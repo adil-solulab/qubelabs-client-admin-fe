@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import UsersPage from "./pages/UsersPage";
+import AIAgentsPage from "./pages/AIAgentsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -19,7 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/users" element={<UsersPage />} />
-          <Route path="/ai-agents" element={<PlaceholderPage />} />
+          <Route path="/ai-agents" element={<AIAgentsPage />} />
           <Route path="/knowledge-base" element={<PlaceholderPage />} />
           <Route path="/channels" element={<PlaceholderPage />} />
           <Route path="/flow-builder" element={<PlaceholderPage />} />
