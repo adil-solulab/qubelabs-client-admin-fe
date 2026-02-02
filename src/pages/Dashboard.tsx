@@ -9,12 +9,11 @@ import { UsageLimitsWidget } from '@/components/dashboard/UsageLimitsWidget';
 import { ChannelUtilizationWidget } from '@/components/dashboard/ChannelUtilizationWidget';
 import { AlertsWidget } from '@/components/dashboard/AlertsWidget';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { cn } from '@/lib/utils';
 
 export default function Dashboard() {
   const [lastRefresh, setLastRefresh] = useState(new Date());
-  const { toast } = useToast();
   
   const {
     isLoading,
@@ -32,10 +31,12 @@ export default function Dashboard() {
   const handleRefresh = async () => {
     await refreshData();
     setLastRefresh(new Date());
-    toast({
-      title: 'Dashboard Refreshed',
-      description: 'All widgets have been updated with the latest data.',
-    });
+    notify.success('Dashboard Refreshed', 'All widgets have been updated with the latest data.');
+  };
+
+  const handleAcknowledgeAlert = (alertId: string) => {
+    acknowledgeAlert(alertId);
+    notify.info('Alert acknowledged');
   };
 
   return (
@@ -92,8 +93,8 @@ export default function Dashboard() {
         {/* Alerts */}
         <AlertsWidget 
           alerts={alerts} 
-          onAcknowledge={acknowledgeAlert}
-          isLoading={isLoading} 
+          onAcknowledge={handleAcknowledgeAlert}
+          isLoading={isLoading}
         />
       </div>
 
