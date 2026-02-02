@@ -11,6 +11,7 @@ import ChannelsPage from "./pages/ChannelsPage";
 import FlowBuilderPage from "./pages/FlowBuilderPage";
 import LiveOpsPage from "./pages/LiveOpsPage";
 import OutboundCallsPage from "./pages/OutboundCallsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -31,7 +32,7 @@ const App = () => (
           <Route path="/flow-builder" element={<FlowBuilderPage />} />
           <Route path="/live-ops" element={<LiveOpsPage />} />
           <Route path="/outbound-calls" element={<OutboundCallsPage />} />
-          <Route path="/analytics" element={<PlaceholderPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/integrations" element={<PlaceholderPage />} />
           <Route path="/billing" element={<PlaceholderPage />} />
           <Route path="/security" element={<PlaceholderPage />} />
