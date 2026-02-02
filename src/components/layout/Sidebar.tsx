@@ -68,7 +68,7 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <div className="flex flex-col">
-            <span className="text-sidebar-foreground font-semibold text-sm">ConvoAI</span>
+            <span className="text-sidebar-foreground font-semibold text-sm">QubeLabs</span>
             <span className="text-sidebar-foreground/50 text-xs">Enterprise</span>
           </div>
         )}

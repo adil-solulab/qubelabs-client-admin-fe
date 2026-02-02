@@ -247,7 +247,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="absolute bottom-4 text-center text-xs text-muted-foreground">
-        <p>© 2025 AI Platform. All rights reserved.</p>
+        <p>© 2025 QubeLabs. All rights reserved.</p>
       </div>
     </div>
   );
