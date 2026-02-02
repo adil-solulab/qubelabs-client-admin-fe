@@ -14,6 +14,7 @@ import OutboundCallsPage from "./pages/OutboundCallsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import BillingPage from "./pages/BillingPage";
 import IntegrationsPage from "./pages/IntegrationsPage";
+import SecurityPage from "./pages/SecurityPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -37,7 +38,7 @@ const App = () => (
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/integrations" element={<IntegrationsPage />} />
           <Route path="/billing" element={<BillingPage />} />
-          <Route path="/security" element={<PlaceholderPage />} />
+          <Route path="/security" element={<SecurityPage />} />
           <Route path="/sdks" element={<PlaceholderPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
