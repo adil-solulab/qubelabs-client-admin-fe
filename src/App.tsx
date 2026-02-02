@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import UsersPage from "./pages/UsersPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -17,7 +18,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/users" element={<PlaceholderPage />} />
+          <Route path="/users" element={<UsersPage />} />
           <Route path="/ai-agents" element={<PlaceholderPage />} />
           <Route path="/knowledge-base" element={<PlaceholderPage />} />
           <Route path="/channels" element={<PlaceholderPage />} />
