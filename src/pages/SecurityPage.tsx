@@ -43,13 +43,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useSecurityData } from '@/hooks/useSecurityData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import type { DataRetentionSettings } from '@/types/security';
 import { MODERATION_TYPES, MODERATION_ACTIONS } from '@/types/security';
 import { cn } from '@/lib/utils';
 
 export default function SecurityPage() {
-  const { toast } = useToast();
   const {
     consentSettings,
     setConsentSettings,
@@ -81,20 +80,18 @@ export default function SecurityPage() {
   const handleSaveSettings = async () => {
     const result = await saveSettings();
     if (result.success) {
-      toast({
-        title: 'Settings Saved',
-        description: 'Your security settings have been updated successfully.',
-      });
+      notify.saved('Security settings');
+    } else {
+      notify.error('Save failed', 'Could not save security settings.');
     }
   };
 
   const handleExportLogs = async () => {
     const result = await exportAuditLogs();
     if (result.success) {
-      toast({
-        title: 'Export Started',
-        description: 'Your audit logs are being downloaded.',
-      });
+      notify.success('Export started', 'Your audit logs are being downloaded.');
+    } else {
+      notify.error('Export failed', 'Could not export audit logs.');
     }
   };
 

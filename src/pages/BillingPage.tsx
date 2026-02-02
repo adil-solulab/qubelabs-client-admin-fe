@@ -41,13 +41,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useBillingData } from '@/hooks/useBillingData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { UpdatePaymentModal } from '@/components/billing/UpdatePaymentModal';
 import { PLAN_CONFIG, INVOICE_STATUS_CONFIG } from '@/types/billing';
 import { cn } from '@/lib/utils';
 
 export default function BillingPage() {
-  const { toast } = useToast();
   const {
     plans,
     currentPlan,
@@ -75,51 +74,34 @@ export default function BillingPage() {
   }) => {
     const result = await updatePaymentMethod(data);
     if (result.success) {
-      toast({
-        title: 'Payment Method Added',
-        description: 'Your new card has been saved successfully.',
-      });
+      notify.created('Payment method');
     } else {
-      toast({
-        title: 'Payment Failed',
-        description: result.error || 'Could not add payment method. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Payment failed', result.error || 'Could not add payment method. Please try again.');
     }
     return result;
   };
 
   const handleSetDefault = async (methodId: string) => {
     await setDefaultPaymentMethod(methodId);
-    toast({
-      title: 'Default Updated',
-      description: 'Your default payment method has been updated.',
-    });
+    notify.saved('Default payment method');
   };
 
   const handleRemoveMethod = async (methodId: string) => {
     await removePaymentMethod(methodId);
-    toast({
-      title: 'Payment Method Removed',
-      description: 'The payment method has been removed from your account.',
-    });
+    notify.deleted('Payment method');
   };
 
   const handleDownloadInvoice = async (invoiceId: string) => {
     await downloadInvoice(invoiceId);
-    toast({
-      title: 'Invoice Downloaded',
-      description: 'Your invoice has been downloaded.',
-    });
+    notify.success('Download started', 'Your invoice is being downloaded.');
   };
 
   const handleUpgrade = async (planType: string) => {
     const result = await upgradePlan(planType as any);
     if (result.success) {
-      toast({
-        title: 'Plan Upgrade Initiated',
-        description: 'Your plan upgrade is being processed.',
-      });
+      notify.success('Plan upgrade initiated', 'Your plan upgrade is being processed.');
+    } else {
+      notify.error('Upgrade failed', 'Could not upgrade plan. Please try again.');
     }
   };
 

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAIAgentsData } from '@/hooks/useAIAgentsData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { PersonaCard } from '@/components/aiAgents/PersonaCard';
 import { PersonaModal } from '@/components/aiAgents/PersonaModal';
 import { TestPersonaModal } from '@/components/aiAgents/TestPersonaModal';
@@ -25,7 +25,6 @@ import type { Persona, PersonaType } from '@/types/aiAgents';
 import { PERSONA_TYPE_LABELS } from '@/types/aiAgents';
 
 export default function AIAgentsPage() {
-  const { toast } = useToast();
   const {
     personas,
     sequences,
@@ -87,38 +86,39 @@ export default function AIAgentsPage() {
   };
 
   const handleSavePersona = async (personaData: Omit<Persona, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (isEditMode && selectedPersona) {
-      await updatePersona(selectedPersona.id, personaData);
-      toast({
-        title: 'Persona Updated',
-        description: `${personaData.name} has been saved successfully.`,
-      });
-    } else {
-      await addPersona(personaData);
-      toast({
-        title: 'Persona Created',
-        description: `${personaData.name} is now ready to use.`,
-      });
+    try {
+      if (isEditMode && selectedPersona) {
+        await updatePersona(selectedPersona.id, personaData);
+        notify.saved(`Persona "${personaData.name}"`);
+      } else {
+        await addPersona(personaData);
+        notify.created(`Persona "${personaData.name}"`);
+      }
+    } catch (error) {
+      notify.error('Failed to save persona', 'Please try again.');
+      throw error;
     }
   };
 
   const handleDeletePersona = async (personaId: string) => {
     const persona = personas.find(p => p.id === personaId);
-    await deletePersona(personaId);
-    toast({
-      title: 'Persona Deleted',
-      description: `${persona?.name} has been removed.`,
-      variant: 'destructive',
-    });
+    try {
+      await deletePersona(personaId);
+      notify.deleted(`Persona "${persona?.name}"`);
+    } catch (error) {
+      notify.error('Failed to delete persona', 'Please try again.');
+      throw error;
+    }
   };
 
   const handleToggleActive = (personaId: string) => {
-    togglePersonaActive(personaId);
     const persona = personas.find(p => p.id === personaId);
-    toast({
-      title: persona?.isActive ? 'Persona Deactivated' : 'Persona Activated',
-      description: `${persona?.name} is now ${persona?.isActive ? 'inactive' : 'active'}.`,
-    });
+    togglePersonaActive(personaId);
+    if (persona?.isActive) {
+      notify.info(`Persona "${persona.name}" deactivated`);
+    } else {
+      notify.success(`Persona "${persona?.name}" activated`);
+    }
   };
 
   return (

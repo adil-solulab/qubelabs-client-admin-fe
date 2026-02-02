@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useOutboundCallingData } from '@/hooks/useOutboundCallingData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { LeadUploadModal } from '@/components/outboundCalling/LeadUploadModal';
 import { StartCampaignModal } from '@/components/outboundCalling/StartCampaignModal';
 import { EscalateLeadModal } from '@/components/outboundCalling/EscalateLeadModal';
@@ -39,7 +39,6 @@ import { CAMPAIGN_STATUS_CONFIG } from '@/types/outboundCalling';
 import { cn } from '@/lib/utils';
 
 export default function OutboundCallsPage() {
-  const { toast } = useToast();
   const {
     leads,
     campaign,
@@ -83,16 +82,9 @@ export default function OutboundCallsPage() {
   const handleUpload = async (file: File) => {
     const result = await uploadLeads(file);
     if (result.success) {
-      toast({
-        title: 'Leads Uploaded',
-        description: `Successfully added ${result.leadsAdded} leads to the campaign.`,
-      });
+      notify.uploaded(`${result.leadsAdded} leads added to campaign`);
     } else {
-      toast({
-        title: 'Upload Failed',
-        description: 'Failed to upload leads. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Upload failed', 'Failed to upload leads. Please try again.');
     }
     return result;
   };
@@ -100,33 +92,20 @@ export default function OutboundCallsPage() {
   const handleStartCampaign = async () => {
     try {
       await startCampaign();
-      toast({
-        title: 'Campaign Started',
-        description: 'AI calling has begun. Monitor progress in the dashboard.',
-      });
+      notify.success('Campaign started', 'AI calling has begun. Monitor progress in the dashboard.');
     } catch {
-      toast({
-        title: 'Failed to Start',
-        description: 'Could not start the campaign. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Failed to start', 'Could not start the campaign. Please try again.');
     }
   };
 
   const handlePauseCampaign = async () => {
     await pauseCampaign();
-    toast({
-      title: 'Campaign Paused',
-      description: 'AI calling has been paused. Resume when ready.',
-    });
+    notify.info('Campaign paused', 'AI calling has been paused. Resume when ready.');
   };
 
   const handleResumeCampaign = async () => {
     await resumeCampaign();
-    toast({
-      title: 'Campaign Resumed',
-      description: 'AI calling has resumed.',
-    });
+    notify.success('Campaign resumed', 'AI calling has resumed.');
   };
 
   const handleEscalateClick = (lead: Lead) => {
@@ -136,10 +115,7 @@ export default function OutboundCallsPage() {
 
   const handleEscalateConfirm = async (leadId: string, agentName: string, _reason: string) => {
     await escalateLead(leadId, agentName);
-    toast({
-      title: 'Lead Escalated',
-      description: `Lead has been assigned to ${agentName}.`,
-    });
+    notify.success('Lead escalated', `Lead has been assigned to ${agentName}.`);
   };
 
   return (

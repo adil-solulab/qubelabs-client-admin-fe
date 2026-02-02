@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useKnowledgeBaseData } from '@/hooks/useKnowledgeBaseData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { DocumentCard } from '@/components/knowledgeBase/DocumentCard';
 import { UploadDocumentModal } from '@/components/knowledgeBase/UploadDocumentModal';
 import { DeleteDocumentModal } from '@/components/knowledgeBase/DeleteDocumentModal';
@@ -32,7 +32,6 @@ import type { KnowledgeDocument, DocumentType, TrainingStatus } from '@/types/kn
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_CATEGORIES, TRAINING_STATUS_LABELS } from '@/types/knowledgeBase';
 
 export default function KnowledgeBasePage() {
-  const { toast } = useToast();
   const {
     documents,
     isLoading,
@@ -72,26 +71,20 @@ export default function KnowledgeBasePage() {
   };
 
   const handleUploadComplete = (docName: string) => {
-    toast({
-      title: 'Document Uploaded',
-      description: `"${docName}" has been uploaded successfully.`,
-    });
+    notify.uploaded(docName);
   };
 
   const handleTrain = async (doc: KnowledgeDocument) => {
-    toast({
-      title: 'Training Started',
-      description: `Starting to train on "${doc.name}"...`,
-    });
+    notify.info(`Training started for "${doc.name}"`);
 
-    await startTraining(doc.id, (progress) => {
-      // Progress is handled in the hook
-    });
-
-    toast({
-      title: 'Training Complete',
-      description: `"${doc.name}" has been trained successfully.`,
-    });
+    try {
+      await startTraining(doc.id, (progress) => {
+        // Progress is handled in the hook
+      });
+      notify.success(`Training complete`, `"${doc.name}" has been trained successfully.`);
+    } catch (error) {
+      notify.error('Training failed', `Could not train "${doc.name}".`);
+    }
   };
 
   const handleDeleteClick = (doc: KnowledgeDocument) => {
@@ -106,20 +99,21 @@ export default function KnowledgeBasePage() {
 
   const handleDelete = async (documentId: string) => {
     const doc = documents.find(d => d.id === documentId);
-    await deleteDocument(documentId);
-    toast({
-      title: 'Document Deleted',
-      description: `"${doc?.name}" has been removed from the knowledge base.`,
-      variant: 'destructive',
-    });
+    try {
+      await deleteDocument(documentId);
+      notify.deleted(`Document "${doc?.name}"`);
+    } catch (error) {
+      notify.error('Delete failed', 'Could not delete document.');
+    }
   };
 
   const handleRevert = async (documentId: string, versionId: string) => {
-    await revertToVersion(documentId, versionId);
-    toast({
-      title: 'Version Restored',
-      description: 'Document has been reverted to the selected version.',
-    });
+    try {
+      await revertToVersion(documentId, versionId);
+      notify.success('Version restored', 'Document reverted to selected version.');
+    } catch (error) {
+      notify.error('Revert failed', 'Could not revert to version.');
+    }
   };
 
   return (

@@ -36,14 +36,13 @@ import {
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useUserProfileData } from '@/hooks/useUserProfileData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 import { LogoutAllSessionsModal } from '@/components/profile/LogoutAllSessionsModal';
 import { LANGUAGES, TIMEZONES } from '@/types/userProfile';
 import { cn } from '@/lib/utils';
 
 export default function UserProfilePage() {
-  const { toast } = useToast();
   const {
     profile,
     preferences,
@@ -69,20 +68,13 @@ export default function UserProfilePage() {
 
   const handleSaveName = async () => {
     if (!editedName.trim()) {
-      toast({
-        title: 'Invalid Input',
-        description: 'Full name cannot be empty.',
-        variant: 'destructive',
-      });
+      notify.validationError('Full name cannot be empty.');
       return;
     }
 
     const result = await updateProfile({ fullName: editedName.trim() });
     if (result.success) {
-      toast({
-        title: 'Profile Updated',
-        description: 'Your name has been saved successfully.',
-      });
+      notify.saved('Name');
       setIsEditingName(false);
     }
   };
@@ -93,21 +85,13 @@ export default function UserProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid File',
-        description: 'Please select an image file.',
-        variant: 'destructive',
-      });
+      notify.validationError('Please select an image file.');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File Too Large',
-        description: 'Image must be less than 5MB.',
-        variant: 'destructive',
-      });
+      notify.validationError('Image must be less than 5MB.');
       return;
     }
 
@@ -128,10 +112,7 @@ export default function UserProfilePage() {
     setTimeout(() => {
       setUploadProgress(null);
       if (result.success) {
-        toast({
-          title: 'Photo Uploaded',
-          description: 'Your profile photo has been updated.',
-        });
+        notify.uploaded('Profile photo');
       }
     }, 500);
   };
@@ -139,10 +120,7 @@ export default function UserProfilePage() {
   const handlePreferenceChange = async (key: string, value: any) => {
     const result = await updatePreferences({ [key]: value });
     if (result.success) {
-      toast({
-        title: 'Preference Updated',
-        description: 'Your preference has been saved.',
-      });
+      notify.saved('Preference');
     }
   };
 
@@ -161,20 +139,14 @@ export default function UserProfilePage() {
     
     const result = await updateNotificationPrefs(updates);
     if (result.success) {
-      toast({
-        title: 'Notifications Updated',
-        description: 'Your notification preferences have been saved.',
-      });
+      notify.saved('Notification preferences');
     }
   };
 
   const handleChangePassword = async (currentPassword: string, newPassword: string) => {
     const result = await changePassword(currentPassword, newPassword);
     if (result.success) {
-      toast({
-        title: 'Password Changed',
-        description: 'Your password has been updated successfully.',
-      });
+      notify.success('Password changed', 'Your password has been updated successfully.');
     }
     return result;
   };
@@ -182,20 +154,14 @@ export default function UserProfilePage() {
   const handleTerminateSession = async (sessionId: string) => {
     const result = await terminateSession(sessionId);
     if (result.success) {
-      toast({
-        title: 'Session Terminated',
-        description: 'The device has been logged out.',
-      });
+      notify.success('Session terminated', 'The device has been logged out.');
     }
   };
 
   const handleLogoutAll = async () => {
     const result = await terminateAllSessions();
     if (result.success) {
-      toast({
-        title: 'All Sessions Terminated',
-        description: 'All other devices have been logged out.',
-      });
+      notify.success('All sessions terminated', 'All other devices have been logged out.');
     }
     return result;
   };
