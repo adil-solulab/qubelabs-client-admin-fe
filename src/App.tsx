@@ -8,6 +8,7 @@ import UsersPage from "./pages/UsersPage";
 import AIAgentsPage from "./pages/AIAgentsPage";
 import KnowledgeBasePage from "./pages/KnowledgeBasePage";
 import ChannelsPage from "./pages/ChannelsPage";
+import FlowBuilderPage from "./pages/FlowBuilderPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -25,7 +26,7 @@ const App = () => (
           <Route path="/ai-agents" element={<AIAgentsPage />} />
           <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
           <Route path="/channels" element={<ChannelsPage />} />
-          <Route path="/flow-builder" element={<PlaceholderPage />} />
+          <Route path="/flow-builder" element={<FlowBuilderPage />} />
           <Route path="/live-ops" element={<PlaceholderPage />} />
           <Route path="/outbound-calls" element={<PlaceholderPage />} />
           <Route path="/analytics" element={<PlaceholderPage />} />
