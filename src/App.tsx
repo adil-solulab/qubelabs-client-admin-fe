@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import UsersPage from "./pages/UsersPage";
 import AIAgentsPage from "./pages/AIAgentsPage";
+import KnowledgeBasePage from "./pages/KnowledgeBasePage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -21,7 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/ai-agents" element={<AIAgentsPage />} />
-          <Route path="/knowledge-base" element={<PlaceholderPage />} />
+          <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
           <Route path="/channels" element={<PlaceholderPage />} />
           <Route path="/flow-builder" element={<PlaceholderPage />} />
           <Route path="/live-ops" element={<PlaceholderPage />} />
