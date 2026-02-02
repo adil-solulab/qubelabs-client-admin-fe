@@ -6,14 +6,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useChannelsData } from '@/hooks/useChannelsData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { VoiceConfigPanel } from '@/components/channels/VoiceConfigPanel';
 import { ChatConfigPanel } from '@/components/channels/ChatConfigPanel';
 import { EmailConfigPanel } from '@/components/channels/EmailConfigPanel';
 import { cn } from '@/lib/utils';
 
 export default function ChannelsPage() {
-  const { toast } = useToast();
   const {
     voiceConfig,
     chatConfig,
@@ -34,57 +33,38 @@ export default function ChannelsPage() {
 
   const handleToggleChannel = async (channel: 'voice' | 'chat' | 'email', enabled: boolean) => {
     await toggleChannel(channel, enabled);
-    toast({
-      title: `${channel.charAt(0).toUpperCase() + channel.slice(1)} Channel ${enabled ? 'Enabled' : 'Disabled'}`,
-      description: `The ${channel} channel has been ${enabled ? 'activated' : 'deactivated'}.`,
-    });
+    const channelName = channel.charAt(0).toUpperCase() + channel.slice(1);
+    if (enabled) {
+      notify.success(`${channelName} channel enabled`);
+    } else {
+      notify.info(`${channelName} channel disabled`);
+    }
   };
 
   const handleSaveVoice = async () => {
     try {
       await updateVoiceConfig({});
-      toast({
-        title: 'Voice Configuration Saved',
-        description: 'Your voice settings have been updated successfully.',
-      });
+      notify.saved('Voice configuration');
     } catch {
-      toast({
-        title: 'Error Saving Configuration',
-        description: 'Failed to save voice settings. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Failed to save', 'Could not save voice settings.');
     }
   };
 
   const handleSaveChat = async () => {
     try {
       await updateChatConfig({});
-      toast({
-        title: 'Chat Configuration Saved',
-        description: 'Your chat widget settings have been updated successfully.',
-      });
+      notify.saved('Chat configuration');
     } catch {
-      toast({
-        title: 'Error Saving Configuration',
-        description: 'Failed to save chat settings. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Failed to save', 'Could not save chat settings.');
     }
   };
 
   const handleSaveEmail = async () => {
     try {
       await updateEmailConfig({});
-      toast({
-        title: 'Email Configuration Saved',
-        description: 'Your email settings have been updated successfully.',
-      });
+      notify.saved('Email configuration');
     } catch {
-      toast({
-        title: 'Error Saving Configuration',
-        description: 'Failed to save email settings. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Failed to save', 'Could not save email settings.');
     }
   };
 

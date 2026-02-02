@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useLiveOpsData } from '@/hooks/useLiveOpsData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { ConversationCard } from '@/components/liveOps/ConversationCard';
 import { ConversationDetailPanel } from '@/components/liveOps/ConversationDetailPanel';
 import { BargeInModal } from '@/components/liveOps/BargeInModal';
@@ -35,7 +35,6 @@ import type { ConversationChannel, SentimentType, ConversationStatus, LiveConver
 import { cn } from '@/lib/utils';
 
 export default function LiveOpsPage() {
-  const { toast } = useToast();
   const {
     conversations,
     agents,
@@ -69,19 +68,13 @@ export default function LiveOpsPage() {
   const handleMonitor = async () => {
     if (!selectedConversation) return;
     await startMonitoring(selectedConversation.id);
-    toast({
-      title: 'Monitoring Started',
-      description: `You are now monitoring the conversation with ${selectedConversation.customerName}`,
-    });
+    notify.info(`Monitoring started`, `Now monitoring conversation with ${selectedConversation.customerName}`);
   };
 
   const handleWhisper = async (message: string) => {
     if (!selectedConversation) return;
     await startWhisper(selectedConversation.id, message);
-    toast({
-      title: 'Whisper Sent',
-      description: 'Your message has been sent to the agent privately.',
-    });
+    notify.success('Whisper sent', 'Your message was sent to the agent privately.');
   };
 
   const handleBargeInClick = () => {
@@ -93,30 +86,20 @@ export default function LiveOpsPage() {
   const handleBargeInConfirm = async () => {
     if (!conversationToBargeIn) return;
     await bargeIn(conversationToBargeIn.id);
-    toast({
-      title: 'Barged In',
-      description: 'You have joined the conversation as supervisor.',
-      variant: 'default',
-    });
+    notify.success('Barged in', 'You have joined the conversation as supervisor.');
   };
 
   const handleTransfer = async (agentId: string) => {
     if (!selectedConversation) return;
     const agent = agents.find(a => a.id === agentId);
     await transferToAgent(selectedConversation.id, agentId);
-    toast({
-      title: 'Transfer Complete',
-      description: `Conversation transferred to ${agent?.name}`,
-    });
+    notify.success('Transfer complete', `Conversation transferred to ${agent?.name}`);
   };
 
   const handleStopSupervision = async () => {
     if (!selectedConversation) return;
     await stopSupervision(selectedConversation.id);
-    toast({
-      title: 'Supervision Ended',
-      description: 'You are no longer supervising this conversation.',
-    });
+    notify.info('Supervision ended', 'You are no longer supervising this conversation.');
   };
 
   const formatTime = (seconds: number) => {

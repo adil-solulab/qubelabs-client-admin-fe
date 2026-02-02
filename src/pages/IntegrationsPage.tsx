@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { ConnectIntegrationModal } from '@/components/integrations/ConnectIntegrationModal';
 import { DisconnectIntegrationModal } from '@/components/integrations/DisconnectIntegrationModal';
 import { CreateAPIKeyModal } from '@/components/integrations/CreateAPIKeyModal';
@@ -46,7 +46,6 @@ import { CATEGORY_CONFIG, STATUS_CONFIG, INTEGRATION_ICONS } from '@/types/integ
 import { cn } from '@/lib/utils';
 
 export default function IntegrationsPage() {
-  const { toast } = useToast();
   const {
     integrations,
     apiKeys,
@@ -77,18 +76,11 @@ export default function IntegrationsPage() {
 
   const handleConnect = async (integrationId: string, credentials?: Record<string, string>) => {
     const result = await connectIntegration(integrationId, credentials);
+    const int = integrations.find(i => i.id === integrationId);
     if (result.success) {
-      const int = integrations.find(i => i.id === integrationId);
-      toast({
-        title: 'Integration Connected',
-        description: `${int?.name} has been successfully connected.`,
-      });
+      notify.connected(int?.name || 'Integration');
     } else {
-      toast({
-        title: 'Connection Failed',
-        description: result.error || 'Could not connect. Please try again.',
-        variant: 'destructive',
-      });
+      notify.error('Connection failed', result.error || 'Could not connect. Please try again.');
     }
     return result;
   };
@@ -97,10 +89,7 @@ export default function IntegrationsPage() {
     const int = integrations.find(i => i.id === integrationId);
     const result = await disconnectIntegration(integrationId);
     if (result.success) {
-      toast({
-        title: 'Integration Disconnected',
-        description: `${int?.name} has been disconnected.`,
-      });
+      notify.disconnected(int?.name || 'Integration');
     }
     return result;
   };
@@ -118,34 +107,33 @@ export default function IntegrationsPage() {
   const handleCreateKey = async (name: string, permissions: string[]) => {
     const result = await createAPIKey(name, permissions);
     if (result.success) {
-      toast({
-        title: 'API Key Created',
-        description: 'Your new API key has been generated.',
-      });
+      notify.created('API Key');
+    } else {
+      notify.error('Failed to create API key', 'Please try again.');
     }
     return result;
   };
 
   const handleRevokeKey = async (keyId: string) => {
     await revokeAPIKey(keyId);
-    toast({
-      title: 'API Key Revoked',
-      description: 'The API key has been permanently deleted.',
-    });
+    notify.deleted('API Key');
   };
 
   const handleToggleKey = async (keyId: string) => {
     await toggleAPIKey(keyId);
+    const key = apiKeys.find(k => k.id === keyId);
+    if (key?.isActive) {
+      notify.info('API Key disabled');
+    } else {
+      notify.success('API Key enabled');
+    }
   };
 
   const handleCopyKey = async (keyId: string, key: string) => {
     await navigator.clipboard.writeText(key);
     setCopiedKeyId(keyId);
     setTimeout(() => setCopiedKeyId(null), 2000);
-    toast({
-      title: 'Copied',
-      description: 'API key copied to clipboard.',
-    });
+    notify.copied();
   };
 
   const formatDate = (dateStr: string) => {

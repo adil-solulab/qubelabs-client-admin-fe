@@ -43,7 +43,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUsersData } from '@/hooks/useUsersData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { AddUserModal } from '@/components/users/AddUserModal';
 import { EditUserDrawer } from '@/components/users/EditUserDrawer';
 import { DeleteUserModal } from '@/components/users/DeleteUserModal';
@@ -53,7 +53,6 @@ import { ROLE_LABELS, STATUS_LABELS } from '@/types/users';
 import { cn } from '@/lib/utils';
 
 export default function UsersPage() {
-  const { toast } = useToast();
   const { 
     users, 
     isLoading, 
@@ -93,39 +92,50 @@ export default function UsersPage() {
   };
 
   const handleAddUser = async (userData: Omit<TeamUser, 'id' | 'createdAt' | 'lastActive'>) => {
-    const newUser = await addUser(userData);
-    toast({
-      title: 'User Created',
-      description: `${newUser.name} has been added to the team.`,
-    });
-    return newUser;
+    try {
+      const newUser = await addUser(userData);
+      notify.created(`User "${newUser.name}"`);
+      return newUser;
+    } catch (error) {
+      notify.error('Failed to create user', 'Please check the information and try again.');
+      throw error;
+    }
   };
 
   const handleUpdateUser = async (userId: string, userData: Partial<TeamUser>) => {
-    await updateUser(userId, userData);
-    toast({
-      title: 'User Updated',
-      description: 'User information has been saved successfully.',
-    });
+    try {
+      await updateUser(userId, userData);
+      notify.saved('User information');
+    } catch (error) {
+      notify.error('Failed to update user', 'Please try again.');
+      throw error;
+    }
   };
 
   const handleDeleteUser = async (userId: string) => {
     const user = users.find(u => u.id === userId);
-    await deleteUser(userId);
-    toast({
-      title: 'User Deleted',
-      description: `${user?.name} has been removed from the team.`,
-      variant: 'destructive',
-    });
+    try {
+      await deleteUser(userId);
+      notify.deleted(`User "${user?.name}"`);
+    } catch (error) {
+      notify.error('Failed to delete user', 'Please try again.');
+      throw error;
+    }
   };
 
   const handleImportUsers = async (file: File, onProgress: (progress: number) => void) => {
-    const result = await importUsers(file, onProgress);
-    toast({
-      title: 'Import Complete',
-      description: `Successfully imported ${result.success} users.${result.failed > 0 ? ` ${result.failed} failed.` : ''}`,
-    });
-    return result;
+    try {
+      const result = await importUsers(file, onProgress);
+      if (result.failed > 0) {
+        notify.warning(`Imported ${result.success} users`, `${result.failed} failed to import.`);
+      } else {
+        notify.uploaded(`${result.success} users imported`);
+      }
+      return result;
+    } catch (error) {
+      notify.error('Import failed', 'Could not import users from file.');
+      throw error;
+    }
   };
 
   const handleEditClick = (user: TeamUser) => {

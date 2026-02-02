@@ -28,7 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useSDKsData } from '@/hooks/useSDKsData';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 import { GenerateCodeModal } from '@/components/sdks/GenerateCodeModal';
 import { RegenerateKeyModal } from '@/components/sdks/RegenerateKeyModal';
 import type { EmbedWidget, ProjectKey } from '@/types/sdks';
@@ -36,7 +36,6 @@ import { SDK_ICONS } from '@/types/sdks';
 import { cn } from '@/lib/utils';
 
 export default function SDKsPage() {
-  const { toast } = useToast();
   const {
     sdks,
     embedWidgets,
@@ -58,10 +57,7 @@ export default function SDKsPage() {
   const handleCopy = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedId(id);
-    toast({
-      title: 'Copied to clipboard',
-      description: 'The content has been copied to your clipboard.',
-    });
+    notify.copied();
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -78,10 +74,9 @@ export default function SDKsPage() {
   const handleRegenerate = async (keyId: string) => {
     const result = await regenerateKey(keyId);
     if (result.success) {
-      toast({
-        title: 'Key Regenerated',
-        description: 'Your new API key has been generated. Update your integrations.',
-      });
+      notify.success('Key regenerated', 'Your new API key has been generated. Update your integrations.');
+    } else {
+      notify.error('Regeneration failed', 'Could not regenerate the key. Please try again.');
     }
     return result;
   };
@@ -475,12 +470,7 @@ const client = new AIClient({
         publishableKey={productionPublishableKey}
         open={generateModalOpen}
         onOpenChange={setGenerateModalOpen}
-        onCopy={() => {
-          toast({
-            title: 'Copied to clipboard',
-            description: 'The embed code has been copied to your clipboard.',
-          });
-        }}
+        onCopy={() => notify.copied()}
       />
 
       <RegenerateKeyModal
