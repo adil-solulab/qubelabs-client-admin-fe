@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   GitBranch,
   Plus,
   Save,
   Rocket,
   History,
-  Play,
   Eye,
   EyeOff,
   Loader2,
   ChevronDown,
+  AlertCircle,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -19,35 +19,37 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useFlowBuilderData } from '@/hooks/useFlowBuilderData';
-import { useToast } from '@/hooks/use-toast';
 import { FlowCanvas } from '@/components/flowBuilder/FlowCanvas';
 import { NodePropertiesPanel } from '@/components/flowBuilder/NodePropertiesPanel';
 import { PublishFlowModal } from '@/components/flowBuilder/PublishFlowModal';
 import { RollbackModal } from '@/components/flowBuilder/RollbackModal';
 import { LivePreviewPanel } from '@/components/flowBuilder/LivePreviewPanel';
+import { UnsavedChangesModal } from '@/components/flowBuilder/UnsavedChangesModal';
 import { NODE_TYPE_CONFIG, type NodeType } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
+import { notify } from '@/hooks/useNotification';
 
 export default function FlowBuilderPage() {
-  const { toast } = useToast();
   const {
     flow,
     selectedNode,
     setSelectedNode,
     isConnecting,
-    setIsConnecting,
     connectingFrom,
-    setConnectingFrom,
+    connectingHandleType,
     isSaving,
+    hasUnsavedChanges,
     addNode,
-    updateNode,
+    duplicateNode,
     updateNodeData,
     deleteNode,
     moveNode,
+    startConnect,
+    cancelConnect,
     addEdge,
+    deleteEdge,
     publishFlow,
     rollbackToVersion,
     saveDraft,
@@ -56,68 +58,92 @@ export default function FlowBuilderPage() {
   const [showPreview, setShowPreview] = useState(true);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [rollbackModalOpen, setRollbackModalOpen] = useState(false);
-  const [addNodePosition, setAddNodePosition] = useState<{ x: number; y: number } | null>(null);
+  const [unsavedChangesModalOpen, setUnsavedChangesModalOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+
+  // Warn user before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const handleAddNode = (type: NodeType) => {
-    const position = addNodePosition || { x: 400, y: 300 };
+    const position = { x: 400 + Math.random() * 200, y: 300 + Math.random() * 100 };
     const newNode = addNode(type, position);
     setSelectedNode(newNode);
-    setAddNodePosition(null);
-    toast({
-      title: 'Node Added',
-      description: `Added new ${NODE_TYPE_CONFIG[type].label} node`,
-    });
+    notify.created(`${NODE_TYPE_CONFIG[type].label} node added`);
   };
 
-  const handleCanvasClick = (position: { x: number; y: number }) => {
-    if (isConnecting) {
-      setIsConnecting(false);
-      setConnectingFrom(null);
-    } else {
-      setAddNodePosition(position);
-    }
-  };
-
-  const handleStartConnect = (nodeId: string) => {
-    setIsConnecting(true);
-    setConnectingFrom(nodeId);
+  const handleStartConnect = (nodeId: string, handleType: 'output' | 'yes' | 'no') => {
+    startConnect(nodeId, handleType);
   };
 
   const handleEndConnect = (nodeId: string) => {
     if (connectingFrom && connectingFrom !== nodeId) {
-      addEdge(connectingFrom, nodeId);
-      toast({
-        title: 'Connection Created',
-        description: 'Nodes connected successfully',
-      });
+      const result = addEdge(connectingFrom, nodeId);
+      if (result.success) {
+        notify.success('Nodes connected');
+      } else {
+        notify.error(result.error || 'Invalid connection');
+      }
     }
-    setIsConnecting(false);
-    setConnectingFrom(null);
+    cancelConnect();
+  };
+
+  const handleEditNode = (node: typeof selectedNode) => {
+    setSelectedNode(node);
+  };
+
+  const handleDuplicateNode = (nodeId: string) => {
+    const newNode = duplicateNode(nodeId);
+    if (newNode) {
+      setSelectedNode(newNode);
+      notify.created('Node duplicated');
+    }
+  };
+
+  const handleCanvasClick = (position: { x: number; y: number }) => {
+    // Optional: could open node type picker at position
   };
 
   const handleSaveDraft = async () => {
     await saveDraft();
-    toast({
-      title: 'Draft Saved',
-      description: 'Your flow has been saved as draft.',
-    });
+    notify.saved('Flow saved as draft');
   };
 
   const handlePublish = async (changelog: string) => {
     await publishFlow(changelog);
-    toast({
-      title: 'Flow Published',
-      description: `Version ${parseInt(flow.currentVersion) + 1}.0 is now live!`,
-    });
+    notify.success(`Version ${parseInt(flow.currentVersion) + 1}.0 published!`);
   };
 
   const handleRollback = async (versionId: string) => {
     const version = flow.versions.find(v => v.id === versionId);
     await rollbackToVersion(versionId);
-    toast({
-      title: 'Rollback Complete',
-      description: `Restored to version ${version?.version}`,
-    });
+    notify.success(`Restored to version ${version?.version}`);
+  };
+
+  const handleDiscardChanges = () => {
+    setUnsavedChangesModalOpen(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleSaveAndContinue = async () => {
+    await saveDraft();
+    setUnsavedChangesModalOpen(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
   };
 
   const nodeTypes: NodeType[] = ['message', 'condition', 'api_call', 'transfer', 'end'];
@@ -138,6 +164,12 @@ export default function FlowBuilderPage() {
                   {flow.status}
                 </Badge>
                 <Badge variant="outline">v{flow.currentVersion}</Badge>
+                {hasUnsavedChanges && (
+                  <Badge variant="destructive" className="gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Unsaved
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">{flow.description}</p>
             </div>
@@ -182,7 +214,11 @@ export default function FlowBuilderPage() {
             </Button>
 
             {/* Save Draft */}
-            <Button variant="outline" onClick={handleSaveDraft} disabled={isSaving}>
+            <Button 
+              variant={hasUnsavedChanges ? 'default' : 'outline'} 
+              onClick={handleSaveDraft} 
+              disabled={isSaving}
+            >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
@@ -209,10 +245,15 @@ export default function FlowBuilderPage() {
               selectedNode={selectedNode}
               isConnecting={isConnecting}
               connectingFrom={connectingFrom}
+              connectingHandleType={connectingHandleType}
               onSelectNode={setSelectedNode}
+              onEditNode={handleEditNode}
               onStartConnect={handleStartConnect}
               onEndConnect={handleEndConnect}
+              onCancelConnect={cancelConnect}
+              onDuplicateNode={handleDuplicateNode}
               onDeleteNode={deleteNode}
+              onDeleteEdge={deleteEdge}
               onMoveNode={moveNode}
               onCanvasClick={handleCanvasClick}
             />
@@ -236,13 +277,6 @@ export default function FlowBuilderPage() {
             )}
           </div>
         </div>
-
-        {/* Connection Mode Indicator */}
-        {isConnecting && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg animate-pulse">
-            Click a node to connect, or click canvas to cancel
-          </div>
-        )}
       </div>
 
       {/* Modals */}
@@ -259,6 +293,13 @@ export default function FlowBuilderPage() {
         open={rollbackModalOpen}
         onOpenChange={setRollbackModalOpen}
         onRollback={handleRollback}
+      />
+
+      <UnsavedChangesModal
+        open={unsavedChangesModalOpen}
+        onOpenChange={setUnsavedChangesModalOpen}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardChanges}
       />
     </AppLayout>
   );

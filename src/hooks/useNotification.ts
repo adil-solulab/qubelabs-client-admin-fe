@@ -120,6 +120,32 @@ export function useNotification() {
 
 // Quick toast functions for common actions
 export const notify = {
+  // Generic success/error/warning/info
+  success: (message: string, description?: string) => showToast.success({
+    title: message,
+    description,
+    showProgress: true,
+  }),
+
+  error: (message: string, description?: string) => showToast.error({
+    title: message,
+    description,
+    showProgress: true,
+  }),
+
+  warning: (message: string, description?: string) => showToast.warning({
+    title: message,
+    description,
+    showProgress: true,
+  }),
+
+  info: (message: string, description?: string) => showToast.info({
+    title: message,
+    description,
+    showProgress: true,
+  }),
+
+  // Specific action shortcuts
   copied: () => showToast.success({
     title: 'Copied to clipboard',
     description: 'The content has been copied successfully',
@@ -140,8 +166,8 @@ export const notify = {
   }),
 
   deleted: (itemName: string) => showToast.success({
-    title: `${itemName} deleted`,
-    description: `The ${itemName.toLowerCase()} has been removed`,
+    title: itemName,
+    description: 'Successfully removed',
     showProgress: true,
   }),
 
