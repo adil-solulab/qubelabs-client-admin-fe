@@ -15,6 +15,7 @@ import {
   CreditCard,
   Shield,
   Code2,
+  Palette,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { icon: CreditCard, label: 'Billing', path: '/billing' },
   { icon: Shield, label: 'Security', path: '/security' },
   { icon: Code2, label: 'SDKs', path: '/sdks' },
+  { icon: Palette, label: 'Theme', path: '/theme' },
 ];
 
 export function Sidebar() {
