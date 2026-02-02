@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData } from '@/types/flowBuilder';
 
 const generateMockFlow = (): Flow => ({
@@ -11,21 +11,21 @@ const generateMockFlow = (): Flow => ({
     {
       id: 'start-1',
       type: 'start',
-      position: { x: 400, y: 50 },
+      position: { x: 100, y: 300 },
       data: { label: 'Start' },
       connections: ['msg-1'],
     },
     {
       id: 'msg-1',
       type: 'message',
-      position: { x: 400, y: 150 },
+      position: { x: 350, y: 300 },
       data: { label: 'Welcome Message', content: 'Hello! How can I help you today?' },
       connections: ['cond-1'],
     },
     {
       id: 'cond-1',
       type: 'condition',
-      position: { x: 400, y: 280 },
+      position: { x: 600, y: 300 },
       data: {
         label: 'Check Intent',
         condition: { variable: 'intent', operator: 'equals', value: 'sales' },
@@ -37,28 +37,28 @@ const generateMockFlow = (): Flow => ({
     {
       id: 'msg-2',
       type: 'message',
-      position: { x: 250, y: 420 },
+      position: { x: 900, y: 180 },
       data: { label: 'Sales Response', content: 'Let me connect you with our sales team!' },
       connections: ['transfer-1'],
     },
     {
       id: 'msg-3',
       type: 'message',
-      position: { x: 550, y: 420 },
+      position: { x: 900, y: 420 },
       data: { label: 'Support Response', content: 'I\'ll help you with support.' },
       connections: ['api-1'],
     },
     {
       id: 'transfer-1',
       type: 'transfer',
-      position: { x: 250, y: 550 },
+      position: { x: 1150, y: 180 },
       data: { label: 'Transfer to Sales', transferTo: 'Sales Team' },
       connections: ['end-1'],
     },
     {
       id: 'api-1',
       type: 'api_call',
-      position: { x: 550, y: 550 },
+      position: { x: 1150, y: 420 },
       data: {
         label: 'Get User Info',
         apiConfig: { method: 'GET', url: '/api/user/{userId}' },
@@ -68,14 +68,14 @@ const generateMockFlow = (): Flow => ({
     {
       id: 'end-1',
       type: 'end',
-      position: { x: 250, y: 680 },
+      position: { x: 1400, y: 180 },
       data: { label: 'End (Sales)' },
       connections: [],
     },
     {
       id: 'end-2',
       type: 'end',
-      position: { x: 550, y: 680 },
+      position: { x: 1400, y: 420 },
       data: { label: 'End (Support)' },
       connections: [],
     },
@@ -128,10 +128,20 @@ const generateMockFlow = (): Flow => ({
 
 export function useFlowBuilderData() {
   const [flow, setFlow] = useState<Flow>(generateMockFlow());
+  const [initialFlow, setInitialFlow] = useState<Flow>(generateMockFlow());
   const [selectedNode, setSelectedNode] = useState<FlowNode | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
+  const [connectingHandleType, setConnectingHandleType] = useState<'output' | 'yes' | 'no' | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Track unsaved changes
+  useEffect(() => {
+    const flowString = JSON.stringify({ nodes: flow.nodes, edges: flow.edges });
+    const initialString = JSON.stringify({ nodes: initialFlow.nodes, edges: initialFlow.edges });
+    setHasUnsavedChanges(flowString !== initialString);
+  }, [flow, initialFlow]);
 
   const addNode = useCallback((type: NodeType, position: { x: number; y: number }) => {
     const newNode: FlowNode = {
@@ -155,6 +165,27 @@ export function useFlowBuilderData() {
 
     return newNode;
   }, []);
+
+  const duplicateNode = useCallback((nodeId: string) => {
+    const node = flow.nodes.find(n => n.id === nodeId);
+    if (!node || node.type === 'start') return null;
+
+    const newNode: FlowNode = {
+      id: `${node.type}-${Date.now()}`,
+      type: node.type,
+      position: { x: node.position.x + 50, y: node.position.y + 50 },
+      data: { ...node.data, label: `${node.data.label} (Copy)` },
+      connections: [],
+    };
+
+    setFlow(prev => ({
+      ...prev,
+      nodes: [...prev.nodes, newNode],
+      status: 'draft',
+    }));
+
+    return newNode;
+  }, [flow.nodes]);
 
   const updateNode = useCallback((nodeId: string, updates: Partial<FlowNode>) => {
     setFlow(prev => ({
@@ -195,9 +226,50 @@ export function useFlowBuilderData() {
     }));
   }, []);
 
-  const addEdge = useCallback((source: string, target: string, label?: string) => {
+  const startConnect = useCallback((nodeId: string, handleType: 'output' | 'yes' | 'no') => {
+    setIsConnecting(true);
+    setConnectingFrom(nodeId);
+    setConnectingHandleType(handleType);
+  }, []);
+
+  const cancelConnect = useCallback(() => {
+    setIsConnecting(false);
+    setConnectingFrom(null);
+    setConnectingHandleType(null);
+  }, []);
+
+  const addEdge = useCallback((source: string, target: string) => {
+    // Validation
+    if (source === target) {
+      return { success: false, error: 'Cannot connect node to itself' };
+    }
+    
+    const sourceNode = flow.nodes.find(n => n.id === source);
+    const targetNode = flow.nodes.find(n => n.id === target);
+    
+    if (!sourceNode || !targetNode) {
+      return { success: false, error: 'Invalid nodes' };
+    }
+    
+    if (targetNode.type === 'start') {
+      return { success: false, error: 'Cannot connect to start node' };
+    }
+    
+    if (sourceNode.type === 'end') {
+      return { success: false, error: 'Cannot connect from end node' };
+    }
+
+    // Check for existing connection
     const edgeExists = flow.edges.some(e => e.source === source && e.target === target);
-    if (edgeExists) return;
+    if (edgeExists) {
+      return { success: false, error: 'Connection already exists' };
+    }
+
+    // Determine label for condition nodes
+    let label: string | undefined;
+    if (sourceNode.type === 'condition') {
+      label = connectingHandleType === 'yes' ? 'Yes' : connectingHandleType === 'no' ? 'No' : undefined;
+    }
 
     const newEdge: FlowEdge = {
       id: `e-${Date.now()}`,
@@ -216,7 +288,10 @@ export function useFlowBuilderData() {
       ),
       status: 'draft',
     }));
-  }, [flow.edges]);
+
+    cancelConnect();
+    return { success: true };
+  }, [flow.nodes, flow.edges, connectingHandleType, cancelConnect]);
 
   const deleteEdge = useCallback((edgeId: string) => {
     const edge = flow.edges.find(e => e.id === edgeId);
@@ -257,7 +332,14 @@ export function useFlowBuilderData() {
       updatedAt: new Date().toISOString().split('T')[0],
     }));
 
+    setInitialFlow(prev => ({
+      ...prev,
+      nodes: flow.nodes,
+      edges: flow.edges,
+    }));
+
     setIsSaving(false);
+    setHasUnsavedChanges(false);
   }, [flow]);
 
   const rollbackToVersion = useCallback(async (versionId: string) => {
@@ -280,12 +362,21 @@ export function useFlowBuilderData() {
   const saveDraft = useCallback(async () => {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 500));
+    
     setFlow(prev => ({
       ...prev,
       updatedAt: new Date().toISOString().split('T')[0],
     }));
+    
+    setInitialFlow(prev => ({
+      ...prev,
+      nodes: flow.nodes,
+      edges: flow.edges,
+    }));
+    
     setIsSaving(false);
-  }, []);
+    setHasUnsavedChanges(false);
+  }, [flow.nodes, flow.edges]);
 
   return {
     flow,
@@ -295,12 +386,17 @@ export function useFlowBuilderData() {
     setIsConnecting,
     connectingFrom,
     setConnectingFrom,
+    connectingHandleType,
     isSaving,
+    hasUnsavedChanges,
     addNode,
+    duplicateNode,
     updateNode,
     updateNodeData,
     deleteNode,
     moveNode,
+    startConnect,
+    cancelConnect,
     addEdge,
     deleteEdge,
     publishFlow,
