@@ -13,6 +13,7 @@ import LiveOpsPage from "./pages/LiveOpsPage";
 import OutboundCallsPage from "./pages/OutboundCallsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import BillingPage from "./pages/BillingPage";
+import IntegrationsPage from "./pages/IntegrationsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -34,7 +35,7 @@ const App = () => (
           <Route path="/live-ops" element={<LiveOpsPage />} />
           <Route path="/outbound-calls" element={<OutboundCallsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/integrations" element={<PlaceholderPage />} />
+          <Route path="/integrations" element={<IntegrationsPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/security" element={<PlaceholderPage />} />
           <Route path="/sdks" element={<PlaceholderPage />} />
