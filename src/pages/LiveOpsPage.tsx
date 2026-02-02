@@ -1,0 +1,338 @@
+import { useState } from 'react';
+import {
+  Headphones,
+  Users,
+  Clock,
+  TrendingUp,
+  Phone,
+  MessageSquare,
+  Mail,
+  Bot,
+  User,
+  Filter,
+  Search,
+  RefreshCw,
+} from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useLiveOpsData } from '@/hooks/useLiveOpsData';
+import { useToast } from '@/hooks/use-toast';
+import { ConversationCard } from '@/components/liveOps/ConversationCard';
+import { ConversationDetailPanel } from '@/components/liveOps/ConversationDetailPanel';
+import { BargeInModal } from '@/components/liveOps/BargeInModal';
+import type { ConversationChannel, SentimentType, ConversationStatus, LiveConversation } from '@/types/liveOps';
+import { cn } from '@/lib/utils';
+
+export default function LiveOpsPage() {
+  const { toast } = useToast();
+  const {
+    conversations,
+    agents,
+    queueStats,
+    selectedConversation,
+    setSelectedConversation,
+    startMonitoring,
+    startWhisper,
+    bargeIn,
+    transferToAgent,
+    stopSupervision,
+  } = useLiveOpsData();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [channelFilter, setChannelFilter] = useState<ConversationChannel | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
+  const [sentimentFilter, setSentimentFilter] = useState<SentimentType | 'all'>('all');
+  const [bargeInModalOpen, setBargeInModalOpen] = useState(false);
+  const [conversationToBargeIn, setConversationToBargeIn] = useState<LiveConversation | null>(null);
+
+  // Filter conversations
+  const filteredConversations = conversations.filter(conv => {
+    const matchesSearch = conv.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.topic.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesChannel = channelFilter === 'all' || conv.channel === channelFilter;
+    const matchesStatus = statusFilter === 'all' || conv.status === statusFilter;
+    const matchesSentiment = sentimentFilter === 'all' || conv.sentiment === sentimentFilter;
+    return matchesSearch && matchesChannel && matchesStatus && matchesSentiment;
+  });
+
+  const handleMonitor = async () => {
+    if (!selectedConversation) return;
+    await startMonitoring(selectedConversation.id);
+    toast({
+      title: 'Monitoring Started',
+      description: `You are now monitoring the conversation with ${selectedConversation.customerName}`,
+    });
+  };
+
+  const handleWhisper = async (message: string) => {
+    if (!selectedConversation) return;
+    await startWhisper(selectedConversation.id, message);
+    toast({
+      title: 'Whisper Sent',
+      description: 'Your message has been sent to the agent privately.',
+    });
+  };
+
+  const handleBargeInClick = () => {
+    if (!selectedConversation) return;
+    setConversationToBargeIn(selectedConversation);
+    setBargeInModalOpen(true);
+  };
+
+  const handleBargeInConfirm = async () => {
+    if (!conversationToBargeIn) return;
+    await bargeIn(conversationToBargeIn.id);
+    toast({
+      title: 'Barged In',
+      description: 'You have joined the conversation as supervisor.',
+      variant: 'default',
+    });
+  };
+
+  const handleTransfer = async (agentId: string) => {
+    if (!selectedConversation) return;
+    const agent = agents.find(a => a.id === agentId);
+    await transferToAgent(selectedConversation.id, agentId);
+    toast({
+      title: 'Transfer Complete',
+      description: `Conversation transferred to ${agent?.name}`,
+    });
+  };
+
+  const handleStopSupervision = async () => {
+    if (!selectedConversation) return;
+    await stopSupervision(selectedConversation.id);
+    toast({
+      title: 'Supervision Ended',
+      description: 'You are no longer supervising this conversation.',
+    });
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <AppLayout>
+      <div className="h-[calc(100vh-120px)] flex flex-col animate-fade-in">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 flex-shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Live Operations</h1>
+            <p className="text-sm text-muted-foreground">
+              Monitor and manage real-time conversations
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1 animate-pulse">
+              <div className="w-2 h-2 rounded-full bg-success" />
+              Live
+            </Badge>
+            <Button variant="outline" size="icon">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 flex-shrink-0">
+          <Card className="gradient-card">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Headphones className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{queueStats.activeConversations}</p>
+                  <p className="text-[10px] text-muted-foreground">Active</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gradient-card">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-warning" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{queueStats.totalWaiting}</p>
+                  <p className="text-[10px] text-muted-foreground">In Queue</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gradient-card">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                  <Users className="w-4 h-4 text-success" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{queueStats.availableAgents}</p>
+                  <p className="text-[10px] text-muted-foreground">Available</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gradient-card">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{formatTime(queueStats.averageWaitTime)}</p>
+                  <p className="text-[10px] text-muted-foreground">Avg Wait</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gradient-card">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{formatTime(queueStats.longestWait)}</p>
+                  <p className="text-[10px] text-muted-foreground">Longest</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex gap-4 min-h-0">
+          {/* Conversations List */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Filters */}
+            <Card className="gradient-card mb-4 flex-shrink-0">
+              <CardContent className="pt-3 pb-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search conversations..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Select value={channelFilter} onValueChange={(v) => setChannelFilter(v as ConversationChannel | 'all')}>
+                      <SelectTrigger className="w-[110px]">
+                        <SelectValue placeholder="Channel" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Channels</SelectItem>
+                        <SelectItem value="voice">📞 Voice</SelectItem>
+                        <SelectItem value="chat">💬 Chat</SelectItem>
+                        <SelectItem value="email">📧 Email</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ConversationStatus | 'all')}>
+                      <SelectTrigger className="w-[110px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="waiting">Waiting</SelectItem>
+                        <SelectItem value="on_hold">On Hold</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={sentimentFilter} onValueChange={(v) => setSentimentFilter(v as SentimentType | 'all')}>
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="Sentiment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Sentiment</SelectItem>
+                        <SelectItem value="positive">😊 Positive</SelectItem>
+                        <SelectItem value="neutral">😐 Neutral</SelectItem>
+                        <SelectItem value="negative">😟 Negative</SelectItem>
+                        <SelectItem value="escalated">🚨 Escalated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Conversations */}
+            <ScrollArea className="flex-1">
+              <div className="space-y-3 pr-4">
+                {filteredConversations.length === 0 ? (
+                  <Card className="gradient-card">
+                    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                      <Headphones className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="font-semibold mb-1">No conversations found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {searchQuery || channelFilter !== 'all' || statusFilter !== 'all'
+                          ? 'Try adjusting your filters'
+                          : 'Conversations will appear here when customers connect'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  filteredConversations.map(conv => (
+                    <ConversationCard
+                      key={conv.id}
+                      conversation={conv}
+                      isSelected={selectedConversation?.id === conv.id}
+                      onClick={() => setSelectedConversation(conv)}
+                    />
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+
+            <p className="text-xs text-muted-foreground mt-3 flex-shrink-0">
+              Showing {filteredConversations.length} of {conversations.length} conversations
+            </p>
+          </div>
+
+          {/* Detail Panel */}
+          {selectedConversation && (
+            <ConversationDetailPanel
+              conversation={selectedConversation}
+              agents={agents}
+              onClose={() => setSelectedConversation(null)}
+              onMonitor={handleMonitor}
+              onWhisper={handleWhisper}
+              onBargeIn={handleBargeInClick}
+              onTransfer={handleTransfer}
+              onStopSupervision={handleStopSupervision}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Barge In Modal */}
+      <BargeInModal
+        conversation={conversationToBargeIn}
+        open={bargeInModalOpen}
+        onOpenChange={setBargeInModalOpen}
+        onConfirm={handleBargeInConfirm}
+      />
+    </AppLayout>
+  );
+}
