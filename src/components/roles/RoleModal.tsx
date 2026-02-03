@@ -139,8 +139,8 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] h-[85vh] max-h-[850px] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEdit ? 'Edit Role' : 'Create New Role'}</DialogTitle>
           <DialogDescription>
             {isEdit 
@@ -149,9 +149,9 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col gap-6 py-4">
-          {/* Basic Info */}
-          <div className="space-y-4 px-1">
+        <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
+          {/* Basic Info - Fixed height section */}
+          <div className="flex-shrink-0 space-y-4 px-1">
             <div className="space-y-2">
               <Label htmlFor="role-name">Role Name *</Label>
               <Input
@@ -181,20 +181,20 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
             </div>
           </div>
 
-          {/* Permissions */}
-          <div className="flex-1 overflow-hidden">
-            <div className="flex items-center justify-between mb-3 px-1">
+          {/* Permissions - Flexible scrollable section */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex-shrink-0 flex items-center justify-between mb-3 px-1">
               <Label>Permissions *</Label>
               {errors.permissions && (
                 <span className="text-sm text-destructive">{errors.permissions}</span>
               )}
             </div>
             
-            <ScrollArea className="h-[300px] border rounded-lg">
+            <ScrollArea className="flex-1 min-h-0 border rounded-lg">
               <div className="p-4 space-y-6">
                 {Object.entries(screensByCategory).map(([category, screens]) => (
                   <div key={category}>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-3">
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3 sticky top-0 bg-background py-1">
                       {categoryLabels[category]}
                     </h4>
                     <div className="space-y-3">
