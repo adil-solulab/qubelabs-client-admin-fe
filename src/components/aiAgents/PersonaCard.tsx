@@ -1,8 +1,9 @@
-import { Bot, Pencil, Trash2, Play, MoreHorizontal, Zap, Volume2 } from 'lucide-react';
+import { Bot, Pencil, Trash2, Play, MoreHorizontal, Zap, Volume2, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +21,19 @@ interface PersonaCardProps {
   onTest: (persona: Persona) => void;
   onDelete: (persona: Persona) => void;
   onToggleActive: (personaId: string) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-export function PersonaCard({ persona, onEdit, onTest, onDelete, onToggleActive }: PersonaCardProps) {
+export function PersonaCard({ 
+  persona, 
+  onEdit, 
+  onTest, 
+  onDelete, 
+  onToggleActive,
+  canEdit = true,
+  canDelete = true,
+}: PersonaCardProps) {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'sales': return 'bg-success/10 text-success border-success/30';
@@ -60,10 +71,22 @@ export function PersonaCard({ persona, onEdit, onTest, onDelete, onToggleActive 
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Switch
-              checked={persona.isActive}
-              onCheckedChange={() => onToggleActive(persona.id)}
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Switch
+                    checked={persona.isActive}
+                    onCheckedChange={() => onToggleActive(persona.id)}
+                    disabled={!canEdit}
+                  />
+                </div>
+              </TooltipTrigger>
+              {!canEdit && (
+                <TooltipContent>
+                  <p>Edit permission required</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -71,8 +94,16 @@ export function PersonaCard({ persona, onEdit, onTest, onDelete, onToggleActive 
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(persona)}>
-                  <Pencil className="w-4 h-4 mr-2" />
+                <DropdownMenuItem 
+                  onClick={() => onEdit(persona)}
+                  disabled={!canEdit}
+                  className={cn(!canEdit && 'opacity-50')}
+                >
+                  {canEdit ? (
+                    <Pencil className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Lock className="w-4 h-4 mr-2" />
+                  )}
                   Edit Persona
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onTest(persona)}>
@@ -81,10 +112,18 @@ export function PersonaCard({ persona, onEdit, onTest, onDelete, onToggleActive 
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
+                  className={cn(
+                    "text-destructive focus:text-destructive",
+                    !canDelete && 'opacity-50'
+                  )}
                   onClick={() => onDelete(persona)}
+                  disabled={!canDelete}
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
+                  {canDelete ? (
+                    <Trash2 className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Lock className="w-4 h-4 mr-2" />
+                  )}
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -139,15 +178,34 @@ export function PersonaCard({ persona, onEdit, onTest, onDelete, onToggleActive 
 
         {/* Quick Actions */}
         <div className="flex gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => onEdit(persona)}
-          >
-            <Pencil className="w-3 h-3 mr-1" />
-            Edit
-          </Button>
+          {canEdit ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => onEdit(persona)}
+            >
+              <Pencil className="w-3 h-3 mr-1" />
+              Edit
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 opacity-50"
+                  disabled
+                >
+                  <Lock className="w-3 h-3 mr-1" />
+                  Edit
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit permission required</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Button
             size="sm"
             className="flex-1"

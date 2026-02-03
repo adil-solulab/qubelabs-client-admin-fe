@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Bot, Plus, Search, Filter, Sparkles, GitBranch, Volume2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +13,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAIAgentsData } from '@/hooks/useAIAgentsData';
+import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
+import { PermissionButton } from '@/components/auth/PermissionButton';
 import { PersonaCard } from '@/components/aiAgents/PersonaCard';
 import { PersonaModal } from '@/components/aiAgents/PersonaModal';
 import { TestPersonaModal } from '@/components/aiAgents/TestPersonaModal';
@@ -34,6 +35,8 @@ export default function AIAgentsPage() {
     deletePersona,
     togglePersonaActive,
   } = useAIAgentsData();
+
+  const { canCreate, canEdit, canDelete, withPermission } = usePermission('ai-agents');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<PersonaType | 'all'>('all');
@@ -64,15 +67,19 @@ export default function AIAgentsPage() {
   };
 
   const handleCreatePersona = () => {
-    setSelectedPersona(null);
-    setIsEditMode(false);
-    setPersonaModalOpen(true);
+    withPermission('create', () => {
+      setSelectedPersona(null);
+      setIsEditMode(false);
+      setPersonaModalOpen(true);
+    });
   };
 
   const handleEditPersona = (persona: Persona) => {
-    setSelectedPersona(persona);
-    setIsEditMode(true);
-    setPersonaModalOpen(true);
+    withPermission('edit', () => {
+      setSelectedPersona(persona);
+      setIsEditMode(true);
+      setPersonaModalOpen(true);
+    });
   };
 
   const handleTestPersona = (persona: Persona) => {
@@ -81,8 +88,10 @@ export default function AIAgentsPage() {
   };
 
   const handleDeleteClick = (persona: Persona) => {
-    setSelectedPersona(persona);
-    setDeleteModalOpen(true);
+    withPermission('delete', () => {
+      setSelectedPersona(persona);
+      setDeleteModalOpen(true);
+    });
   };
 
   const handleSavePersona = async (personaData: Omit<Persona, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -112,13 +121,15 @@ export default function AIAgentsPage() {
   };
 
   const handleToggleActive = (personaId: string) => {
-    const persona = personas.find(p => p.id === personaId);
-    togglePersonaActive(personaId);
-    if (persona?.isActive) {
-      notify.info(`Persona "${persona.name}" deactivated`);
-    } else {
-      notify.success(`Persona "${persona?.name}" activated`);
-    }
+    withPermission('edit', () => {
+      const persona = personas.find(p => p.id === personaId);
+      togglePersonaActive(personaId);
+      if (persona?.isActive) {
+        notify.info(`Persona "${persona.name}" deactivated`);
+      } else {
+        notify.success(`Persona "${persona?.name}" activated`);
+      }
+    });
   };
 
   return (
@@ -132,10 +143,14 @@ export default function AIAgentsPage() {
               Configure AI personas with custom behaviors, prompts, and voice settings
             </p>
           </div>
-          <Button onClick={handleCreatePersona}>
+          <PermissionButton 
+            screenId="ai-agents" 
+            action="create" 
+            onClick={handleCreatePersona}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Create Persona
-          </Button>
+          </PermissionButton>
         </div>
 
         {/* Stats Cards */}
@@ -269,11 +284,11 @@ export default function AIAgentsPage() {
                       ? 'Try adjusting your search or filters'
                       : 'Create your first AI persona to get started'}
                   </p>
-                  {!searchQuery && typeFilter === 'all' && (
-                    <Button onClick={handleCreatePersona}>
+                  {!searchQuery && typeFilter === 'all' && canCreate && (
+                    <PermissionButton screenId="ai-agents" action="create" onClick={handleCreatePersona}>
                       <Plus className="w-4 h-4 mr-2" />
                       Create Persona
-                    </Button>
+                    </PermissionButton>
                   )}
                 </CardContent>
               </Card>
@@ -287,6 +302,8 @@ export default function AIAgentsPage() {
                     onTest={handleTestPersona}
                     onDelete={handleDeleteClick}
                     onToggleActive={handleToggleActive}
+                    canEdit={canEdit}
+                    canDelete={canDelete}
                   />
                 ))}
               </div>
@@ -354,9 +371,14 @@ export default function AIAgentsPage() {
                     </div>
                   </div>
 
-                  <Button className="w-full" variant="outline">
+                  <PermissionButton 
+                    screenId="ai-agents" 
+                    action="edit" 
+                    className="w-full" 
+                    variant="outline"
+                  >
                     Configure Voice Settings
-                  </Button>
+                  </PermissionButton>
                 </CardContent>
               </Card>
             </div>
