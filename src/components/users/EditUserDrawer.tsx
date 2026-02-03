@@ -10,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetFooter,
+  SheetBody,
 } from '@/components/ui/sheet';
 import {
   Form,
@@ -177,8 +178,8 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[480px] sm:max-w-[480px] flex flex-col h-full overflow-hidden">
-        <SheetHeader className="flex-shrink-0">
+      <SheetContent className="w-[480px] sm:max-w-[480px] flex flex-col">
+        <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Pencil className="w-4 h-4 text-primary" />
             Edit User
@@ -189,7 +190,7 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
         </SheetHeader>
 
         {/* User Preview Card */}
-        <div className="flex-shrink-0 mt-4 p-4 rounded-xl border bg-muted/30">
+        <div className="mt-4 p-4 rounded-xl border bg-muted/30">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Avatar className="w-14 h-14">
@@ -218,11 +219,11 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
           </div>
         </div>
 
-        <Separator className="my-4 flex-shrink-0" />
+        <Separator className="my-4" />
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1 min-h-0 pr-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 min-h-0 flex flex-col">
+            <SheetBody className="pr-2">
               <div className="space-y-4 py-1">
                 <FormField
                   control={form.control}
@@ -437,9 +438,9 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
                   </div>
                 )}
               </div>
-            </ScrollArea>
+            </SheetBody>
 
-            <SheetFooter className="flex-shrink-0 gap-2 pt-4 border-t mt-4">
+            <SheetFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
