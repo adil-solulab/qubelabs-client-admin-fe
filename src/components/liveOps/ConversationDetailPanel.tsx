@@ -12,6 +12,7 @@ import {
   User,
   Clock,
   AlertTriangle,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,8 +20,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { LiveConversation, Agent } from '@/types/liveOps';
 import { SENTIMENT_CONFIG, CHANNEL_CONFIG, STATUS_CONFIG } from '@/types/liveOps';
+import { useAuth } from '@/hooks/useAuth';
+import { notify } from '@/hooks/useNotification';
 import { cn } from '@/lib/utils';
 
 interface ConversationDetailPanelProps {
@@ -47,6 +51,15 @@ export function ConversationDetailPanel({
   const [whisperMessage, setWhisperMessage] = useState('');
   const [showTransfer, setShowTransfer] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { currentRole, isClientAdmin } = useAuth();
+  const roleName = currentRole?.name || 'Client Admin';
+
+  // Permission checks based on role
+  const canWhisper = isClientAdmin || roleName === 'Supervisor';
+  const canBargeIn = isClientAdmin || roleName === 'Supervisor';
+  const canTransfer = isClientAdmin || roleName === 'Supervisor';
+  const canMonitor = isClientAdmin || roleName === 'Supervisor';
 
   const sentiment = SENTIMENT_CONFIG[conversation.sentiment];
   const channel = CHANNEL_CONFIG[conversation.channel];
@@ -67,13 +80,57 @@ export function ConversationDetailPanel({
   }, [conversation.messages]);
 
   const handleWhisperSend = () => {
+    if (!canWhisper) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
     if (whisperMessage.trim()) {
       onWhisper(whisperMessage);
       setWhisperMessage('');
     }
   };
 
+  const handleBargeIn = () => {
+    if (!canBargeIn) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
+    onBargeIn();
+  };
+
+  const handleTransfer = (agentId: string) => {
+    if (!canTransfer) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
+    onTransfer(agentId);
+    setShowTransfer(false);
+  };
+
+  const handleMonitor = () => {
+    if (!canMonitor) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
+    onMonitor();
+  };
+
   const availableAgents = agents.filter(a => a.status === 'available' || a.status === 'busy');
+
+  // Helper component for locked buttons
+  const LockedButton = ({ children, tooltip }: { children: React.ReactNode; tooltip: string }) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="outline" size="sm" disabled className="opacity-50 cursor-not-allowed">
+          <Lock className="w-3 h-3 mr-1" />
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 
   return (
     <div className="w-[400px] border-l bg-background flex flex-col h-full">
@@ -122,7 +179,7 @@ export function ConversationDetailPanel({
         </div>
       </div>
 
-      {/* Supervisor Actions */}
+      {/* Supervisor Actions - Only show for roles with permissions */}
       <div className="p-3 border-b flex-shrink-0">
         <div className="flex items-center gap-2 flex-wrap">
           {conversation.supervisorMode ? (
@@ -136,43 +193,64 @@ export function ConversationDetailPanel({
                 {conversation.supervisorMode === 'whispering' && '🔇 Whispering'}
                 {conversation.supervisorMode === 'barged_in' && '🎙️ Barged In'}
               </Badge>
-              <Button variant="outline" size="sm" onClick={onStopSupervision}>
-                <EyeOff className="w-3 h-3 mr-1" />
-                Stop
-              </Button>
+              {canMonitor ? (
+                <Button variant="outline" size="sm" onClick={onStopSupervision}>
+                  <EyeOff className="w-3 h-3 mr-1" />
+                  Stop
+                </Button>
+              ) : (
+                <LockedButton tooltip="Supervisor access required">Stop</LockedButton>
+              )}
             </>
           ) : (
-            <Button variant="outline" size="sm" onClick={onMonitor}>
-              <Eye className="w-3 h-3 mr-1" />
-              Monitor
-            </Button>
+            canMonitor ? (
+              <Button variant="outline" size="sm" onClick={handleMonitor}>
+                <Eye className="w-3 h-3 mr-1" />
+                Monitor
+              </Button>
+            ) : (
+              <LockedButton tooltip="Supervisor access required">Monitor</LockedButton>
+            )
           )}
           
           {conversation.supervisorMode === 'monitoring' && (
             <>
-              <Button variant="outline" size="sm" onClick={() => {}}>
-                <MessageSquare className="w-3 h-3 mr-1" />
-                Whisper
-              </Button>
-              <Button variant="secondary" size="sm" onClick={onBargeIn}>
-                <Mic className="w-3 h-3 mr-1" />
-                Barge In
-              </Button>
+              {canWhisper ? (
+                <Button variant="outline" size="sm" onClick={() => {}}>
+                  <MessageSquare className="w-3 h-3 mr-1" />
+                  Whisper
+                </Button>
+              ) : (
+                <LockedButton tooltip="Supervisor access required">Whisper</LockedButton>
+              )}
+              
+              {canBargeIn ? (
+                <Button variant="secondary" size="sm" onClick={handleBargeIn}>
+                  <Mic className="w-3 h-3 mr-1" />
+                  Barge In
+                </Button>
+              ) : (
+                <LockedButton tooltip="Supervisor access required">Barge In</LockedButton>
+              )}
             </>
           )}
 
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowTransfer(!showTransfer)}
-          >
-            <UserPlus className="w-3 h-3 mr-1" />
-            Transfer
-          </Button>
+          {canTransfer ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowTransfer(!showTransfer)}
+            >
+              <UserPlus className="w-3 h-3 mr-1" />
+              Transfer
+            </Button>
+          ) : (
+            <LockedButton tooltip="Supervisor access required">Transfer</LockedButton>
+          )}
         </div>
 
         {/* Transfer Panel */}
-        {showTransfer && (
+        {showTransfer && canTransfer && (
           <div className="mt-3 p-3 rounded-lg border bg-muted/30">
             <p className="text-xs font-medium mb-2">Transfer to Agent:</p>
             <div className="space-y-1">
@@ -182,10 +260,7 @@ export function ConversationDetailPanel({
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => {
-                    onTransfer(agent.id);
-                    setShowTransfer(false);
-                  }}
+                  onClick={() => handleTransfer(agent.id)}
                   disabled={agent.currentConversations >= agent.maxConversations}
                 >
                   <div className={cn(
@@ -292,8 +367,8 @@ export function ConversationDetailPanel({
         </div>
       </ScrollArea>
 
-      {/* Whisper Input */}
-      {(conversation.supervisorMode === 'monitoring' || conversation.supervisorMode === 'whispering') && (
+      {/* Whisper Input - Only for Supervisor roles */}
+      {canWhisper && (conversation.supervisorMode === 'monitoring' || conversation.supervisorMode === 'whispering') && (
         <div className="p-3 border-t flex-shrink-0">
           <div className="flex gap-2">
             <Input

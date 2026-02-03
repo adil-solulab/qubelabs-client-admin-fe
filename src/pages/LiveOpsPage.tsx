@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Headphones,
   Users,
@@ -12,6 +12,7 @@ import {
   Filter,
   Search,
   RefreshCw,
+  Info,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -27,12 +29,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useLiveOpsData } from '@/hooks/useLiveOpsData';
+import { useAuth } from '@/hooks/useAuth';
 import { notify } from '@/hooks/useNotification';
 import { ConversationCard } from '@/components/liveOps/ConversationCard';
 import { ConversationDetailPanel } from '@/components/liveOps/ConversationDetailPanel';
 import { BargeInModal } from '@/components/liveOps/BargeInModal';
 import type { ConversationChannel, SentimentType, ConversationStatus, LiveConversation } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
+
+// Simulated assigned agent ID for Agent role demo
+const CURRENT_AGENT_ID = 'agent-1';
 
 export default function LiveOpsPage() {
   const {
@@ -48,6 +54,9 @@ export default function LiveOpsPage() {
     stopSupervision,
   } = useLiveOpsData();
 
+  const { currentRole, isClientAdmin } = useAuth();
+  const roleName = currentRole?.name || 'Client Admin';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<ConversationChannel | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
@@ -55,8 +64,25 @@ export default function LiveOpsPage() {
   const [bargeInModalOpen, setBargeInModalOpen] = useState(false);
   const [conversationToBargeIn, setConversationToBargeIn] = useState<LiveConversation | null>(null);
 
-  // Filter conversations
-  const filteredConversations = conversations.filter(conv => {
+  // Permission checks
+  const canViewAll = isClientAdmin || roleName === 'Supervisor';
+  const canWhisper = isClientAdmin || roleName === 'Supervisor';
+  const canBargeIn = isClientAdmin || roleName === 'Supervisor';
+
+  // Filter conversations based on role
+  const roleFilteredConversations = useMemo(() => {
+    if (canViewAll) {
+      return conversations;
+    }
+    // Agent can only see their assigned conversations
+    return conversations.filter(conv => 
+      conv.agentId === CURRENT_AGENT_ID || 
+      conv.agentName === 'John Smith' // For demo purposes
+    );
+  }, [conversations, canViewAll]);
+
+  // Apply user filters
+  const filteredConversations = roleFilteredConversations.filter(conv => {
     const matchesSearch = conv.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conv.topic.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesChannel = channelFilter === 'all' || conv.channel === channelFilter;
@@ -67,30 +93,50 @@ export default function LiveOpsPage() {
 
   const handleMonitor = async () => {
     if (!selectedConversation) return;
+    if (!canViewAll) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
     await startMonitoring(selectedConversation.id);
     notify.info(`Monitoring started`, `Now monitoring conversation with ${selectedConversation.customerName}`);
   };
 
   const handleWhisper = async (message: string) => {
     if (!selectedConversation) return;
+    if (!canWhisper) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
     await startWhisper(selectedConversation.id, message);
     notify.success('Whisper sent', 'Your message was sent to the agent privately.');
   };
 
   const handleBargeInClick = () => {
     if (!selectedConversation) return;
+    if (!canBargeIn) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
     setConversationToBargeIn(selectedConversation);
     setBargeInModalOpen(true);
   };
 
   const handleBargeInConfirm = async () => {
     if (!conversationToBargeIn) return;
+    if (!canBargeIn) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
     await bargeIn(conversationToBargeIn.id);
     notify.success('Barged in', 'You have joined the conversation as supervisor.');
   };
 
   const handleTransfer = async (agentId: string) => {
     if (!selectedConversation) return;
+    if (!canViewAll) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
     const agent = agents.find(a => a.id === agentId);
     await transferToAgent(selectedConversation.id, agentId);
     notify.success('Transfer complete', `Conversation transferred to ${agent?.name}`);
@@ -108,6 +154,21 @@ export default function LiveOpsPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Calculate role-specific queue stats
+  const roleQueueStats = useMemo(() => {
+    if (canViewAll) {
+      return queueStats;
+    }
+    // Agent sees only their stats
+    const assignedActive = roleFilteredConversations.filter(c => c.status === 'active').length;
+    const assignedWaiting = roleFilteredConversations.filter(c => c.status === 'waiting').length;
+    return {
+      ...queueStats,
+      activeConversations: assignedActive,
+      totalWaiting: assignedWaiting,
+    };
+  }, [queueStats, roleFilteredConversations, canViewAll]);
+
   return (
     <AppLayout>
       <div className="h-[calc(100vh-120px)] flex flex-col animate-fade-in">
@@ -116,7 +177,10 @@ export default function LiveOpsPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Live Operations</h1>
             <p className="text-sm text-muted-foreground">
-              Monitor and manage real-time conversations
+              {canViewAll 
+                ? 'Monitor and manage real-time conversations'
+                : 'View your assigned conversations'
+              }
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -130,6 +194,16 @@ export default function LiveOpsPage() {
           </div>
         </div>
 
+        {/* Role-based info banner for Agent */}
+        {!canViewAll && (
+          <Alert className="mb-4 flex-shrink-0">
+            <Info className="w-4 h-4" />
+            <AlertDescription>
+              You are viewing only your assigned conversations. Contact a supervisor for full queue access.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 flex-shrink-0">
           <Card className="gradient-card">
@@ -139,8 +213,10 @@ export default function LiveOpsPage() {
                   <Headphones className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold">{queueStats.activeConversations}</p>
-                  <p className="text-[10px] text-muted-foreground">Active</p>
+                  <p className="text-xl font-bold">{roleQueueStats.activeConversations}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {canViewAll ? 'Active' : 'My Active'}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -153,54 +229,58 @@ export default function LiveOpsPage() {
                   <Clock className="w-4 h-4 text-warning" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold">{queueStats.totalWaiting}</p>
+                  <p className="text-xl font-bold">{roleQueueStats.totalWaiting}</p>
                   <p className="text-[10px] text-muted-foreground">In Queue</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="gradient-card">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-success" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold">{queueStats.availableAgents}</p>
-                  <p className="text-[10px] text-muted-foreground">Available</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {canViewAll && (
+            <>
+              <Card className="gradient-card">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-success" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">{queueStats.availableAgents}</p>
+                      <p className="text-[10px] text-muted-foreground">Available</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="gradient-card">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold">{formatTime(queueStats.averageWaitTime)}</p>
-                  <p className="text-[10px] text-muted-foreground">Avg Wait</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="gradient-card">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">{formatTime(queueStats.averageWaitTime)}</p>
+                      <p className="text-[10px] text-muted-foreground">Avg Wait</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="gradient-card">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold">{formatTime(queueStats.longestWait)}</p>
-                  <p className="text-[10px] text-muted-foreground">Longest</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="gradient-card">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-destructive" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">{formatTime(queueStats.longestWait)}</p>
+                      <p className="text-[10px] text-muted-foreground">Longest</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* Main Content */}
@@ -267,11 +347,16 @@ export default function LiveOpsPage() {
                   <Card className="gradient-card">
                     <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                       <Headphones className="w-12 h-12 text-muted-foreground mb-4" />
-                      <h3 className="font-semibold mb-1">No conversations found</h3>
+                      <h3 className="font-semibold mb-1">
+                        {!canViewAll ? 'No assigned conversations' : 'No conversations found'}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        {searchQuery || channelFilter !== 'all' || statusFilter !== 'all'
-                          ? 'Try adjusting your filters'
-                          : 'Conversations will appear here when customers connect'}
+                        {!canViewAll 
+                          ? 'You will see conversations assigned to you here'
+                          : searchQuery || channelFilter !== 'all' || statusFilter !== 'all'
+                            ? 'Try adjusting your filters'
+                            : 'Conversations will appear here when customers connect'
+                        }
                       </p>
                     </CardContent>
                   </Card>
@@ -289,7 +374,8 @@ export default function LiveOpsPage() {
             </ScrollArea>
 
             <p className="text-xs text-muted-foreground mt-3 flex-shrink-0">
-              Showing {filteredConversations.length} of {conversations.length} conversations
+              Showing {filteredConversations.length} of {roleFilteredConversations.length} conversations
+              {!canViewAll && ' (assigned to you)'}
             </p>
           </div>
 
