@@ -44,6 +44,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useUsersData } from '@/hooks/useUsersData';
 import { usePermission } from '@/hooks/usePermission';
+import { useAuth } from '@/hooks/useAuth';
 import { notify } from '@/hooks/useNotification';
 import { PermissionButton } from '@/components/auth/PermissionButton';
 import { AddUserModal } from '@/components/users/AddUserModal';
@@ -65,6 +66,7 @@ export default function UsersPage() {
   } = useUsersData();
 
   const { canCreate, canEdit, canDelete, withPermission } = usePermission('users');
+  const { notifyRoleChange, currentUser } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
@@ -108,7 +110,23 @@ export default function UsersPage() {
 
   const handleUpdateUser = async (userId: string, userData: Partial<TeamUser>) => {
     try {
+      const existingUser = users.find(u => u.id === userId);
       await updateUser(userId, userData);
+      
+      // If role was changed, notify the session system
+      if (userData.role && existingUser?.role !== userData.role) {
+        // Trigger session refresh for affected user
+        notifyRoleChange(userId, userData.role);
+        
+        // If changing another user's role (not current user), show admin notification
+        if (userId !== currentUser?.id) {
+          notify.info(
+            'Role Updated',
+            `${existingUser?.name}'s session will be refreshed with new permissions.`
+          );
+        }
+      }
+      
       notify.saved('User information');
     } catch (error) {
       notify.error('Failed to update user', 'Please try again.');
