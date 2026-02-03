@@ -118,6 +118,12 @@ export default function FlowBuilderPage() {
     });
   };
 
+  const handleDeleteNode = (nodeId: string) => {
+    const node = flow.nodes.find(n => n.id === nodeId);
+    deleteNode(nodeId);
+    notify.deleted(`Node "${node?.data.label || 'Unknown'}" deleted`);
+  };
+
   const handleCanvasClick = (position: { x: number; y: number }) => {
     // Optional: could open node type picker at position
   };
@@ -309,8 +315,11 @@ export default function FlowBuilderPage() {
               onEndConnect={handleEndConnect}
               onCancelConnect={cancelConnect}
               onDuplicateNode={handleDuplicateNode}
-              onDeleteNode={deleteNode}
-              onDeleteEdge={deleteEdge}
+              onDeleteNode={handleDeleteNode}
+              onDeleteEdge={(edgeId) => {
+                deleteEdge(edgeId);
+                notify.deleted('Connection removed');
+              }}
               onMoveNode={moveNode}
               onCanvasClick={handleCanvasClick}
             />

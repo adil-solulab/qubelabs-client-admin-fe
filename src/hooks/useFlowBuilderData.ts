@@ -198,13 +198,24 @@ export function useFlowBuilderData() {
   }, []);
 
   const updateNodeData = useCallback((nodeId: string, dataUpdates: Partial<NodeData>) => {
-    setFlow(prev => ({
-      ...prev,
-      nodes: prev.nodes.map(node =>
+    setFlow(prev => {
+      const newNodes = prev.nodes.map(node =>
         node.id === nodeId ? { ...node, data: { ...node.data, ...dataUpdates } } : node
-      ),
-      status: 'draft',
-    }));
+      );
+      return {
+        ...prev,
+        nodes: newNodes,
+        status: 'draft',
+      };
+    });
+    
+    // Keep selected node in sync
+    setSelectedNode(prev => {
+      if (prev && prev.id === nodeId) {
+        return { ...prev, data: { ...prev.data, ...dataUpdates } };
+      }
+      return prev;
+    });
   }, []);
 
   const deleteNode = useCallback((nodeId: string) => {

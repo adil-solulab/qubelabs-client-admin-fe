@@ -123,16 +123,29 @@ export function LivePreviewPanel({ flow }: LivePreviewPanelProps) {
   };
 
   const moveToNextNode = (currentNode: FlowNode) => {
+    // Find next node via edges, not connections array
+    const outgoingEdge = flow.edges.find(e => e.source === currentNode.id && !e.label);
+    if (outgoingEdge) {
+      const nextNode = flow.nodes.find(n => n.id === outgoingEdge.target);
+      if (nextNode) {
+        setCurrentNodeId(nextNode.id);
+        processNode(nextNode);
+        return;
+      }
+    }
+    
+    // Fallback: check connections array
     if (currentNode.connections.length > 0) {
       const nextNodeId = currentNode.connections[0];
       const nextNode = flow.nodes.find(n => n.id === nextNodeId);
       if (nextNode) {
         setCurrentNodeId(nextNode.id);
         processNode(nextNode);
+        return;
       }
-    } else {
-      setIsRunning(false);
     }
+    
+    setIsRunning(false);
   };
 
   const handleUserInput = async () => {
@@ -177,13 +190,26 @@ export function LivePreviewPanel({ flow }: LivePreviewPanelProps) {
       content: `Condition evaluated: ${result ? 'Yes' : 'No'}`,
     }]);
 
-    // Move to yes or no branch
-    const nextNodeId = result ? currentNode.data.yesConnection : currentNode.data.noConnection;
-    if (nextNodeId) {
-      const nextNode = flow.nodes.find(n => n.id === nextNodeId);
+    // Move to yes or no branch via edges
+    const yesEdge = flow.edges.find(e => e.source === currentNodeId && e.label === 'Yes');
+    const noEdge = flow.edges.find(e => e.source === currentNodeId && e.label === 'No');
+    const targetEdge = result ? yesEdge : noEdge;
+    
+    if (targetEdge) {
+      const nextNode = flow.nodes.find(n => n.id === targetEdge.target);
       if (nextNode) {
         setCurrentNodeId(nextNode.id);
         processNode(nextNode);
+      }
+    } else {
+      // Fallback to old method
+      const nextNodeId = result ? currentNode.data.yesConnection : currentNode.data.noConnection;
+      if (nextNodeId) {
+        const nextNode = flow.nodes.find(n => n.id === nextNodeId);
+        if (nextNode) {
+          setCurrentNodeId(nextNode.id);
+          processNode(nextNode);
+        }
       }
     }
 
