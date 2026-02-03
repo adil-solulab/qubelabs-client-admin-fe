@@ -19,10 +19,10 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
   const screenCount = role.permissions.length;
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/30 h-full">
-      <CardContent className="p-5 h-full flex flex-col">
+    <Card className="group hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/30 h-full overflow-hidden">
+      <CardContent className="p-5 h-full flex flex-col overflow-hidden">
         {/* Header Row: Icon + Title + Badge + Actions */}
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 flex-shrink-0">
           {/* Icon */}
           <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
             role.isSystem 
@@ -37,7 +37,7 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
           </div>
           
           {/* Title + Badge */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
             <h3 className="font-semibold text-foreground truncate">{role.name}</h3>
             {role.isSystem && (
               <Tooltip>
@@ -96,29 +96,31 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
         </div>
         
         {/* Description - Fixed height with 2-line clamp */}
-        <p className="text-sm text-muted-foreground line-clamp-2 h-10 mb-4">
-          {role.description}
-        </p>
+        <div className="flex-shrink-0 mb-4">
+          <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+            {role.description}
+          </p>
+        </div>
         
         {/* Metadata Row - Pinned to bottom with consistent alignment */}
-        <div className="mt-auto pt-3 border-t border-border/50">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="mt-auto pt-3 border-t border-border/50 flex-shrink-0 overflow-hidden">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             {/* Users */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <Users className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">{role.userCount} {role.userCount === 1 ? 'user' : 'users'}</span>
+              <span className="whitespace-nowrap">{role.userCount}</span>
             </div>
             
             {/* Screens */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <MonitorSmartphone className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">{screenCount} screens</span>
+              <span className="whitespace-nowrap">{screenCount}</span>
             </div>
             
             {/* Permissions */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <KeyRound className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">{permissionCount} permissions</span>
+              <span className="whitespace-nowrap">{permissionCount}</span>
             </div>
           </div>
         </div>
