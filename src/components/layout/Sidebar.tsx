@@ -14,6 +14,7 @@ import {
   Puzzle,
   CreditCard,
   Shield,
+  ShieldCheck,
   Code2,
   Palette,
   ChevronLeft,
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { icon: Puzzle, label: 'Integrations', path: '/integrations' },
   { icon: CreditCard, label: 'Billing', path: '/billing' },
   { icon: Shield, label: 'Security', path: '/security' },
+  { icon: ShieldCheck, label: 'Roles', path: '/roles' },
   { icon: Code2, label: 'SDKs', path: '/sdks' },
   { icon: Palette, label: 'Theme', path: '/theme' },
 ];

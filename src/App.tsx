@@ -20,6 +20,7 @@ import IntegrationsPage from "./pages/IntegrationsPage";
 import SecurityPage from "./pages/SecurityPage";
 import SDKsPage from "./pages/SDKsPage";
 import ThemeSettingsPage from "./pages/ThemeSettingsPage";
+import RolesPage from "./pages/RolesPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/security" element={<SecurityPage />} />
             <Route path="/sdks" element={<SDKsPage />} />
             <Route path="/theme" element={<ThemeSettingsPage />} />
+            <Route path="/roles" element={<RolesPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
