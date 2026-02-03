@@ -140,7 +140,7 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] flex flex-col">
+      <DialogContent className="sm:max-w-[750px] h-[85vh] max-h-[850px] flex flex-col">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Role' : 'Create New Role'}</DialogTitle>
           <DialogDescription>
@@ -150,54 +150,60 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
           </DialogDescription>
         </DialogHeader>
 
-        <DialogBody className="flex flex-col gap-4 py-2 pr-1">
-          {/* Basic Info - Fixed height section */}
-          <div className="flex-shrink-0 space-y-4 px-1">
-            <div className="space-y-2">
-              <Label htmlFor="role-name">Role Name *</Label>
-              <Input
-                id="role-name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
-                }}
-                placeholder="e.g., Sales Agent, Support Lead"
-                className={errors.name ? 'border-destructive' : ''}
-              />
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name}</p>
-              )}
-            </div>
+        <DialogBody className="flex flex-col gap-4 py-2">
+          {/* Basic Info - Compact section */}
+          <div className="flex-shrink-0 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="role-name">Role Name *</Label>
+                <Input
+                  id="role-name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
+                  }}
+                  placeholder="e.g., Sales Agent, Support Lead"
+                  className={errors.name ? 'border-destructive' : ''}
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name}</p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role-description">Description</Label>
-              <Textarea
-                id="role-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what this role can do..."
-                rows={2}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="role-description">Description</Label>
+                <Input
+                  id="role-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe what this role can do..."
+                />
+              </div>
             </div>
           </div>
 
-          {/* Permissions - Flexible scrollable section */}
-          <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <Label>Permissions *</Label>
+          {/* Permissions - Main scrollable section with guaranteed height */}
+          <div className="flex-1 min-h-[45vh] flex flex-col">
+            <div className="flex items-center justify-between mb-3 flex-shrink-0">
+              <Label className="text-base font-semibold">Permissions *</Label>
               {errors.permissions && (
                 <span className="text-sm text-destructive">{errors.permissions}</span>
               )}
             </div>
             
-            <ScrollArea className="flex-1 min-h-0 border rounded-lg">
+            <ScrollArea className="flex-1 border rounded-lg bg-muted/20">
               <div className="p-4 space-y-6">
                 {Object.entries(screensByCategory).map(([category, screens]) => (
                   <div key={category}>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-3 sticky top-0 bg-background py-1">
-                      {categoryLabels[category]}
-                    </h4>
+                    <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-2 -mx-4 px-4 border-b border-border/50 mb-3">
+                      <h4 className="text-sm font-semibold text-foreground">
+                        {categoryLabels[category]}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {screens.length} screens available
+                      </p>
+                    </div>
                     <div className="space-y-3">
                       {screens.map(screen => {
                         const screenPerms = permissions.get(screen.id);
@@ -208,20 +214,21 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
                             key={screen.id}
                             className={`p-3 rounded-lg border transition-colors ${
                               hasAccess 
-                                ? 'bg-primary/5 border-primary/20' 
-                                : 'bg-muted/30 border-transparent'
+                                ? 'bg-primary/5 border-primary/30' 
+                                : 'bg-background border-border/50 hover:border-border'
                             }`}
                           >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
                                 <Checkbox
                                   id={`screen-${screen.id}`}
                                   checked={hasAccess}
                                   onCheckedChange={() => toggleScreenAccess(screen.id)}
+                                  className="h-5 w-5"
                                 />
                                 <Label 
                                   htmlFor={`screen-${screen.id}`}
-                                  className="font-medium cursor-pointer"
+                                  className="font-medium cursor-pointer text-sm"
                                 >
                                   {screen.label}
                                 </Label>
@@ -234,14 +241,14 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
                             </div>
                             
                             {hasAccess && (
-                              <div className="flex flex-wrap gap-2 mt-2 ml-6">
+                              <div className="flex flex-wrap gap-2 mt-3 ml-8">
                                 {AVAILABLE_ACTIONS.map(action => (
                                   <label
                                     key={action.id}
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-colors ${
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors ${
                                       screenPerms?.has(action.id)
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                        ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                                     }`}
                                   >
                                     <Checkbox
