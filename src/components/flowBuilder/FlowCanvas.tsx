@@ -187,7 +187,6 @@ export function FlowCanvas({
   const handleDeleteEdge = () => {
     if (selectedEdge) {
       onDeleteEdge(selectedEdge.id);
-      notify.deleted('Connection removed');
       setSelectedEdge(null);
       setDeleteEdgeModalOpen(false);
     }
@@ -201,7 +200,6 @@ export function FlowCanvas({
   const handleDeleteNodeConfirmed = () => {
     if (nodeToDelete) {
       onDeleteNode(nodeToDelete.id);
-      notify.deleted(`Node "${nodeToDelete.data.label}" deleted`);
       setNodeToDelete(null);
       setDeleteNodeModalOpen(false);
     }
