@@ -376,6 +376,7 @@ export default function AIAgentsPage() {
                     action="edit" 
                     className="w-full" 
                     variant="outline"
+                    onClick={() => notify.info('Voice Settings', 'Voice configuration is available in Channels > Voice tab.')}
                   >
                     Configure Voice Settings
                   </PermissionButton>
