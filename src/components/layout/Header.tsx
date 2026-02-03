@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, User, Building2, FlaskConical, Rocket, LogOut, Settings } from 'lucide-react';
+import { Bell, ChevronDown, User, Building2, FlaskConical, Rocket, LogOut, Settings, Shield, ShieldCheck, Users as UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,6 +9,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
   Popover,
@@ -18,6 +22,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { notify } from '@/hooks/useNotification';
 import type { Environment, Notification } from '@/types/dashboard';
 
 const mockNotifications: Notification[] = [
@@ -27,6 +33,13 @@ const mockNotifications: Notification[] = [
   { id: '4', type: 'info', title: 'New Integration', message: 'Salesforce integration is now available', timestamp: '3 hours ago', read: true },
 ];
 
+// Available roles for switching (demo purposes)
+const switchableRoles = [
+  { id: 'client_admin', name: 'Client Admin', icon: ShieldCheck },
+  { id: 'supervisor', name: 'Supervisor', icon: UsersIcon },
+  { id: 'agent', name: 'Agent', icon: User },
+];
+
 interface HeaderProps {
   environment: Environment;
   onEnvironmentChange: (env: Environment) => void;
@@ -34,6 +47,7 @@ interface HeaderProps {
 
 export function Header({ environment, onEnvironmentChange }: HeaderProps) {
   const navigate = useNavigate();
+  const { currentUser, currentRole, setUserRole } = useAuth();
   const [notifications, setNotifications] = useState(mockNotifications);
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -49,6 +63,14 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
 
   const handleLogout = () => {
     navigate('/login');
+  };
+
+  const handleRoleSwitch = (roleId: string) => {
+    const role = switchableRoles.find(r => r.id === roleId);
+    if (role) {
+      setUserRole(roleId);
+      notify.info('Role switched', `Now viewing as ${role.name}. Sidebar updated.`);
+    }
   };
 
   return (
@@ -68,6 +90,44 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-3">
+        {/* Role Switcher (Demo) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 font-medium border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">{currentRole?.name || 'Role'}</span>
+              <ChevronDown className="w-3 h-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Switch Role (Demo)
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {switchableRoles.map((role) => {
+              const Icon = role.icon;
+              const isActive = currentRole?.id === role.id;
+              return (
+                <DropdownMenuItem 
+                  key={role.id}
+                  onClick={() => handleRoleSwitch(role.id)}
+                  className={cn(isActive && 'bg-primary/10')}
+                >
+                  <Icon className={cn('w-4 h-4 mr-2', isActive && 'text-primary')} />
+                  <span>{role.name}</span>
+                  {isActive && (
+                    <Badge variant="secondary" className="ml-auto text-xs">Active</Badge>
+                  )}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {/* Environment Selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -86,7 +146,7 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
               ) : (
                 <FlaskConical className="w-4 h-4" />
               )}
-              {environment === 'production' ? 'Production' : 'Test'}
+              <span className="hidden sm:inline">{environment === 'production' ? 'Production' : 'Test'}</span>
               <ChevronDown className="w-3 h-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
@@ -187,8 +247,8 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
                 <User className="w-4 h-4 text-primary-foreground" />
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-medium">John Admin</p>
-                <p className="text-xs text-muted-foreground">Client Admin</p>
+                <p className="text-sm font-medium">{currentUser?.name || 'User'}</p>
+                <p className="text-xs text-muted-foreground">{currentRole?.name || 'Unknown Role'}</p>
               </div>
               <ChevronDown className="w-3 h-3 opacity-50" />
             </Button>
@@ -196,8 +256,8 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>John Admin</span>
-                <span className="text-xs font-normal text-muted-foreground">john@acmecorp.com</span>
+                <span>{currentUser?.name}</span>
+                <span className="text-xs font-normal text-muted-foreground">{currentUser?.email}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
