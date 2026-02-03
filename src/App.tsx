@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -35,24 +36,91 @@ const App = () => (
           <Toaster />
           <BrowserRouter>
             <Routes>
+              {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/profile" element={<UserProfilePage />} />
-              <Route path="/" element={<Index />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/ai-agents" element={<AIAgentsPage />} />
-              <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
-              <Route path="/channels" element={<ChannelsPage />} />
-              <Route path="/flow-builder" element={<FlowBuilderPage />} />
-              <Route path="/live-ops" element={<LiveOpsPage />} />
-              <Route path="/outbound-calls" element={<OutboundCallsPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/integrations" element={<IntegrationsPage />} />
-              <Route path="/billing" element={<BillingPage />} />
-              <Route path="/security" element={<SecurityPage />} />
-              <Route path="/sdks" element={<SDKsPage />} />
-              <Route path="/theme" element={<ThemeSettingsPage />} />
-              <Route path="/roles" element={<RolesPage />} />
+              
+              {/* Protected routes */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <UserProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/" element={
+                <ProtectedRoute screenId="dashboard">
+                  <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="/users" element={
+                <ProtectedRoute screenId="users">
+                  <UsersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/ai-agents" element={
+                <ProtectedRoute screenId="ai-agents">
+                  <AIAgentsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/knowledge-base" element={
+                <ProtectedRoute screenId="knowledge-base">
+                  <KnowledgeBasePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/channels" element={
+                <ProtectedRoute screenId="channels">
+                  <ChannelsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/flow-builder" element={
+                <ProtectedRoute screenId="flow-builder">
+                  <FlowBuilderPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/live-ops" element={
+                <ProtectedRoute screenId="live-ops">
+                  <LiveOpsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/outbound-calls" element={
+                <ProtectedRoute screenId="outbound-calls">
+                  <OutboundCallsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/analytics" element={
+                <ProtectedRoute screenId="analytics">
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/integrations" element={
+                <ProtectedRoute screenId="integrations">
+                  <IntegrationsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/billing" element={
+                <ProtectedRoute screenId="billing">
+                  <BillingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/security" element={
+                <ProtectedRoute screenId="security">
+                  <SecurityPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/sdks" element={
+                <ProtectedRoute screenId="sdks">
+                  <SDKsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/theme" element={
+                <ProtectedRoute screenId="theme">
+                  <ThemeSettingsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/roles" element={
+                <ProtectedRoute screenId="roles">
+                  <RolesPage />
+                </ProtectedRoute>
+              } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
