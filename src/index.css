@@ -36,18 +36,18 @@
     --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
     
-    /* Status colors */
-    --success: 142 76% 36%;
+    /* Status colors - refined for modern SaaS */
+    --success: 151 55% 41%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 36 77% 49%;
     --warning-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
     /* Sentiment colors */
-    --sentiment-positive: 142 76% 36%;
+    --sentiment-positive: 151 55% 41%;
     --sentiment-neutral: 220 9% 46%;
-    --sentiment-negative: 0 84% 60%;
+    --sentiment-negative: 0 72% 51%;
     
     /* Channel colors */
     --channel-voice: 217 91% 60%;
