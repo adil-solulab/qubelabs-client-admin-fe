@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, User, Building2, FlaskConical, Rocket, LogOut, Settings, Shield, ShieldCheck, Users as UsersIcon } from 'lucide-react';
+import { Bell, ChevronDown, User, Building2, FlaskConical, Rocket, LogOut, Settings, Shield, ShieldCheck, Users as UsersIcon, RefreshCw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,10 +9,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
   Popover,
@@ -21,6 +17,7 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { notify } from '@/hooks/useNotification';
@@ -47,7 +44,7 @@ interface HeaderProps {
 
 export function Header({ environment, onEnvironmentChange }: HeaderProps) {
   const navigate = useNavigate();
-  const { currentUser, currentRole, setUserRole } = useAuth();
+  const { currentUser, currentRole, session, setUserRole, refreshSession, logout } = useAuth();
   const [notifications, setNotifications] = useState(mockNotifications);
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -62,15 +59,31 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
   };
 
   const handleLogout = () => {
+    logout();
     navigate('/login');
+  };
+
+  const handleRefreshSession = () => {
+    refreshSession();
+    notify.success('Session Refreshed', 'Your permissions are now up to date.');
   };
 
   const handleRoleSwitch = (roleId: string) => {
     const role = switchableRoles.find(r => r.id === roleId);
     if (role) {
       setUserRole(roleId);
-      notify.info('Role switched', `Now viewing as ${role.name}. Sidebar updated.`);
     }
+  };
+
+  // Format session cached time
+  const getSessionAge = () => {
+    if (!session?.cachedAt) return 'Unknown';
+    const ageMs = Date.now() - session.cachedAt;
+    const ageMins = Math.floor(ageMs / 60000);
+    if (ageMins < 1) return 'Just now';
+    if (ageMins < 60) return `${ageMins}m ago`;
+    const ageHours = Math.floor(ageMins / 60);
+    return `${ageHours}h ago`;
   };
 
   return (
@@ -103,7 +116,7 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
               <ChevronDown className="w-3 h-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Switch Role (Demo)
             </DropdownMenuLabel>
@@ -125,6 +138,18 @@ export function Header({ environment, onEnvironmentChange }: HeaderProps) {
                 </DropdownMenuItem>
               );
             })}
+            <DropdownMenuSeparator />
+            <div className="px-2 py-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Clock className="w-3 h-3" />
+                <span>Session: {getSessionAge()}</span>
+              </div>
+              <div className="text-[10px]">v{session?.version || 1}</div>
+            </div>
+            <DropdownMenuItem onClick={handleRefreshSession}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Session
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
