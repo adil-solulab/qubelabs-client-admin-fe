@@ -251,8 +251,17 @@ export function ComponentPreviewPanel() {
                 type="text"
                 placeholder="Type a message..."
                 className="flex-1 px-4 py-2 text-sm rounded-full border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    showToast.info({ title: 'Preview Only', description: 'This is a visual preview of the chat widget styling.' });
+                  }
+                }}
               />
-              <Button size="icon" className="rounded-full">
+              <Button 
+                size="icon" 
+                className="rounded-full"
+                onClick={() => showToast.info({ title: 'Preview Only', description: 'This is a visual preview of the chat widget styling.' })}
+              >
                 <Send className="w-4 h-4" />
               </Button>
             </div>
