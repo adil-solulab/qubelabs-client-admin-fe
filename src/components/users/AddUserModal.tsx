@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogBody,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -131,8 +132,8 @@ export function AddUserModal({ open, onOpenChange, onAddUser }: AddUserModalProp
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg h-[85vh] max-h-[750px] flex flex-col overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-lg flex flex-col">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <UserPlus className="w-4 h-4 text-primary-foreground" />
@@ -146,7 +147,7 @@ export function AddUserModal({ open, onOpenChange, onAddUser }: AddUserModalProp
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 min-h-0 flex flex-col">
-            <ScrollArea className="flex-1 min-h-0 pr-4">
+            <DialogBody className="pr-2">
               <div className="space-y-4 py-2">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -352,10 +353,9 @@ export function AddUserModal({ open, onOpenChange, onAddUser }: AddUserModalProp
                   </div>
                 )}
               </div>
+            </DialogBody>
 
-            </ScrollArea>
-
-            <DialogFooter className="flex-shrink-0 gap-2 pt-4 border-t mt-4">
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>

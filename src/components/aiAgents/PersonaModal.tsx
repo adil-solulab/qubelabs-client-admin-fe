@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogBody,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -143,8 +144,8 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[85vh] max-h-[800px] flex flex-col overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-2xl flex flex-col">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <Bot className="w-4 h-4 text-primary-foreground" />
@@ -159,7 +160,7 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 min-h-0 flex flex-col">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col">
-              <TabsList className="flex-shrink-0 grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="prompt">
                   <Sparkles className="w-3 h-3 mr-1" />
@@ -171,7 +172,7 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1 min-h-0 mt-4 pr-4">
+              <DialogBody className="mt-4 pr-2">
                 <TabsContent value="basic" className="space-y-4 mt-0">
                   <FormField
                     control={form.control}
@@ -407,10 +408,10 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
                     </div>
                   )}
                 </TabsContent>
-              </ScrollArea>
+              </DialogBody>
             </Tabs>
 
-            <DialogFooter className="flex-shrink-0 gap-2 pt-4 border-t mt-4">
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>

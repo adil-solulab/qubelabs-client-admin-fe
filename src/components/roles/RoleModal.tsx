@@ -6,6 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,8 +140,8 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] h-[85vh] max-h-[850px] flex flex-col overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="sm:max-w-[700px] flex flex-col">
+        <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Role' : 'Create New Role'}</DialogTitle>
           <DialogDescription>
             {isEdit 
@@ -149,7 +150,7 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
+        <DialogBody className="flex flex-col gap-4 py-2 pr-1">
           {/* Basic Info - Fixed height section */}
           <div className="flex-shrink-0 space-y-4 px-1">
             <div className="space-y-2">
@@ -183,7 +184,7 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
 
           {/* Permissions - Flexible scrollable section */}
           <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-shrink-0 flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center justify-between mb-3">
               <Label>Permissions *</Label>
               {errors.permissions && (
                 <span className="text-sm text-destructive">{errors.permissions}</span>
@@ -262,7 +263,7 @@ export function RoleModal({ open, onOpenChange, role, onSave, isLoading }: RoleM
               </div>
             </ScrollArea>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
