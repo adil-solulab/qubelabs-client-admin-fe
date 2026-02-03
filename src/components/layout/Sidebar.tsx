@@ -20,38 +20,54 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAuth } from '@/hooks/useAuth';
+import type { ScreenId } from '@/types/roles';
 
 interface NavItem {
   icon: React.ElementType;
   label: string;
   path: string;
+  screenId: ScreenId | 'profile'; // profile is always accessible
   badge?: string | number;
 }
 
-const navItems: NavItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: Users, label: 'Users', path: '/users' },
-  { icon: Bot, label: 'AI Agents', path: '/ai-agents', badge: '5' },
-  { icon: BookOpen, label: 'Knowledge Base', path: '/knowledge-base' },
-  { icon: MessageSquare, label: 'Channels', path: '/channels' },
-  { icon: GitBranch, label: 'Flow Builder', path: '/flow-builder' },
-  { icon: Headphones, label: 'Live Ops', path: '/live-ops', badge: '12' },
-  { icon: PhoneOutgoing, label: 'Outbound Calls', path: '/outbound-calls' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-  { icon: Puzzle, label: 'Integrations', path: '/integrations' },
-  { icon: CreditCard, label: 'Billing', path: '/billing' },
-  { icon: Shield, label: 'Security', path: '/security' },
-  { icon: ShieldCheck, label: 'Roles', path: '/roles' },
-  { icon: Code2, label: 'SDKs', path: '/sdks' },
-  { icon: Palette, label: 'Theme', path: '/theme' },
+const allNavItems: NavItem[] = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/', screenId: 'dashboard' },
+  { icon: Users, label: 'Users', path: '/users', screenId: 'users' },
+  { icon: Bot, label: 'AI Agents', path: '/ai-agents', screenId: 'ai-agents', badge: '5' },
+  { icon: BookOpen, label: 'Knowledge Base', path: '/knowledge-base', screenId: 'knowledge-base' },
+  { icon: MessageSquare, label: 'Channels', path: '/channels', screenId: 'channels' },
+  { icon: GitBranch, label: 'Flow Builder', path: '/flow-builder', screenId: 'flow-builder' },
+  { icon: Headphones, label: 'Live Ops', path: '/live-ops', screenId: 'live-ops', badge: '12' },
+  { icon: PhoneOutgoing, label: 'Outbound Calls', path: '/outbound-calls', screenId: 'outbound-calls' },
+  { icon: BarChart3, label: 'Analytics', path: '/analytics', screenId: 'analytics' },
+  { icon: Puzzle, label: 'Integrations', path: '/integrations', screenId: 'integrations' },
+  { icon: CreditCard, label: 'Billing', path: '/billing', screenId: 'billing' },
+  { icon: Shield, label: 'Security', path: '/security', screenId: 'security' },
+  { icon: ShieldCheck, label: 'Roles', path: '/roles', screenId: 'roles' },
+  { icon: Code2, label: 'SDKs', path: '/sdks', screenId: 'sdks' },
+  { icon: Palette, label: 'Theme', path: '/theme', screenId: 'theme' },
+  { icon: User, label: 'Profile', path: '/profile', screenId: 'profile' },
 ];
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { canAccessScreen, isClientAdmin } = useAuth();
+
+  // Filter nav items based on role permissions
+  const navItems = allNavItems.filter(item => {
+    // Profile is always accessible
+    if (item.screenId === 'profile') return true;
+    // Client admin sees everything
+    if (isClientAdmin) return true;
+    // Check permission for other roles
+    return canAccessScreen(item.screenId as ScreenId);
+  });
 
   return (
     <aside
