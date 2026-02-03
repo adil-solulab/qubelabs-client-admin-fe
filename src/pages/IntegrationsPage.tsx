@@ -14,6 +14,7 @@ import {
   Search,
   Filter,
   Webhook,
+  Lock,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -37,7 +39,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
+import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
+import { PermissionButton } from '@/components/auth/PermissionButton';
 import { ConnectIntegrationModal } from '@/components/integrations/ConnectIntegrationModal';
 import { DisconnectIntegrationModal } from '@/components/integrations/DisconnectIntegrationModal';
 import { CreateAPIKeyModal } from '@/components/integrations/CreateAPIKeyModal';
@@ -56,6 +60,8 @@ export default function IntegrationsPage() {
     revokeAPIKey,
     toggleAPIKey,
   } = useIntegrationsData();
+
+  const { canCreate, canEdit, canDelete, withPermission } = usePermission('integrations');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<IntegrationCategory | 'all'>('all');
@@ -95,13 +101,17 @@ export default function IntegrationsPage() {
   };
 
   const handleConnectClick = (integration: Integration) => {
-    setSelectedIntegration(integration);
-    setConnectModalOpen(true);
+    withPermission('edit', () => {
+      setSelectedIntegration(integration);
+      setConnectModalOpen(true);
+    });
   };
 
   const handleDisconnectClick = (integration: Integration) => {
-    setSelectedIntegration(integration);
-    setDisconnectModalOpen(true);
+    withPermission('edit', () => {
+      setSelectedIntegration(integration);
+      setDisconnectModalOpen(true);
+    });
   };
 
   const handleCreateKey = async (name: string, permissions: string[]) => {
@@ -114,19 +124,29 @@ export default function IntegrationsPage() {
     return result;
   };
 
+  const handleCreateKeyClick = () => {
+    withPermission('create', () => {
+      setCreateKeyModalOpen(true);
+    });
+  };
+
   const handleRevokeKey = async (keyId: string) => {
-    await revokeAPIKey(keyId);
-    notify.deleted('API Key');
+    withPermission('delete', async () => {
+      await revokeAPIKey(keyId);
+      notify.deleted('API Key');
+    });
   };
 
   const handleToggleKey = async (keyId: string) => {
-    await toggleAPIKey(keyId);
-    const key = apiKeys.find(k => k.id === keyId);
-    if (key?.isActive) {
-      notify.info('API Key disabled');
-    } else {
-      notify.success('API Key enabled');
-    }
+    withPermission('edit', async () => {
+      await toggleAPIKey(keyId);
+      const key = apiKeys.find(k => k.id === keyId);
+      if (key?.isActive) {
+        notify.info('API Key disabled');
+      } else {
+        notify.success('API Key enabled');
+      }
+    });
   };
 
   const handleCopyKey = async (keyId: string, key: string) => {

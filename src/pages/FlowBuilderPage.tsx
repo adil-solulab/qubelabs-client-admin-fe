@@ -10,10 +10,12 @@ import {
   Loader2,
   ChevronDown,
   AlertCircle,
+  Lock,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useFlowBuilderData } from '@/hooks/useFlowBuilderData';
+import { usePermission } from '@/hooks/usePermission';
 import { FlowCanvas } from '@/components/flowBuilder/FlowCanvas';
 import { NodePropertiesPanel } from '@/components/flowBuilder/NodePropertiesPanel';
 import { PublishFlowModal } from '@/components/flowBuilder/PublishFlowModal';
@@ -55,6 +58,8 @@ export default function FlowBuilderPage() {
     saveDraft,
   } = useFlowBuilderData();
 
+  const { canEdit, canPublish, withPermission } = usePermission('flow-builder');
+
   const [showPreview, setShowPreview] = useState(true);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [rollbackModalOpen, setRollbackModalOpen] = useState(false);
@@ -75,10 +80,12 @@ export default function FlowBuilderPage() {
   }, [hasUnsavedChanges]);
 
   const handleAddNode = (type: NodeType) => {
-    const position = { x: 400 + Math.random() * 200, y: 300 + Math.random() * 100 };
-    const newNode = addNode(type, position);
-    setSelectedNode(newNode);
-    notify.created(`${NODE_TYPE_CONFIG[type].label} node added`);
+    withPermission('edit', () => {
+      const position = { x: 400 + Math.random() * 200, y: 300 + Math.random() * 100 };
+      const newNode = addNode(type, position);
+      setSelectedNode(newNode);
+      notify.created(`${NODE_TYPE_CONFIG[type].label} node added`);
+    });
   };
 
   const handleStartConnect = (nodeId: string, handleType: 'output' | 'yes' | 'no') => {
@@ -102,11 +109,13 @@ export default function FlowBuilderPage() {
   };
 
   const handleDuplicateNode = (nodeId: string) => {
-    const newNode = duplicateNode(nodeId);
-    if (newNode) {
-      setSelectedNode(newNode);
-      notify.created('Node duplicated');
-    }
+    withPermission('edit', () => {
+      const newNode = duplicateNode(nodeId);
+      if (newNode) {
+        setSelectedNode(newNode);
+        notify.created('Node duplicated');
+      }
+    });
   };
 
   const handleCanvasClick = (position: { x: number; y: number }) => {
@@ -114,19 +123,25 @@ export default function FlowBuilderPage() {
   };
 
   const handleSaveDraft = async () => {
-    await saveDraft();
-    notify.saved('Flow saved as draft');
+    withPermission('edit', async () => {
+      await saveDraft();
+      notify.saved('Flow saved as draft');
+    });
   };
 
   const handlePublish = async (changelog: string) => {
-    await publishFlow(changelog);
-    notify.success(`Version ${parseInt(flow.currentVersion) + 1}.0 published!`);
+    withPermission('publish', async () => {
+      await publishFlow(changelog);
+      notify.success(`Version ${parseInt(flow.currentVersion) + 1}.0 published!`);
+    });
   };
 
   const handleRollback = async (versionId: string) => {
-    const version = flow.versions.find(v => v.id === versionId);
-    await rollbackToVersion(versionId);
-    notify.success(`Restored to version ${version?.version}`);
+    withPermission('edit', async () => {
+      const version = flow.versions.find(v => v.id === versionId);
+      await rollbackToVersion(versionId);
+      notify.success(`Restored to version ${version?.version}`);
+    });
   };
 
   const handleDiscardChanges = () => {
@@ -177,26 +192,40 @@ export default function FlowBuilderPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Add Node */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Node
-                  <ChevronDown className="w-4 h-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {nodeTypes.map(type => {
-                  const config = NODE_TYPE_CONFIG[type];
-                  return (
-                    <DropdownMenuItem key={type} onClick={() => handleAddNode(type)}>
-                      <span className="mr-2">{config.icon}</span>
-                      {config.label}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {canEdit ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Node
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {nodeTypes.map(type => {
+                    const config = NODE_TYPE_CONFIG[type];
+                    return (
+                      <DropdownMenuItem key={type} onClick={() => handleAddNode(type)}>
+                        <span className="mr-2">{config.icon}</span>
+                        {config.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" disabled className="opacity-50">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Add Node
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit permission required</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
             {/* Preview Toggle */}
             <Button
@@ -214,24 +243,52 @@ export default function FlowBuilderPage() {
             </Button>
 
             {/* Save Draft */}
-            <Button 
-              variant={hasUnsavedChanges ? 'default' : 'outline'} 
-              onClick={handleSaveDraft} 
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              Save
-            </Button>
+            {canEdit ? (
+              <Button 
+                variant={hasUnsavedChanges ? 'default' : 'outline'} 
+                onClick={handleSaveDraft} 
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                Save
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" disabled className="opacity-50">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit permission required</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
             {/* Publish */}
-            <Button onClick={() => setPublishModalOpen(true)}>
-              <Rocket className="w-4 h-4 mr-2" />
-              Publish
-            </Button>
+            {canPublish ? (
+              <Button onClick={() => setPublishModalOpen(true)}>
+                <Rocket className="w-4 h-4 mr-2" />
+                Publish
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button disabled className="opacity-50">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Publish
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Publish permission required</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
 
