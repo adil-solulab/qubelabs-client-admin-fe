@@ -19,9 +19,18 @@ interface DocumentCardProps {
   onTrain: (doc: KnowledgeDocument) => void;
   onDelete: (doc: KnowledgeDocument) => void;
   onViewHistory: (doc: KnowledgeDocument) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-export function DocumentCard({ document, onTrain, onDelete, onViewHistory }: DocumentCardProps) {
+export function DocumentCard({ 
+  document, 
+  onTrain, 
+  onDelete, 
+  onViewHistory,
+  canEdit = true,
+  canDelete = true,
+}: DocumentCardProps) {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'faq': return '❓';
@@ -83,7 +92,11 @@ export function DocumentCard({ document, onTrain, onDelete, onViewHistory }: Doc
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onTrain(document)}>
+                  <DropdownMenuItem 
+                    onClick={() => onTrain(document)}
+                    disabled={!canEdit}
+                    className={!canEdit ? 'opacity-50' : ''}
+                  >
                     <Play className="w-4 h-4 mr-2" />
                     {document.trainingStatus === 'completed' ? 'Retrain' : 'Start Training'}
                   </DropdownMenuItem>
@@ -95,6 +108,7 @@ export function DocumentCard({ document, onTrain, onDelete, onViewHistory }: Doc
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
                     onClick={() => onDelete(document)}
+                    disabled={!canDelete}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete

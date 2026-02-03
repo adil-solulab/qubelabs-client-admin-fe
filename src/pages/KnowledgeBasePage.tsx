@@ -3,17 +3,16 @@ import {
   BookOpen,
   Upload,
   Search,
-  Filter,
   FileText,
   Brain,
   Play,
   CheckCircle,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -22,7 +21,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useKnowledgeBaseData } from '@/hooks/useKnowledgeBaseData';
+import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
+import { PermissionButton } from '@/components/auth/PermissionButton';
 import { DocumentCard } from '@/components/knowledgeBase/DocumentCard';
 import { UploadDocumentModal } from '@/components/knowledgeBase/UploadDocumentModal';
 import { DeleteDocumentModal } from '@/components/knowledgeBase/DeleteDocumentModal';
@@ -40,6 +41,8 @@ export default function KnowledgeBasePage() {
     deleteDocument,
     revertToVersion,
   } = useKnowledgeBaseData();
+
+  const { canCreate, canEdit, canDelete, withPermission } = usePermission('knowledge-base');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<DocumentType | 'all'>('all');
@@ -70,26 +73,36 @@ export default function KnowledgeBasePage() {
     pending: documents.filter(d => d.trainingStatus === 'pending').length,
   };
 
+  const handleUploadClick = () => {
+    withPermission('create', () => {
+      setUploadModalOpen(true);
+    });
+  };
+
   const handleUploadComplete = (docName: string) => {
     notify.uploaded(docName);
   };
 
   const handleTrain = async (doc: KnowledgeDocument) => {
-    notify.info(`Training started for "${doc.name}"`);
+    withPermission('edit', async () => {
+      notify.info(`Training started for "${doc.name}"`);
 
-    try {
-      await startTraining(doc.id, (progress) => {
-        // Progress is handled in the hook
-      });
-      notify.success(`Training complete`, `"${doc.name}" has been trained successfully.`);
-    } catch (error) {
-      notify.error('Training failed', `Could not train "${doc.name}".`);
-    }
+      try {
+        await startTraining(doc.id, (progress) => {
+          // Progress is handled in the hook
+        });
+        notify.success(`Training complete`, `"${doc.name}" has been trained successfully.`);
+      } catch (error) {
+        notify.error('Training failed', `Could not train "${doc.name}".`);
+      }
+    });
   };
 
   const handleDeleteClick = (doc: KnowledgeDocument) => {
-    setSelectedDocument(doc);
-    setDeleteModalOpen(true);
+    withPermission('delete', () => {
+      setSelectedDocument(doc);
+      setDeleteModalOpen(true);
+    });
   };
 
   const handleViewHistory = (doc: KnowledgeDocument) => {
@@ -108,12 +121,14 @@ export default function KnowledgeBasePage() {
   };
 
   const handleRevert = async (documentId: string, versionId: string) => {
-    try {
-      await revertToVersion(documentId, versionId);
-      notify.success('Version restored', 'Document reverted to selected version.');
-    } catch (error) {
-      notify.error('Revert failed', 'Could not revert to version.');
-    }
+    withPermission('edit', async () => {
+      try {
+        await revertToVersion(documentId, versionId);
+        notify.success('Version restored', 'Document reverted to selected version.');
+      } catch (error) {
+        notify.error('Revert failed', 'Could not revert to version.');
+      }
+    });
   };
 
   return (
@@ -127,10 +142,14 @@ export default function KnowledgeBasePage() {
               Upload documents and train your AI agents with custom knowledge
             </p>
           </div>
-          <Button onClick={() => setUploadModalOpen(true)}>
+          <PermissionButton 
+            screenId="knowledge-base" 
+            action="create" 
+            onClick={handleUploadClick}
+          >
             <Upload className="w-4 h-4 mr-2" />
             Upload Document
-          </Button>
+          </PermissionButton>
         </div>
 
         {/* Stats Cards */}
@@ -258,8 +277,8 @@ export default function KnowledgeBasePage() {
                       ? 'Try adjusting your search or filters'
                       : 'Upload your first document to get started'}
                   </p>
-                  {!searchQuery && typeFilter === 'all' && (
-                    <Button onClick={() => setUploadModalOpen(true)}>
+                  {!searchQuery && typeFilter === 'all' && canCreate && (
+                    <Button onClick={handleUploadClick}>
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Document
                     </Button>
@@ -275,6 +294,8 @@ export default function KnowledgeBasePage() {
                     onTrain={handleTrain}
                     onDelete={handleDeleteClick}
                     onViewHistory={handleViewHistory}
+                    canEdit={canEdit}
+                    canDelete={canDelete}
                   />
                 ))}
               </div>
