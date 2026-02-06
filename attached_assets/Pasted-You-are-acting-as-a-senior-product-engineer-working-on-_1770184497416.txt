@@ -1,0 +1,144 @@
+You are acting as a senior product engineer working on an enterprise SaaS platform.
+
+CLIENT DIRECTIVE (MANDATORY):
+“Complete all in-memory features and add proper animations where applicable.”
+
+--------------------------------------------------
+DEFINITION: IN-MEMORY FEATURE
+--------------------------------------------------
+
+An in-memory feature means:
+
+- Feature works fully in the UI without backend
+- State persists across navigation (until refresh)
+- User actions cause real, visible state changes
+- Buttons, forms, and actions are NOT visual-only
+- Toasts, confirmations, and status updates appear
+
+DO NOT leave:
+- Dead buttons
+- No-op actions
+- Console-only behavior
+- Static mock data that doesn’t change
+
+--------------------------------------------------
+GLOBAL IMPLEMENTATION RULES
+--------------------------------------------------
+
+1. EVERY BUTTON MUST DO SOMETHING
+- If action is supported → execute in-memory logic
+- If not ready → disable button with tooltip “Coming Soon”
+
+2. EVERY FORM MUST:
+- Accept input
+- Update state
+- Reflect changes immediately in UI
+
+3. EVERY MODAL MUST:
+- Open with animation
+- Close with animation
+- Perform its primary action successfully
+
+--------------------------------------------------
+IN-MEMORY STATE REQUIREMENTS
+--------------------------------------------------
+
+Implement in-memory state using:
+- React state / context / store
+- Persist data across screens
+- Simulate real workflows
+
+Examples:
+- Ending a call removes it from Active Calls
+- Adding a flow node updates canvas state
+- Saving flow updates version state
+- Callback request appears in queue
+- Survey response updates analytics
+
+--------------------------------------------------
+ANIMATION REQUIREMENTS (IMPORTANT)
+--------------------------------------------------
+
+Animations must be:
+- Subtle
+- Professional
+- Purpose-driven
+- Fast (150–300ms)
+
+DO NOT add flashy or gimmicky effects.
+
+--------------------------------------------------
+WHERE TO ADD ANIMATIONS
+--------------------------------------------------
+
+1. Modals
+- Fade + scale in
+- Smooth close animation
+
+2. Lists / Tables
+- Item add/remove animation
+- Status change transition
+
+3. Buttons
+- Hover + active states
+- Loading state when action triggered
+
+4. Panels & Drawers
+- Slide-in / slide-out
+- Smooth height expansion
+
+5. Chat / Live Ops
+- New message animation
+- Status indicator transitions
+
+--------------------------------------------------
+FEATURE-SPECIFIC IN-MEMORY COMPLETION
+--------------------------------------------------
+
+1. Live Operations
+- Active Calls: mute, end, transfer update state
+- Chat: messages append, status updates
+- Language/translation toggles update UI state
+
+2. Flow Builder
+- Add/edit/delete nodes
+- Connections update in-memory graph
+- Save updates version state
+- Preview uses current in-memory state
+
+3. Callback & Queue
+- Request callback creates queue item
+- FIFO ordering updates dynamically
+- Retry updates attempt count
+- Agent actions update status
+
+4. Surveys
+- Survey triggers on interaction end
+- Responses stored in-memory
+- CSAT/NPS recalculated live
+- Negative responses trigger escalation banner
+
+--------------------------------------------------
+ACCEPTANCE CRITERIA (NON-NEGOTIABLE)
+--------------------------------------------------
+
+A feature is COMPLETE only if:
+
+- User clicks → something visibly happens
+- State changes are reflected immediately
+- Animations make transitions clear
+- No UI element feels broken or fake
+
+If a feature cannot be completed in-memory,
+mark it clearly as “Coming Soon” and disable it.
+
+--------------------------------------------------
+FINAL STEP
+--------------------------------------------------
+
+After implementation, re-test at:
+- 100% zoom
+- Normal screen sizes
+- Long data sets (lists, chats, flows)
+
+Confirm NO dead buttons and NO broken flows.
