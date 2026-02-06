@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Bell, CheckCircle, Clock, ShieldAlert, Users, Server, X } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle, Clock, ShieldAlert, Users, Server, X, Loader2 } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,8 @@ interface AlertsWidgetProps {
 export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [isDismissingAll, setIsDismissingAll] = useState(false);
+  const [acknowledgeLoadingId, setAcknowledgeLoadingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const unacknowledged = alerts.filter(a => !a.acknowledged);
@@ -65,20 +67,26 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
     }
   };
 
-  const handleAcknowledge = (alert: Alert) => {
+  const handleAcknowledge = async (alert: Alert) => {
+    setAcknowledgeLoadingId(alert.id);
+    await new Promise(resolve => setTimeout(resolve, 300));
     onAcknowledge(alert.id);
     toast({
       title: 'Alert Acknowledged',
       description: `"${alert.title}" has been acknowledged.`,
     });
+    setAcknowledgeLoadingId(null);
   };
 
-  const handleDismissAll = () => {
+  const handleDismissAll = async () => {
+    setIsDismissingAll(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
     unacknowledged.forEach(alert => onAcknowledge(alert.id));
     toast({
       title: 'All Alerts Dismissed',
       description: `${unacknowledged.length} alerts have been acknowledged.`,
     });
+    setIsDismissingAll(false);
   };
 
   return (
@@ -138,8 +146,9 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
                 System Alerts
               </DialogTitle>
               {unacknowledged.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={handleDismissAll}>
-                  Acknowledge All
+                <Button variant="ghost" size="sm" onClick={handleDismissAll} disabled={isDismissingAll || acknowledgeLoadingId !== null}>
+                  {isDismissingAll && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                  {isDismissingAll ? 'Acknowledging...' : 'Acknowledge All'}
                 </Button>
               )}
             </div>
@@ -213,12 +222,17 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
                             variant="ghost"
                             size="icon"
                             className="flex-shrink-0"
+                            disabled={acknowledgeLoadingId === alert.id || isDismissingAll}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleAcknowledge(alert);
                             }}
                           >
-                            <X className="w-4 h-4" />
+                            {acknowledgeLoadingId === alert.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
                           </Button>
                         )}
                       </div>
@@ -275,13 +289,18 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
               {!selectedAlert.acknowledged && (
                 <Button 
                   className="w-full" 
-                  onClick={() => {
-                    handleAcknowledge(selectedAlert);
+                  disabled={acknowledgeLoadingId === selectedAlert.id}
+                  onClick={async () => {
+                    await handleAcknowledge(selectedAlert);
                     setSelectedAlert(null);
                   }}
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Acknowledge Alert
+                  {acknowledgeLoadingId === selectedAlert.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                  )}
+                  {acknowledgeLoadingId === selectedAlert.id ? 'Acknowledging...' : 'Acknowledge Alert'}
                 </Button>
               )}
             </div>

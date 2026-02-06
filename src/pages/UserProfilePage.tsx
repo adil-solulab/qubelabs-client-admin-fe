@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useUserProfileData } from '@/hooks/useUserProfileData';
+import { useTheme, ThemeMode } from '@/hooks/useTheme';
 import { notify } from '@/hooks/useNotification';
 import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 import { LogoutAllSessionsModal } from '@/components/profile/LogoutAllSessionsModal';
@@ -57,6 +58,8 @@ export default function UserProfilePage() {
     terminateSession,
     terminateAllSessions,
   } = useUserProfileData();
+
+  const { updateTheme } = useTheme();
 
   const [editedName, setEditedName] = useState(profile.fullName);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -120,6 +123,10 @@ export default function UserProfilePage() {
   const handlePreferenceChange = async (key: string, value: any) => {
     const result = await updatePreferences({ [key]: value });
     if (result.success) {
+      // If theme was changed, also update the actual app theme
+      if (key === 'theme') {
+        updateTheme({ mode: value as ThemeMode });
+      }
       notify.saved('Preference');
     }
   };
@@ -246,7 +253,7 @@ export default function UserProfilePage() {
             <div className="grid sm:grid-cols-2 gap-4">
               {/* Full Name */}
               <div className="space-y-2">
-                <Label>Full Name</Label>
+                <Label className="flex items-center gap-2 h-5">Full Name</Label>
                 {isEditingName ? (
                   <div className="flex gap-2">
                     <Input
@@ -259,7 +266,7 @@ export default function UserProfilePage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30 min-h-[46px]">
                     <span>{profile.fullName}</span>
                     <Button variant="ghost" size="sm" onClick={() => setIsEditingName(true)}>
                       Edit
@@ -270,30 +277,30 @@ export default function UserProfilePage() {
 
               {/* Email (Read-only) */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <Label className="flex items-center gap-2 h-5">
                   Email
                   <Badge variant="secondary" className="text-[10px]">Read-only</Badge>
                 </Label>
-                <div className="p-3 rounded-lg border bg-muted/30 text-muted-foreground">
+                <div className="p-3 rounded-lg border bg-muted/30 text-muted-foreground min-h-[46px] flex items-center">
                   {profile.email}
                 </div>
               </div>
 
               {/* Role (Read-only) */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <Label className="flex items-center gap-2 h-5">
                   Role
                   <Badge variant="secondary" className="text-[10px]">Read-only</Badge>
                 </Label>
-                <div className="p-3 rounded-lg border bg-muted/30">
+                <div className="p-3 rounded-lg border bg-muted/30 min-h-[46px] flex items-center">
                   <Badge variant="outline">{profile.role}</Badge>
                 </div>
               </div>
 
               {/* Member Since */}
               <div className="space-y-2">
-                <Label>Member Since</Label>
-                <div className="p-3 rounded-lg border bg-muted/30 text-muted-foreground">
+                <Label className="flex items-center gap-2 h-5">Member Since</Label>
+                <div className="p-3 rounded-lg border bg-muted/30 text-muted-foreground min-h-[46px] flex items-center">
                   {new Date(profile.createdAt).toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',

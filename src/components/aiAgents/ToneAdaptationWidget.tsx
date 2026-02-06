@@ -1,13 +1,15 @@
-import { Volume2, Waves, Zap, TrendingUp } from 'lucide-react';
+import { Volume2, Waves, Zap, TrendingUp, Settings2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import type { Persona } from '@/types/aiAgents';
 import { TONE_LABELS } from '@/types/aiAgents';
 import { cn } from '@/lib/utils';
 
 interface ToneAdaptationWidgetProps {
   personas: Persona[];
+  onEditPersona?: (persona: Persona) => void;
 }
 
 const TONE_SCENARIOS = [
@@ -17,7 +19,7 @@ const TONE_SCENARIOS = [
   { context: 'VIP Client Call', suggestedTone: 'friendly', urgency: 'high' },
 ];
 
-export function ToneAdaptationWidget({ personas }: ToneAdaptationWidgetProps) {
+export function ToneAdaptationWidget({ personas, onEditPersona }: ToneAdaptationWidgetProps) {
   const activePersonas = personas.filter(p => p.isActive);
   const avgAdaptability = activePersonas.length > 0
     ? Math.round(activePersonas.reduce((sum, p) => sum + p.toneSettings.adaptability, 0) / activePersonas.length)
@@ -71,7 +73,11 @@ export function ToneAdaptationWidget({ personas }: ToneAdaptationWidgetProps) {
             {activePersonas.slice(0, 3).map(persona => (
               <div
                 key={persona.id}
-                className="flex items-center justify-between p-2 rounded-lg border bg-background/50"
+                className={cn(
+                  'flex items-center justify-between p-2 rounded-lg border bg-background/50',
+                  onEditPersona && 'cursor-pointer hover:bg-muted/50 transition-colors group'
+                )}
+                onClick={() => onEditPersona?.(persona)}
               >
                 <div className="flex items-center gap-2">
                   <div className={cn(
@@ -82,11 +88,21 @@ export function ToneAdaptationWidget({ personas }: ToneAdaptationWidgetProps) {
                   )} />
                   <span className="text-sm font-medium">{persona.name}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">
-                  {TONE_LABELS[persona.toneSettings.primary]}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-[10px]">
+                    {TONE_LABELS[persona.toneSettings.primary]}
+                  </Badge>
+                  {onEditPersona && (
+                    <Settings2 className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </div>
               </div>
             ))}
+            {activePersonas.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-2">
+                No active personas
+              </p>
+            )}
           </div>
         </div>
 
@@ -119,7 +135,9 @@ export function ToneAdaptationWidget({ personas }: ToneAdaptationWidgetProps) {
 
         {/* Info */}
         <p className="text-xs text-muted-foreground text-center pt-2 border-t">
-          Tone adapts in real-time based on conversation sentiment and context
+          {onEditPersona 
+            ? 'Click a persona above to edit its voice settings'
+            : 'Tone adapts in real-time based on conversation sentiment and context'}
         </p>
       </CardContent>
     </Card>

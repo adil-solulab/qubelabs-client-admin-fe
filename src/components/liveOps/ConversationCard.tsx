@@ -34,9 +34,10 @@ export function ConversationCard({ conversation, isSelected, onClick }: Conversa
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-all hover:shadow-md',
+        'cursor-pointer card-interactive animate-list-item-in',
         isSelected && 'ring-2 ring-primary shadow-glow',
-        conversation.sentiment === 'escalated' && 'border-destructive/50'
+        conversation.sentiment === 'escalated' && 'border-destructive/50',
+        conversation.status === 'ended' && 'opacity-50 animate-list-item-out'
       )}
       onClick={onClick}
     >
@@ -103,9 +104,9 @@ export function ConversationCard({ conversation, isSelected, onClick }: Conversa
               <div className="mt-2">
                 <Badge className={cn(
                   'text-[10px]',
-                  conversation.supervisorMode === 'monitoring' && 'bg-blue-500',
-                  conversation.supervisorMode === 'whispering' && 'bg-purple-500',
-                  conversation.supervisorMode === 'barged_in' && 'bg-warning'
+                    conversation.supervisorMode === 'monitoring' && 'bg-secondary text-secondary-foreground',
+                    conversation.supervisorMode === 'whispering' && 'bg-accent text-accent-foreground',
+                    conversation.supervisorMode === 'barged_in' && 'bg-warning text-warning-foreground'
                 )}>
                   {conversation.supervisorMode === 'monitoring' && '👁️ Monitoring'}
                   {conversation.supervisorMode === 'whispering' && '🔇 Whispering'}

@@ -1,4 +1,4 @@
-export type NodeType = 'start' | 'message' | 'condition' | 'api_call' | 'transfer' | 'end';
+export type NodeType = 'start' | 'message' | 'condition' | 'api_call' | 'transfer' | 'dtmf' | 'assistant' | 'end';
 
 export type FlowStatus = 'draft' | 'published';
 
@@ -8,6 +8,12 @@ export interface FlowNode {
   position: { x: number; y: number };
   data: NodeData;
   connections: string[];
+}
+
+export interface DTMFBranch {
+  key: string;
+  label: string;
+  targetNodeId?: string;
 }
 
 export interface NodeData {
@@ -27,6 +33,19 @@ export interface NodeData {
   transferTo?: string;
   yesConnection?: string;
   noConnection?: string;
+  // DTMF node specific
+  dtmfConfig?: {
+    prompt: string;
+    timeout: number;
+    maxDigits: number;
+    branches: DTMFBranch[];
+  };
+  // Assistant node specific
+  assistantConfig?: {
+    personaId: string;
+    personaName: string;
+    handoffCondition?: string;
+  };
 }
 
 export interface FlowEdge {
@@ -101,6 +120,20 @@ export const NODE_TYPE_CONFIG: Record<NodeType, {
     color: 'text-purple-500',
     bgColor: 'bg-purple-500/10',
     borderColor: 'border-purple-500/30'
+  },
+  dtmf: { 
+    label: 'DTMF Input', 
+    icon: '🔢', 
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500/30'
+  },
+  assistant: { 
+    label: 'AI Assistant', 
+    icon: '🤖', 
+    color: 'text-cyan-500',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/30'
   },
   end: { 
     label: 'End', 

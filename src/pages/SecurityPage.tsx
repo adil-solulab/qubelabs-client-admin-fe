@@ -86,8 +86,12 @@ export default function SecurityPage() {
     }
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
   const handleExportLogs = async () => {
+    setIsExporting(true);
     const result = await exportAuditLogs();
+    setIsExporting(false);
     if (result.success) {
       notify.success('Export started', 'Your audit logs are being downloaded.');
     } else {
@@ -661,9 +665,13 @@ export default function SecurityPage() {
                       Track all security-relevant activities
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={handleExportLogs}>
-                    <Download className="w-4 h-4 mr-1" />
-                    Export Logs
+                  <Button variant="outline" size="sm" onClick={handleExportLogs} disabled={isExporting}>
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-1" />
+                    )}
+                    {isExporting ? 'Exporting...' : 'Export Logs'}
                   </Button>
                 </div>
               </CardHeader>

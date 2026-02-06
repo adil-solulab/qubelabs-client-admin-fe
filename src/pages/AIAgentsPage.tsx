@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Bot, Plus, Search, Filter, Sparkles, GitBranch, Volume2 } from 'lucide-react';
+import { Bot, Plus, Search, Filter, Sparkles, GitBranch, Volume2, MoreVertical, Pencil, Trash2, Power } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -13,15 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAIAgentsData } from '@/hooks/useAIAgentsData';
+import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
+import { PermissionButton } from '@/components/auth/PermissionButton';
 import { PersonaCard } from '@/components/aiAgents/PersonaCard';
 import { PersonaModal } from '@/components/aiAgents/PersonaModal';
 import { TestPersonaModal } from '@/components/aiAgents/TestPersonaModal';
 import { DeletePersonaModal } from '@/components/aiAgents/DeletePersonaModal';
 import { TaskSequenceVisualizer } from '@/components/aiAgents/TaskSequenceVisualizer';
+import { TaskSequenceModal } from '@/components/aiAgents/TaskSequenceModal';
+import { DeleteTaskSequenceModal } from '@/components/aiAgents/DeleteTaskSequenceModal';
 import { ToneAdaptationWidget } from '@/components/aiAgents/ToneAdaptationWidget';
-import type { Persona, PersonaType } from '@/types/aiAgents';
+import { VoiceSettingsModal } from '@/components/aiAgents/VoiceSettingsModal';
+import type { Persona, PersonaType, TaskSequence } from '@/types/aiAgents';
 import { PERSONA_TYPE_LABELS } from '@/types/aiAgents';
 
 export default function AIAgentsPage() {
@@ -33,17 +45,34 @@ export default function AIAgentsPage() {
     updatePersona,
     deletePersona,
     togglePersonaActive,
+    addSequence,
+    updateSequence,
+    deleteSequence,
+    toggleSequenceActive,
   } = useAIAgentsData();
+
+  const { canCreate, canEdit, canDelete, withPermission } = usePermission('ai-agents');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<PersonaType | 'all'>('all');
   const [activeTab, setActiveTab] = useState('personas');
 
+  // Persona modals
   const [personaModalOpen, setPersonaModalOpen] = useState(false);
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Sequence modals
+  const [sequenceModalOpen, setSequenceModalOpen] = useState(false);
+  const [deleteSequenceModalOpen, setDeleteSequenceModalOpen] = useState(false);
+  const [selectedSequence, setSelectedSequence] = useState<TaskSequence | null>(null);
+  const [isSequenceEditMode, setIsSequenceEditMode] = useState(false);
+
+  // Voice settings modal
+  const [voiceSettingsModalOpen, setVoiceSettingsModalOpen] = useState(false);
+  const [voiceSettingsPersona, setVoiceSettingsPersona] = useState<Persona | null>(null);
 
   // Filter personas
   const filteredPersonas = personas.filter(persona => {
@@ -63,16 +92,21 @@ export default function AIAgentsPage() {
     custom: personas.filter(p => p.type === 'custom').length,
   };
 
+  // Persona handlers
   const handleCreatePersona = () => {
-    setSelectedPersona(null);
-    setIsEditMode(false);
-    setPersonaModalOpen(true);
+    withPermission('create', () => {
+      setSelectedPersona(null);
+      setIsEditMode(false);
+      setPersonaModalOpen(true);
+    });
   };
 
   const handleEditPersona = (persona: Persona) => {
-    setSelectedPersona(persona);
-    setIsEditMode(true);
-    setPersonaModalOpen(true);
+    withPermission('edit', () => {
+      setSelectedPersona(persona);
+      setIsEditMode(true);
+      setPersonaModalOpen(true);
+    });
   };
 
   const handleTestPersona = (persona: Persona) => {
@@ -81,8 +115,10 @@ export default function AIAgentsPage() {
   };
 
   const handleDeleteClick = (persona: Persona) => {
-    setSelectedPersona(persona);
-    setDeleteModalOpen(true);
+    withPermission('delete', () => {
+      setSelectedPersona(persona);
+      setDeleteModalOpen(true);
+    });
   };
 
   const handleSavePersona = async (personaData: Omit<Persona, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -112,12 +148,95 @@ export default function AIAgentsPage() {
   };
 
   const handleToggleActive = (personaId: string) => {
-    const persona = personas.find(p => p.id === personaId);
-    togglePersonaActive(personaId);
-    if (persona?.isActive) {
-      notify.info(`Persona "${persona.name}" deactivated`);
-    } else {
-      notify.success(`Persona "${persona?.name}" activated`);
+    withPermission('edit', () => {
+      const persona = personas.find(p => p.id === personaId);
+      togglePersonaActive(personaId);
+      if (persona?.isActive) {
+        notify.info(`Persona "${persona.name}" deactivated`);
+      } else {
+        notify.success(`Persona "${persona?.name}" activated`);
+      }
+    });
+  };
+
+  // Sequence handlers
+  const handleCreateSequence = () => {
+    withPermission('create', () => {
+      setSelectedSequence(null);
+      setIsSequenceEditMode(false);
+      setSequenceModalOpen(true);
+    });
+  };
+
+  const handleEditSequence = (sequence: TaskSequence) => {
+    withPermission('edit', () => {
+      setSelectedSequence(sequence);
+      setIsSequenceEditMode(true);
+      setSequenceModalOpen(true);
+    });
+  };
+
+  const handleDeleteSequenceClick = (sequence: TaskSequence) => {
+    withPermission('delete', () => {
+      setSelectedSequence(sequence);
+      setDeleteSequenceModalOpen(true);
+    });
+  };
+
+  const handleSaveSequence = async (sequenceData: Omit<TaskSequence, 'id'>) => {
+    try {
+      if (isSequenceEditMode && selectedSequence) {
+        await updateSequence(selectedSequence.id, sequenceData);
+        notify.saved(`Sequence "${sequenceData.name}"`);
+      } else {
+        await addSequence(sequenceData);
+        notify.created(`Sequence "${sequenceData.name}"`);
+      }
+    } catch (error) {
+      notify.error('Failed to save sequence', 'Please try again.');
+      throw error;
+    }
+  };
+
+  const handleDeleteSequence = async (sequenceId: string) => {
+    const sequence = sequences.find(s => s.id === sequenceId);
+    try {
+      await deleteSequence(sequenceId);
+      notify.deleted(`Sequence "${sequence?.name}"`);
+    } catch (error) {
+      notify.error('Failed to delete sequence', 'Please try again.');
+      throw error;
+    }
+  };
+
+  const handleToggleSequenceActive = (sequenceId: string) => {
+    withPermission('edit', () => {
+      const sequence = sequences.find(s => s.id === sequenceId);
+      toggleSequenceActive(sequenceId);
+      if (sequence?.isActive) {
+        notify.info(`Sequence "${sequence.name}" deactivated`);
+      } else {
+        notify.success(`Sequence "${sequence?.name}" activated`);
+      }
+    });
+  };
+
+  // Voice settings handler
+  const handleEditVoiceSettings = (persona: Persona) => {
+    withPermission('edit', () => {
+      setVoiceSettingsPersona(persona);
+      setVoiceSettingsModalOpen(true);
+    });
+  };
+
+  const handleSaveVoiceSettings = async (personaId: string, toneSettings: Persona['toneSettings']) => {
+    try {
+      await updatePersona(personaId, { toneSettings });
+      const persona = personas.find(p => p.id === personaId);
+      notify.saved(`Voice settings for "${persona?.name}"`);
+    } catch (error) {
+      notify.error('Failed to save voice settings', 'Please try again.');
+      throw error;
     }
   };
 
@@ -132,10 +251,14 @@ export default function AIAgentsPage() {
               Configure AI personas with custom behaviors, prompts, and voice settings
             </p>
           </div>
-          <Button onClick={handleCreatePersona}>
+          <PermissionButton 
+            screenId="ai-agents" 
+            action="create" 
+            onClick={handleCreatePersona}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Create Persona
-          </Button>
+          </PermissionButton>
         </div>
 
         {/* Stats Cards */}
@@ -269,11 +392,11 @@ export default function AIAgentsPage() {
                       ? 'Try adjusting your search or filters'
                       : 'Create your first AI persona to get started'}
                   </p>
-                  {!searchQuery && typeFilter === 'all' && (
-                    <Button onClick={handleCreatePersona}>
+                  {!searchQuery && typeFilter === 'all' && canCreate && (
+                    <PermissionButton screenId="ai-agents" action="create" onClick={handleCreatePersona}>
                       <Plus className="w-4 h-4 mr-2" />
                       Create Persona
-                    </Button>
+                    </PermissionButton>
                   )}
                 </CardContent>
               </Card>
@@ -287,6 +410,8 @@ export default function AIAgentsPage() {
                     onTest={handleTestPersona}
                     onDelete={handleDeleteClick}
                     onToggleActive={handleToggleActive}
+                    canEdit={canEdit}
+                    canDelete={canDelete}
                   />
                 ))}
               </div>
@@ -294,20 +419,93 @@ export default function AIAgentsPage() {
           </TabsContent>
 
           <TabsContent value="sequences" className="space-y-4 mt-4">
-            <div className="grid lg:grid-cols-2 gap-4">
-              {sequences.map(sequence => (
-                <TaskSequenceVisualizer
-                  key={sequence.id}
-                  sequence={sequence}
-                  personas={personas}
-                />
-              ))}
+            {/* Header with Create button */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Task Sequences</h3>
+                <p className="text-sm text-muted-foreground">
+                  Define multi-step AI conversation workflows
+                </p>
+              </div>
+              <PermissionButton 
+                screenId="ai-agents" 
+                action="create" 
+                onClick={handleCreateSequence}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Sequence
+              </PermissionButton>
             </div>
+
+            {sequences.length === 0 ? (
+              <Card className="gradient-card">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <GitBranch className="w-12 h-12 text-muted-foreground mb-4" />
+                  <h3 className="font-semibold mb-1">No sequences found</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create your first task sequence to define AI workflows
+                  </p>
+                  {canCreate && (
+                    <PermissionButton screenId="ai-agents" action="create" onClick={handleCreateSequence}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Sequence
+                    </PermissionButton>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-4">
+                {sequences.map(sequence => (
+                  <div key={sequence.id} className="relative group">
+                    <TaskSequenceVisualizer
+                      sequence={sequence}
+                      personas={personas}
+                    />
+                    {/* Action Menu Overlay */}
+                    {(canEdit || canDelete) && (
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="icon" className="h-8 w-8">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {canEdit && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleEditSequence(sequence)}>
+                                  <Pencil className="w-4 h-4 mr-2" />
+                                  Edit Sequence
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleToggleSequenceActive(sequence.id)}>
+                                  <Power className="w-4 h-4 mr-2" />
+                                  {sequence.isActive ? 'Deactivate' : 'Activate'}
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {canEdit && canDelete && <DropdownMenuSeparator />}
+                            {canDelete && (
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteSequenceClick(sequence)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Sequence
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="voice" className="space-y-4 mt-4">
             <div className="grid lg:grid-cols-2 gap-4">
-              <ToneAdaptationWidget personas={personas} />
+              <ToneAdaptationWidget personas={personas} onEditPersona={handleEditVoiceSettings} />
               
               {/* Voice Preview Card */}
               <Card className="gradient-card">
@@ -354,9 +552,15 @@ export default function AIAgentsPage() {
                     </div>
                   </div>
 
-                  <Button className="w-full" variant="outline">
+                  <PermissionButton 
+                    screenId="ai-agents" 
+                    action="edit" 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => notify.info('Voice Settings', 'Voice configuration is available in Channels > Voice tab.')}
+                  >
                     Configure Voice Settings
-                  </Button>
+                  </PermissionButton>
                 </CardContent>
               </Card>
             </div>
@@ -364,7 +568,7 @@ export default function AIAgentsPage() {
         </Tabs>
       </div>
 
-      {/* Modals */}
+      {/* Persona Modals */}
       <PersonaModal
         persona={selectedPersona}
         open={personaModalOpen}
@@ -384,6 +588,31 @@ export default function AIAgentsPage() {
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
         onDelete={handleDeletePersona}
+      />
+
+      {/* Sequence Modals */}
+      <TaskSequenceModal
+        sequence={selectedSequence}
+        personas={personas}
+        open={sequenceModalOpen}
+        onOpenChange={setSequenceModalOpen}
+        onSave={handleSaveSequence}
+        isEdit={isSequenceEditMode}
+      />
+
+      <DeleteTaskSequenceModal
+        sequence={selectedSequence}
+        open={deleteSequenceModalOpen}
+        onOpenChange={setDeleteSequenceModalOpen}
+        onDelete={handleDeleteSequence}
+      />
+
+      {/* Voice Settings Modal */}
+      <VoiceSettingsModal
+        persona={voiceSettingsPersona}
+        open={voiceSettingsModalOpen}
+        onOpenChange={setVoiceSettingsModalOpen}
+        onSave={handleSaveVoiceSettings}
       />
     </AppLayout>
   );

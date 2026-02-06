@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogBody,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -141,9 +142,35 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
     }
   };
 
+  // Navigate to tab with first error when validation fails
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const isValid = await form.trigger();
+    if (!isValid) {
+      const errors = form.formState.errors;
+      // Check which tab has errors and navigate to it
+      const basicFields = ['name', 'type', 'description', 'primaryTone', 'adaptability', 'voiceStyle'];
+      const promptFields = ['systemPrompt'];
+      
+      const hasBasicError = basicFields.some(field => field in errors);
+      const hasPromptError = promptFields.some(field => field in errors);
+      
+      if (hasBasicError) {
+        setActiveTab('basic');
+      } else if (hasPromptError) {
+        setActiveTab('prompt');
+      }
+      return;
+    }
+    
+    // If valid, submit the form
+    form.handleSubmit(onSubmit)();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
+      <DialogContent className="max-w-2xl flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
@@ -157,8 +184,8 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <form onSubmit={handleFormSubmit} className="flex-1 min-h-0 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="prompt">
@@ -171,7 +198,7 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="h-[400px] mt-4 pr-4">
+              <DialogBody className="mt-4 pr-2">
                 <TabsContent value="basic" className="space-y-4 mt-0">
                   <FormField
                     control={form.control}
@@ -407,10 +434,10 @@ export function PersonaModal({ persona, open, onOpenChange, onSave, isEdit = fal
                     </div>
                   )}
                 </TabsContent>
-              </ScrollArea>
+              </DialogBody>
             </Tabs>
 
-            <DialogFooter className="gap-2 mt-6">
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>

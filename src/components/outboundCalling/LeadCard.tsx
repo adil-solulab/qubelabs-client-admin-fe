@@ -1,7 +1,8 @@
-import { Phone, Clock, UserPlus, MoreVertical } from 'lucide-react';
+import { Phone, Clock, UserPlus, MoreVertical, Lock, PhoneCall } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +11,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Lead } from '@/types/outboundCalling';
 import { LEAD_STATUS_CONFIG, SENTIMENT_CONFIG } from '@/types/outboundCalling';
+import { notify } from '@/hooks/useNotification';
 import { cn } from '@/lib/utils';
 
 interface LeadCardProps {
   lead: Lead;
   onEscalate: () => void;
+  canEscalate?: boolean;
+  canMakeCall?: boolean;
 }
 
-export function LeadCard({ lead, onEscalate }: LeadCardProps) {
+export function LeadCard({ lead, onEscalate, canEscalate = true, canMakeCall = true }: LeadCardProps) {
   const statusConfig = LEAD_STATUS_CONFIG[lead.status];
   const sentimentConfig = lead.sentiment ? SENTIMENT_CONFIG[lead.sentiment] : null;
 
@@ -29,6 +33,22 @@ export function LeadCard({ lead, onEscalate }: LeadCardProps) {
 
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleEscalateClick = () => {
+    if (!canEscalate) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
+    onEscalate();
+  };
+
+  const handleCallClick = () => {
+    if (!canMakeCall) {
+      notify.error('Permission denied', 'You do not have permission to perform this action.');
+      return;
+    }
+    notify.info('Initiating call', `Calling ${lead.name}...`);
   };
 
   return (
@@ -62,6 +82,26 @@ export function LeadCard({ lead, onEscalate }: LeadCardProps) {
                 <Badge variant="outline" className={cn('text-[10px]', statusConfig.color)}>
                   {statusConfig.label}
                 </Badge>
+                
+                {/* Agent can make calls on assigned leads */}
+                {canMakeCall && (lead.status === 'pending' || lead.status === 'no_answer') && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-primary"
+                        onClick={handleCallClick}
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Make call</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -69,8 +109,16 @@ export function LeadCard({ lead, onEscalate }: LeadCardProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEscalate}>
-                      <UserPlus className="w-4 h-4 mr-2" />
+                    <DropdownMenuItem 
+                      onClick={handleEscalateClick}
+                      disabled={!canEscalate}
+                      className={cn(!canEscalate && 'opacity-50')}
+                    >
+                      {canEscalate ? (
+                        <UserPlus className="w-4 h-4 mr-2" />
+                      ) : (
+                        <Lock className="w-4 h-4 mr-2" />
+                      )}
                       Escalate to Agent
                     </DropdownMenuItem>
                   </DropdownMenuContent>

@@ -19,6 +19,7 @@ import {
   MoreVertical,
   Calendar,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,7 @@ export default function BillingPage() {
   } = useBillingData();
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
 
   const handleUpdatePayment = async (data: {
     cardNumber: string;
@@ -97,11 +99,16 @@ export default function BillingPage() {
   };
 
   const handleUpgrade = async (planType: string) => {
-    const result = await upgradePlan(planType as any);
-    if (result.success) {
-      notify.success('Plan upgrade initiated', 'Your plan upgrade is being processed.');
-    } else {
-      notify.error('Upgrade failed', 'Could not upgrade plan. Please try again.');
+    setUpgradingPlan(planType);
+    try {
+      const result = await upgradePlan(planType as any);
+      if (result.success) {
+        notify.success('Plan upgrade initiated', 'Your plan upgrade is being processed.');
+      } else {
+        notify.error('Upgrade failed', 'Could not upgrade plan. Please try again.');
+      }
+    } finally {
+      setUpgradingPlan(null);
     }
   };
 
@@ -349,10 +356,19 @@ export default function BillingPage() {
                     <Button
                       className="w-full"
                       variant={plan.isCurrentPlan ? 'secondary' : 'default'}
-                      disabled={plan.isCurrentPlan}
+                      disabled={plan.isCurrentPlan || upgradingPlan !== null}
                       onClick={() => handleUpgrade(plan.type)}
                     >
-                      {plan.isCurrentPlan ? 'Current Plan' : 'Upgrade'}
+                      {upgradingPlan === plan.type ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Upgrading...
+                        </>
+                      ) : plan.isCurrentPlan ? (
+                        'Current Plan'
+                      ) : (
+                        'Upgrade'
+                      )}
                     </Button>
                   </div>
                 );

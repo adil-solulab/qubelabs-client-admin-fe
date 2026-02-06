@@ -1,9 +1,11 @@
+/* Font import must be first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Futuristic Enterprise SaaS Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -36,18 +38,18 @@
     --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
     
-    /* Status colors */
-    --success: 142 76% 36%;
+    /* Status colors - refined for modern SaaS */
+    --success: 151 55% 41%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 36 77% 49%;
     --warning-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
     /* Sentiment colors */
-    --sentiment-positive: 142 76% 36%;
+    --sentiment-positive: 151 55% 41%;
     --sentiment-neutral: 220 9% 46%;
-    --sentiment-negative: 0 84% 60%;
+    --sentiment-negative: 0 72% 51%;
     
     /* Channel colors */
     --channel-voice: 217 91% 60%;
@@ -178,13 +180,74 @@
   }
   
   .widget-hover {
-    transition: all 0.3s ease;
-    cursor: pointer;
+    @apply transition-all duration-200 cursor-pointer;
   }
   
   .widget-hover:hover {
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
+  }
+  
+  /* Interactive hover scale */
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+  .hover-scale:hover {
+    @apply scale-[1.02];
+  }
+  
+  /* Card hover with glow */
+  .card-interactive {
+    @apply transition-all duration-200 cursor-pointer;
+  }
+  .card-interactive:hover {
+    @apply shadow-glow;
+    transform: translateY(-1px);
+  }
+  
+  /* Button active press effect */
+  .btn-press:active {
+    @apply scale-[0.97];
+  }
+  
+  /* List item animations */
+  .list-item-enter {
+    @apply animate-list-item-in;
+  }
+  
+  .list-item-exit {
+    @apply animate-list-item-out overflow-hidden;
+  }
+  
+  /* Message bubble animations */
+  .message-bubble-left {
+    @apply animate-message-in;
+  }
+  
+  .message-bubble-right {
+    @apply animate-message-in-right;
+  }
+  
+  /* Status indicator transitions */
+  .status-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Panel slide animations */
+  .panel-slide-in {
+    @apply animate-slide-in-right;
+  }
+  
+  /* Underline link animation */
+  .story-link {
+    @apply relative inline-block;
+  }
+  .story-link::after {
+    content: '';
+    @apply absolute w-full h-0.5 bottom-0 left-0 bg-primary origin-bottom-right transition-transform duration-300 scale-x-0;
+  }
+  .story-link:hover::after {
+    @apply origin-bottom-left scale-x-100;
   }
   
   .status-dot {
@@ -204,6 +267,16 @@
   
   .status-dot-error {
     background-color: hsl(var(--destructive));
+  }
+
+  /* Loading state shimmer overlay */
+  .loading-shimmer {
+    @apply relative overflow-hidden;
+  }
+  .loading-shimmer::after {
+    content: '';
+    @apply absolute inset-0 animate-shimmer;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
   }
 }
 

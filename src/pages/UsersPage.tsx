@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Crown,
   Headset,
-  ChevronDown,
+  Lock,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -41,9 +41,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useUsersData } from '@/hooks/useUsersData';
+import { usePermission } from '@/hooks/usePermission';
+import { useAuth } from '@/hooks/useAuth';
 import { notify } from '@/hooks/useNotification';
+import { PermissionButton } from '@/components/auth/PermissionButton';
 import { AddUserModal } from '@/components/users/AddUserModal';
 import { EditUserDrawer } from '@/components/users/EditUserDrawer';
 import { DeleteUserModal } from '@/components/users/DeleteUserModal';
@@ -61,6 +64,9 @@ export default function UsersPage() {
     deleteUser, 
     importUsers 
   } = useUsersData();
+
+  const { canCreate, canEdit, canDelete, withPermission } = usePermission('users');
+  const { notifyRoleChange, currentUser } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
@@ -104,7 +110,23 @@ export default function UsersPage() {
 
   const handleUpdateUser = async (userId: string, userData: Partial<TeamUser>) => {
     try {
+      const existingUser = users.find(u => u.id === userId);
       await updateUser(userId, userData);
+      
+      // If role was changed, notify the session system
+      if (userData.role && existingUser?.role !== userData.role) {
+        // Trigger session refresh for affected user
+        notifyRoleChange(userId, userData.role);
+        
+        // If changing another user's role (not current user), show admin notification
+        if (userId !== currentUser?.id) {
+          notify.info(
+            'Role Updated',
+            `${existingUser?.name}'s session will be refreshed with new permissions.`
+          );
+        }
+      }
+      
       notify.saved('User information');
     } catch (error) {
       notify.error('Failed to update user', 'Please try again.');
@@ -139,13 +161,29 @@ export default function UsersPage() {
   };
 
   const handleEditClick = (user: TeamUser) => {
-    setSelectedUser(user);
-    setEditDrawerOpen(true);
+    withPermission('edit', () => {
+      setSelectedUser(user);
+      setEditDrawerOpen(true);
+    });
   };
 
   const handleDeleteClick = (user: TeamUser) => {
-    setSelectedUser(user);
-    setDeleteModalOpen(true);
+    withPermission('delete', () => {
+      setSelectedUser(user);
+      setDeleteModalOpen(true);
+    });
+  };
+
+  const handleAddClick = () => {
+    withPermission('create', () => {
+      setAddModalOpen(true);
+    });
+  };
+
+  const handleImportClick = () => {
+    withPermission('create', () => {
+      setImportModalOpen(true);
+    });
   };
 
   const getStatusColor = (status: AgentStatus) => {
@@ -201,14 +239,23 @@ export default function UsersPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+            <PermissionButton 
+              screenId="users" 
+              action="create" 
+              variant="outline" 
+              onClick={handleImportClick}
+            >
               <Upload className="w-4 h-4 mr-2" />
               Import
-            </Button>
-            <Button onClick={() => setAddModalOpen(true)}>
+            </PermissionButton>
+            <PermissionButton 
+              screenId="users" 
+              action="create" 
+              onClick={handleAddClick}
+            >
               <UserPlus className="w-4 h-4 mr-2" />
               Add User
-            </Button>
+            </PermissionButton>
           </div>
         </div>
 
@@ -363,8 +410,11 @@ export default function UsersPage() {
                   return (
                     <TableRow 
                       key={user.id} 
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => handleEditClick(user)}
+                      className={cn(
+                        "hover:bg-muted/50",
+                        canEdit ? "cursor-pointer" : "cursor-default"
+                      )}
+                      onClick={() => canEdit && handleEditClick(user)}
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -430,20 +480,30 @@ export default function UsersPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditClick(user);
-                            }}>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditClick(user);
+                              }}
+                              disabled={!canEdit}
+                              className={!canEdit ? 'opacity-50' : ''}
+                            >
+                              {!canEdit && <Lock className="w-3 h-3 mr-1" />}
                               <Pencil className="w-4 h-4 mr-2" />
                               Edit User
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              className="text-destructive focus:text-destructive"
+                              className={cn(
+                                "text-destructive focus:text-destructive",
+                                !canDelete && 'opacity-50'
+                              )}
+                              disabled={!canDelete}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteClick(user);
                               }}
                             >
+                              {!canDelete && <Lock className="w-3 h-3 mr-1" />}
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete User
                             </DropdownMenuItem>
@@ -458,10 +518,10 @@ export default function UsersPage() {
           </Table>
         </Card>
 
-        {/* Pagination Info */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <p>Showing {filteredUsers.length} of {users.length} users</p>
-        </div>
+        {/* Results count */}
+        <p className="text-sm text-muted-foreground">
+          Showing {filteredUsers.length} of {users.length} users
+        </p>
       </div>
 
       {/* Modals */}

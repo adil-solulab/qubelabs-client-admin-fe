@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { MessageSquare, Bot, User, Clock, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageSquare, Bot, User, Clock, ExternalLink, Loader2 } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,36 +28,57 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { ActiveChat } from '@/types/dashboard';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 
 interface ActiveChatsWidgetProps {
   chats: ActiveChat[];
   isLoading?: boolean;
 }
 
-export function ActiveChatsWidget({ chats, isLoading }: ActiveChatsWidgetProps) {
+export function ActiveChatsWidget({ chats: initialChats, isLoading }: ActiveChatsWidgetProps) {
+  const [chatList, setChatList] = useState<ActiveChat[]>(initialChats);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState<ActiveChat | null>(null);
-  const { toast } = useToast();
+  const [isTakingOver, setIsTakingOver] = useState(false);
+  const [isEscalating, setIsEscalating] = useState(false);
 
-  const botHandled = chats.filter(c => c.status === 'bot-handled').length;
-  const humanHandled = chats.filter(c => c.status === 'active').length;
-  const waiting = chats.filter(c => c.status === 'waiting').length;
+  // Sync with prop changes
+  useEffect(() => {
+    setChatList(initialChats);
+  }, [initialChats]);
 
-  const handleTakeOver = (chat: ActiveChat) => {
-    toast({
-      title: 'Chat Takeover',
-      description: `You are now handling the chat with ${chat.customer}.`,
-    });
-    setSelectedChat(null);
+  const botHandled = chatList.filter(c => c.status === 'bot-handled').length;
+  const humanHandled = chatList.filter(c => c.status === 'active').length;
+  const waiting = chatList.filter(c => c.status === 'waiting').length;
+
+  const handleTakeOver = async (chat: ActiveChat) => {
+    setIsTakingOver(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Update chat status to active (human-handled)
+    setChatList(prev => prev.map(c => 
+      c.id === chat.id ? { ...c, status: 'active' as const, agent: 'You' } : c
+    ));
+    setSelectedChat({ ...chat, status: 'active', agent: 'You' });
+    
+    notify.success('Chat Takeover Successful', `You are now handling the chat with ${chat.customer}.`);
+    setIsTakingOver(false);
   };
 
-  const handleEscalate = (chat: ActiveChat) => {
-    toast({
-      title: 'Chat Escalated',
-      description: `Chat with ${chat.customer} has been escalated to a supervisor.`,
-      variant: 'destructive',
-    });
+  const handleEscalate = async (chat: ActiveChat) => {
+    setIsEscalating(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Remove from list (escalated to supervisor)
+    setChatList(prev => prev.filter(c => c.id !== chat.id));
+    setSelectedChat(null);
+    
+    notify.success('Chat Escalated', `Chat with ${chat.customer} has been escalated to a supervisor.`);
+    setIsEscalating(false);
   };
 
   const getStatusBadge = (status: string) => {
@@ -83,7 +104,7 @@ export function ActiveChatsWidget({ chats, isLoading }: ActiveChatsWidgetProps) 
         isLoading={isLoading}
       >
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-foreground">{chats.length}</span>
+          <span className="text-3xl font-bold text-foreground">{chatList.length}</span>
           <span className="text-sm text-muted-foreground">active conversations</span>
         </div>
         <div className="flex items-center gap-4 mt-3">
@@ -129,7 +150,7 @@ export function ActiveChatsWidget({ chats, isLoading }: ActiveChatsWidgetProps) 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {chats.map((chat) => (
+                {chatList.map((chat) => (
                   <TableRow
                     key={chat.id}
                     className="cursor-pointer hover:bg-muted/50"
@@ -226,14 +247,45 @@ export function ActiveChatsWidget({ chats, isLoading }: ActiveChatsWidgetProps) 
               </div>
 
               <div className="flex gap-2 pt-4 border-t">
-                {selectedChat.status === 'bot-handled' && (
-                  <Button className="flex-1" onClick={() => handleTakeOver(selectedChat)}>
-                    <User className="w-4 h-4 mr-2" />
-                    Take Over
-                  </Button>
-                )}
-                <Button variant="outline" className="flex-1" onClick={() => handleEscalate(selectedChat)}>
-                  Escalate
+                <Button 
+                  className="flex-1" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleTakeOver(selectedChat);
+                  }}
+                  disabled={isTakingOver || (selectedChat.status === 'active' && selectedChat.agent === 'You')}
+                >
+                  {isTakingOver ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Taking Over...
+                    </>
+                  ) : (
+                    <>
+                      <User className="w-4 h-4 mr-2" />
+                      {selectedChat.status === 'active' && selectedChat.agent === 'You' ? 'Already Handling' : 'Take Over'}
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEscalate(selectedChat);
+                  }}
+                  disabled={isEscalating}
+                >
+                  {isEscalating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Escalating...
+                    </>
+                  ) : (
+                    'Escalate'
+                  )}
                 </Button>
               </div>
             </div>

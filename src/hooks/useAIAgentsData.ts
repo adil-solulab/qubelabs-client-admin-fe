@@ -136,6 +136,7 @@ export function useAIAgentsData() {
   const [sequences, setSequences] = useState<TaskSequence[]>(generateMockSequences());
   const [isLoading, setIsLoading] = useState(false);
 
+  // Persona CRUD
   const addPersona = useCallback(async (personaData: Omit<Persona, 'id' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -188,14 +189,67 @@ export function useAIAgentsData() {
     return personas.find(p => p.id === id);
   }, [personas]);
 
+  // Sequence CRUD
+  const addSequence = useCallback(async (sequenceData: Omit<TaskSequence, 'id'>) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const newSequence: TaskSequence = {
+      ...sequenceData,
+      id: Date.now().toString(),
+    };
+    
+    setSequences(prev => [...prev, newSequence]);
+    setIsLoading(false);
+    return newSequence;
+  }, []);
+
+  const updateSequence = useCallback(async (sequenceId: string, sequenceData: Partial<TaskSequence>) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    setSequences(prev =>
+      prev.map(sequence =>
+        sequence.id === sequenceId
+          ? { ...sequence, ...sequenceData }
+          : sequence
+      )
+    );
+    setIsLoading(false);
+  }, []);
+
+  const deleteSequence = useCallback(async (sequenceId: string) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    setSequences(prev => prev.filter(sequence => sequence.id !== sequenceId));
+    setIsLoading(false);
+  }, []);
+
+  const toggleSequenceActive = useCallback((sequenceId: string) => {
+    setSequences(prev =>
+      prev.map(sequence =>
+        sequence.id === sequenceId
+          ? { ...sequence, isActive: !sequence.isActive }
+          : sequence
+      )
+    );
+  }, []);
+
   return {
     personas,
     sequences,
     isLoading,
+    // Persona operations
     addPersona,
     updatePersona,
     deletePersona,
     togglePersonaActive,
     getPersonaById,
+    // Sequence operations
+    addSequence,
+    updateSequence,
+    deleteSequence,
+    toggleSequenceActive,
   };
 }

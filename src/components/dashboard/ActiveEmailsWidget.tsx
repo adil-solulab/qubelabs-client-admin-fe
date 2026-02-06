@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Mail, AlertTriangle, Clock, CheckCircle, Send, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mail, AlertTriangle, Clock, CheckCircle, Send, Trash2, ArrowUpRight, Loader2 } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,47 +23,79 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { ActiveEmail } from '@/types/dashboard';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/hooks/useNotification';
 
 interface ActiveEmailsWidgetProps {
   emails: ActiveEmail[];
   isLoading?: boolean;
 }
 
-export function ActiveEmailsWidget({ emails, isLoading }: ActiveEmailsWidgetProps) {
+export function ActiveEmailsWidget({ emails: initialEmails, isLoading }: ActiveEmailsWidgetProps) {
+  const [emailList, setEmailList] = useState<ActiveEmail[]>(initialEmails);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState<ActiveEmail | null>(null);
   const [replyContent, setReplyContent] = useState('');
-  const { toast } = useToast();
+  const [isSending, setIsSending] = useState(false);
+  const [isEscalating, setIsEscalating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const pending = emails.filter(e => e.status === 'pending').length;
-  const highPriority = emails.filter(e => e.priority === 'high').length;
+  // Sync with prop changes
+  useEffect(() => {
+    setEmailList(initialEmails);
+  }, [initialEmails]);
 
-  const handleSendReply = () => {
+  const pending = emailList.filter(e => e.status === 'pending').length;
+  const highPriority = emailList.filter(e => e.priority === 'high').length;
+
+  const handleSendReply = async () => {
     if (!replyContent.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a reply message.',
-        variant: 'destructive',
-      });
+      notify.error('Error', 'Please enter a reply message.');
       return;
     }
     
-    toast({
-      title: 'Reply Sent',
-      description: `Your reply to ${selectedEmail?.from} has been sent.`,
-    });
+    setIsSending(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Update email status to resolved
+    if (selectedEmail) {
+      setEmailList(prev => prev.map(e => 
+        e.id === selectedEmail.id ? { ...e, status: 'resolved' as const } : e
+      ));
+    }
+    
+    notify.success('Reply Sent', `Your reply to ${selectedEmail?.from} has been sent.`);
     setReplyContent('');
     setSelectedEmail(null);
+    setIsSending(false);
   };
 
-  const handleDelete = (email: ActiveEmail) => {
-    toast({
-      title: 'Email Deleted',
-      description: `Email from ${email.from} has been moved to trash.`,
-      variant: 'destructive',
-    });
+  const handleEscalate = async (email: ActiveEmail) => {
+    setIsEscalating(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Remove from list (escalated to supervisor)
+    setEmailList(prev => prev.filter(e => e.id !== email.id));
     setSelectedEmail(null);
+    
+    notify.success('Email Escalated', `Email from ${email.from} has been escalated to a supervisor.`);
+    setIsEscalating(false);
+  };
+
+  const handleDelete = async (email: ActiveEmail) => {
+    setIsDeleting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    setEmailList(prev => prev.filter(e => e.id !== email.id));
+    setSelectedEmail(null);
+    
+    notify.warning('Email Deleted', `Email from ${email.from} has been moved to trash.`);
+    setIsDeleting(false);
   };
 
   const getPriorityBadge = (priority: string) => {
@@ -102,7 +134,7 @@ export function ActiveEmailsWidget({ emails, isLoading }: ActiveEmailsWidgetProp
         isLoading={isLoading}
       >
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-foreground">{emails.length}</span>
+          <span className="text-3xl font-bold text-foreground">{emailList.length}</span>
           <span className="text-sm text-muted-foreground">emails in queue</span>
         </div>
         <div className="flex items-center gap-4 mt-3">
@@ -143,7 +175,7 @@ export function ActiveEmailsWidget({ emails, isLoading }: ActiveEmailsWidgetProp
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {emails.map((email) => (
+                {emailList.map((email) => (
                   <TableRow
                     key={email.id}
                     className="cursor-pointer hover:bg-muted/50"
@@ -219,18 +251,54 @@ export function ActiveEmailsWidget({ emails, isLoading }: ActiveEmailsWidgetProp
             </div>
           )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 flex-wrap sm:flex-nowrap">
             <Button
               variant="outline"
               className="text-destructive hover:text-destructive"
-              onClick={() => selectedEmail && handleDelete(selectedEmail)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (selectedEmail) handleDelete(selectedEmail);
+              }}
+              disabled={isDeleting}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
-            <Button onClick={handleSendReply}>
-              <Send className="w-4 h-4 mr-2" />
-              Send Reply
+            <Button
+              variant="outline"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (selectedEmail) handleEscalate(selectedEmail);
+              }}
+              disabled={isEscalating}
+            >
+              {isEscalating ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <ArrowUpRight className="w-4 h-4 mr-2" />
+              )}
+              {isEscalating ? 'Escalating...' : 'Escalate'}
+            </Button>
+            <Button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSendReply();
+              }}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 mr-2" />
+              )}
+              {isSending ? 'Sending...' : 'Send Reply'}
             </Button>
           </DialogFooter>
         </DialogContent>

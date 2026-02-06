@@ -14,6 +14,8 @@ import {
   Search,
   Filter,
   Webhook,
+  Lock,
+  Loader2,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -37,10 +40,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
+import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
+import { PermissionButton } from '@/components/auth/PermissionButton';
 import { ConnectIntegrationModal } from '@/components/integrations/ConnectIntegrationModal';
 import { DisconnectIntegrationModal } from '@/components/integrations/DisconnectIntegrationModal';
+import { ConfigureIntegrationModal } from '@/components/integrations/ConfigureIntegrationModal';
 import { CreateAPIKeyModal } from '@/components/integrations/CreateAPIKeyModal';
+import { AddWebhookModal } from '@/components/integrations/AddWebhookModal';
 import type { Integration, IntegrationCategory } from '@/types/integrations';
 import { CATEGORY_CONFIG, STATUS_CONFIG, INTEGRATION_ICONS } from '@/types/integrations';
 import { cn } from '@/lib/utils';
@@ -55,15 +62,21 @@ export default function IntegrationsPage() {
     createAPIKey,
     revokeAPIKey,
     toggleAPIKey,
+    createWebhook,
   } = useIntegrationsData();
+
+  const { canCreate, canEdit, canDelete, withPermission } = usePermission('integrations');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<IntegrationCategory | 'all'>('all');
   const [connectModalOpen, setConnectModalOpen] = useState(false);
   const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
   const [createKeyModalOpen, setCreateKeyModalOpen] = useState(false);
+  const [addWebhookModalOpen, setAddWebhookModalOpen] = useState(false);
+  const [configureModalOpen, setConfigureModalOpen] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
+  const [configuringId, setConfiguringId] = useState<string | null>(null);
 
   const filteredIntegrations = integrations.filter(int => {
     const matchesSearch = int.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,13 +108,28 @@ export default function IntegrationsPage() {
   };
 
   const handleConnectClick = (integration: Integration) => {
-    setSelectedIntegration(integration);
-    setConnectModalOpen(true);
+    withPermission('edit', () => {
+      setSelectedIntegration(integration);
+      setConnectModalOpen(true);
+    });
   };
 
   const handleDisconnectClick = (integration: Integration) => {
-    setSelectedIntegration(integration);
-    setDisconnectModalOpen(true);
+    withPermission('edit', () => {
+      setSelectedIntegration(integration);
+      setDisconnectModalOpen(true);
+    });
+  };
+
+  const handleConfigureClick = async (integration: Integration) => {
+    withPermission('edit', async () => {
+      setConfiguringId(integration.id);
+      // Simulate loading configuration
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setConfiguringId(null);
+      setSelectedIntegration(integration);
+      setConfigureModalOpen(true);
+    });
   };
 
   const handleCreateKey = async (name: string, permissions: string[]) => {
@@ -114,19 +142,29 @@ export default function IntegrationsPage() {
     return result;
   };
 
+  const handleCreateKeyClick = () => {
+    withPermission('create', () => {
+      setCreateKeyModalOpen(true);
+    });
+  };
+
   const handleRevokeKey = async (keyId: string) => {
-    await revokeAPIKey(keyId);
-    notify.deleted('API Key');
+    withPermission('delete', async () => {
+      await revokeAPIKey(keyId);
+      notify.deleted('API Key');
+    });
   };
 
   const handleToggleKey = async (keyId: string) => {
-    await toggleAPIKey(keyId);
-    const key = apiKeys.find(k => k.id === keyId);
-    if (key?.isActive) {
-      notify.info('API Key disabled');
-    } else {
-      notify.success('API Key enabled');
-    }
+    withPermission('edit', async () => {
+      await toggleAPIKey(keyId);
+      const key = apiKeys.find(k => k.id === keyId);
+      if (key?.isActive) {
+        notify.info('API Key disabled');
+      } else {
+        notify.success('API Key enabled');
+      }
+    });
   };
 
   const handleCopyKey = async (keyId: string, key: string) => {
@@ -134,6 +172,22 @@ export default function IntegrationsPage() {
     setCopiedKeyId(keyId);
     setTimeout(() => setCopiedKeyId(null), 2000);
     notify.copied();
+  };
+
+  const handleAddWebhook = async (name: string, url: string, events: string[]) => {
+    const result = await createWebhook(name, url, events);
+    if (result.success) {
+      notify.created('Webhook Endpoint');
+    } else {
+      notify.error('Failed to create webhook', 'Please try again.');
+    }
+    return result;
+  };
+
+  const handleAddWebhookClick = () => {
+    withPermission('create', () => {
+      setAddWebhookModalOpen(true);
+    });
   };
 
   const formatDate = (dateStr: string) => {
@@ -249,14 +303,25 @@ export default function IntegrationsPage() {
                       <div className="flex gap-2">
                         {isConnected ? (
                           <>
-                            <Button variant="outline" size="sm" className="flex-1">
-                              <Settings className="w-3.5 h-3.5 mr-1" />
-                              Configure
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
+                              disabled={configuringId === integration.id}
+                              onClick={() => handleConfigureClick(integration)}
+                            >
+                              {configuringId === integration.id ? (
+                                <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                              ) : (
+                                <Settings className="w-3.5 h-3.5 mr-1" />
+                              )}
+                              {configuringId === integration.id ? 'Loading...' : 'Configure'}
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDisconnectClick(integration)}
+                              disabled={configuringId === integration.id}
                             >
                               <Unplug className="w-3.5 h-3.5" />
                             </Button>
@@ -390,10 +455,16 @@ export default function IntegrationsPage() {
                     <CardTitle className="text-base font-medium">Webhook Endpoints</CardTitle>
                     <CardDescription>Configure endpoints to receive real-time events</CardDescription>
                   </div>
-                  <Button size="sm">
+                  <PermissionButton
+                    screenId="integrations"
+                    action="create"
+                    size="sm"
+                    onClick={handleAddWebhookClick}
+                    unauthorizedMessage="You don’t have permission to add webhook endpoints."
+                  >
                     <Plus className="w-4 h-4 mr-1" />
                     Add Endpoint
-                  </Button>
+                  </PermissionButton>
                 </div>
               </CardHeader>
               <CardContent>
@@ -457,6 +528,18 @@ export default function IntegrationsPage() {
         open={createKeyModalOpen}
         onOpenChange={setCreateKeyModalOpen}
         onCreate={handleCreateKey}
+      />
+
+      <ConfigureIntegrationModal
+        integration={selectedIntegration}
+        open={configureModalOpen}
+        onOpenChange={setConfigureModalOpen}
+      />
+
+      <AddWebhookModal
+        open={addWebhookModalOpen}
+        onOpenChange={setAddWebhookModalOpen}
+        onAdd={handleAddWebhook}
       />
     </AppLayout>
   );

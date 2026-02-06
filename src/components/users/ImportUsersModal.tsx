@@ -178,7 +178,22 @@ export function ImportUsersModal({ open, onOpenChange, onImport }: ImportUsersMo
                 <FileSpreadsheet className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">Need a template?</span>
               </div>
-              <Button variant="ghost" size="sm" className="text-primary">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-primary"
+                onClick={() => {
+                  // Create and download CSV template
+                  const template = 'email,firstName,lastName,role,department,phone\njohn@example.com,John,Doe,Agent,Support,+1234567890\n';
+                  const blob = new Blob([template], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'users-import-template.csv';
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                }}
+              >
                 <Download className="w-4 h-4 mr-1" />
                 Download
               </Button>

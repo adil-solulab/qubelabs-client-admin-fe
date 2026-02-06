@@ -12,7 +12,7 @@ const generateMockConversations = (): LiveConversation[] => [
   {
     id: 'conv-1',
     customerId: 'cust-1',
-    customerName: 'Emily Watson',
+    customerName: 'María García',
     agentId: 'ai-1',
     agentName: 'AI Assistant',
     channel: 'voice',
@@ -20,15 +20,15 @@ const generateMockConversations = (): LiveConversation[] => [
     sentiment: 'neutral',
     startedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
     duration: 300,
-    topic: 'Billing Inquiry',
+    topic: 'Billing Inquiry (Spanish)',
     isAiHandled: true,
     supervisorMode: null,
     messages: [
-      { id: 'm1', role: 'customer', content: 'Hi, I have a question about my recent bill.', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
-      { id: 'm2', role: 'agent', content: 'Hello Emily! I\'d be happy to help you with your billing inquiry. Could you please provide your account number?', timestamp: new Date(Date.now() - 4.5 * 60 * 1000).toISOString() },
-      { id: 'm3', role: 'customer', content: 'Sure, it\'s 12345678.', timestamp: new Date(Date.now() - 4 * 60 * 1000).toISOString() },
+      { id: 'm1', role: 'customer', content: 'Hola, tengo una pregunta sobre mi factura reciente.', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
+      { id: 'm2', role: 'agent', content: 'Hello María! I\'d be happy to help you with your billing inquiry. Could you please provide your account number?', timestamp: new Date(Date.now() - 4.5 * 60 * 1000).toISOString() },
+      { id: 'm3', role: 'customer', content: 'Claro, es 12345678.', timestamp: new Date(Date.now() - 4 * 60 * 1000).toISOString() },
       { id: 'm4', role: 'agent', content: 'Thank you. I can see your account. I notice there\'s a $50 charge from last week. Is that what you\'re asking about?', timestamp: new Date(Date.now() - 3.5 * 60 * 1000).toISOString() },
-      { id: 'm5', role: 'customer', content: 'Yes, exactly. I don\'t recognize that charge.', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString(), sentiment: 'negative' },
+      { id: 'm5', role: 'customer', content: 'Sí, exactamente. No reconozco ese cargo.', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString(), sentiment: 'negative' },
     ],
   },
   {
@@ -313,6 +313,37 @@ export function useLiveOpsData() {
     }
   }, [selectedConversation]);
 
+  const endConversation = useCallback(async (conversationId: string) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const endMessage: ConversationMessage = {
+      id: `end-${Date.now()}`,
+      role: 'system',
+      content: 'Conversation ended',
+      timestamp: new Date().toISOString(),
+    };
+
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? { 
+            ...conv, 
+            status: 'ended' as const,
+            supervisorMode: null,
+            messages: [...conv.messages, endMessage]
+          }
+        : conv
+    ));
+    
+    // Remove conversation from list after animation
+    setTimeout(() => {
+      setConversations(prev => prev.filter(conv => conv.id !== conversationId));
+    }, 300);
+    
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(null);
+    }
+  }, [selectedConversation]);
+
   return {
     conversations,
     agents,
@@ -324,5 +355,6 @@ export function useLiveOpsData() {
     bargeIn,
     transferToAgent,
     stopSupervision,
+    endConversation,
   };
 }

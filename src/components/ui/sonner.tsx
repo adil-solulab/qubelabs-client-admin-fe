@@ -1,6 +1,7 @@
 import { Toaster as Sonner, toast } from "sonner";
 import { CheckCircle2, XCircle, AlertTriangle, Info, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect, useRef } from "react";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
@@ -8,31 +9,19 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       position="top-right"
-      expand={false}
+      expand={true}
       richColors={false}
       closeButton={false}
       duration={4000}
       gap={8}
       visibleToasts={5}
+      offset={20}
       toastOptions={{
         unstyled: true,
         classNames: {
-          toast: cn(
-            "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-            "rounded-xl border bg-background p-4 shadow-lg",
-            "animate-in slide-in-from-right-full fade-in-0 duration-300",
-            "data-[removed=true]:animate-out data-[removed=true]:slide-out-to-right-full data-[removed=true]:fade-out-0 data-[removed=true]:duration-200",
-            "max-w-[380px]"
-          ),
-          title: "text-sm font-semibold text-foreground",
-          description: "text-sm text-muted-foreground mt-1",
-          actionButton: "bg-primary text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors",
-          cancelButton: "bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-md hover:bg-muted/80 transition-colors",
-          closeButton: cn(
-            "absolute right-2 top-2 rounded-md p-1 opacity-0 transition-opacity",
-            "hover:bg-muted focus:opacity-100 focus:outline-none focus:ring-2",
-            "group-hover:opacity-100"
-          ),
+          toast: "pointer-events-auto",
+          title: "",
+          description: "",
         },
       }}
       {...props}
@@ -40,74 +29,206 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-// Toast icon components
-const ToastIcon = {
-  success: () => (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/15">
-      <CheckCircle2 className="h-5 w-5 text-success" />
-    </div>
-  ),
-  error: () => (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/15">
-      <XCircle className="h-5 w-5 text-destructive" />
-    </div>
-  ),
-  warning: () => (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/15">
-      <AlertTriangle className="h-5 w-5 text-warning" />
-    </div>
-  ),
-  info: () => (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15">
-      <Info className="h-5 w-5 text-primary" />
-    </div>
-  ),
-  loading: () => (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-      <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
-    </div>
-  ),
-};
+// Premium toast container with hover pause functionality
+const ToastContainer = ({ 
+  children, 
+  variant, 
+  duration,
+  onDismiss,
+  toastId,
+  showProgress = true,
+}: { 
+  children: React.ReactNode;
+  variant: 'success' | 'error' | 'warning' | 'info' | 'loading';
+  duration: number;
+  onDismiss: () => void;
+  toastId: string | number;
+  showProgress?: boolean;
+}) => {
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(100);
+  const startTimeRef = useRef<number>(Date.now());
+  const remainingTimeRef = useRef<number>(duration);
+  const animationRef = useRef<number>();
 
-// Progress bar component for auto-dismiss timer
-const ProgressBar = ({ duration, variant }: { duration: number; variant: 'success' | 'error' | 'warning' | 'info' }) => {
-  const colorMap = {
-    success: 'bg-success',
-    error: 'bg-destructive',
-    warning: 'bg-warning',
-    info: 'bg-primary',
+  const accentColors = {
+    success: 'hsl(var(--success))',
+    error: 'hsl(var(--destructive))',
+    warning: 'hsl(var(--warning))',
+    info: 'hsl(var(--primary))',
+    loading: 'hsl(var(--muted-foreground))',
+  };
+
+  const borderAccents = {
+    success: 'border-l-success',
+    error: 'border-l-destructive',
+    warning: 'border-l-warning',
+    info: 'border-l-primary',
+    loading: 'border-l-muted-foreground',
+  };
+
+  useEffect(() => {
+    if (duration === Infinity || !showProgress) return;
+
+    const animate = () => {
+      if (isPaused) return;
+      
+      const elapsed = Date.now() - startTimeRef.current;
+      const remaining = Math.max(0, remainingTimeRef.current - elapsed);
+      const progressPercent = (remaining / duration) * 100;
+      
+      setProgress(progressPercent);
+      
+      if (remaining > 0) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [duration, isPaused, showProgress]);
+
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    remainingTimeRef.current = (progress / 100) * duration;
+  };
+
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+    startTimeRef.current = Date.now();
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted/50 overflow-hidden rounded-b-xl">
-      <div
-        className={cn("h-full", colorMap[variant])}
-        style={{
-          animation: `shrink ${duration}ms linear forwards`,
-        }}
-      />
-      <style>{`
-        @keyframes shrink {
-          from { width: 100%; }
-          to { width: 0%; }
-        }
-      `}</style>
+    <div
+      className={cn(
+        "group relative flex w-full items-start gap-3 overflow-hidden",
+        "rounded-lg border border-l-[3px] bg-background/95 backdrop-blur-sm",
+        "p-4 shadow-lg transition-all duration-200",
+        "hover:shadow-xl hover:translate-y-[-1px]",
+        "animate-in slide-in-from-right-full fade-in-0 duration-200 ease-out",
+        "data-[removed=true]:animate-out data-[removed=true]:slide-out-to-right-full data-[removed=true]:fade-out-0 data-[removed=true]:duration-150",
+        "max-w-[360px] min-w-[300px]",
+        borderAccents[variant]
+      )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      role="alert"
+      aria-live={variant === 'error' ? 'assertive' : 'polite'}
+    >
+      {children}
+      
+      {/* Close button */}
+      <button
+        onClick={onDismiss}
+        className={cn(
+          "absolute right-3 top-3 rounded-md p-1",
+          "opacity-0 transition-all duration-150",
+          "hover:bg-muted/80 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring/20",
+          "group-hover:opacity-100"
+        )}
+        aria-label="Dismiss notification"
+      >
+        <X className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+
+      {/* Premium progress bar */}
+      {showProgress && duration !== Infinity && variant !== 'loading' && (
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-muted/30 overflow-hidden">
+          <div
+            className="h-full transition-all duration-100 ease-linear"
+            style={{
+              width: `${progress}%`,
+              backgroundColor: accentColors[variant],
+              opacity: isPaused ? 0.5 : 0.8,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
-// Close button component
-const CloseButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className="absolute right-2 top-2 rounded-md p-1 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 focus:outline-none group-hover:opacity-100"
-    aria-label="Close notification"
-  >
-    <X className="h-4 w-4 text-muted-foreground" />
-  </button>
-);
+// Premium icon components with refined styling
+const ToastIcon = {
+  success: () => (
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success/10 ring-1 ring-success/20">
+      <CheckCircle2 className="h-4 w-4 text-success" strokeWidth={2.5} />
+    </div>
+  ),
+  error: () => (
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-destructive/10 ring-1 ring-destructive/20">
+      <XCircle className="h-4 w-4 text-destructive" strokeWidth={2.5} />
+    </div>
+  ),
+  warning: () => (
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-warning/10 ring-1 ring-warning/20">
+      <AlertTriangle className="h-4 w-4 text-warning" strokeWidth={2.5} />
+    </div>
+  ),
+  info: () => (
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
+      <Info className="h-4 w-4 text-primary" strokeWidth={2.5} />
+    </div>
+  ),
+  loading: () => (
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border">
+      <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" strokeWidth={2.5} />
+    </div>
+  ),
+};
 
-// Enhanced toast functions
+// Toast content component
+const ToastContent = ({
+  title,
+  description,
+  action,
+  variant,
+  onActionClick,
+}: {
+  title: string;
+  description?: string;
+  action?: { label: string; onClick: () => void };
+  variant: 'success' | 'error' | 'warning' | 'info' | 'loading';
+  onActionClick?: () => void;
+}) => {
+  const actionColors = {
+    success: 'text-success hover:text-success/80',
+    error: 'text-destructive hover:text-destructive/80',
+    warning: 'text-warning hover:text-warning/80',
+    info: 'text-primary hover:text-primary/80',
+    loading: 'text-muted-foreground',
+  };
+
+  return (
+    <div className="flex-1 min-w-0 pr-6">
+      <p className="text-[13px] font-medium text-foreground leading-tight">{title}</p>
+      {description && (
+        <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">{description}</p>
+      )}
+      {action && (
+        <button
+          onClick={onActionClick}
+          className={cn(
+            "mt-2 text-[12px] font-medium transition-colors",
+            actionColors[variant]
+          )}
+        >
+          {action.label} →
+        </button>
+      )}
+    </div>
+  );
+};
+
+// Enhanced toast options interface
 interface ToastOptions {
   title: string;
   description?: string;
@@ -121,83 +242,60 @@ interface ToastOptions {
   onDismiss?: () => void;
 }
 
+// Premium toast functions
 const showToast = {
   success: (options: ToastOptions) => {
-    const duration = options.persistent ? Infinity : (options.duration ?? 4000);
+    const duration = options.persistent ? Infinity : (options.duration ?? 3500);
     return toast.custom(
       (t) => (
-        <div
-          className={cn(
-            "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-            "rounded-xl border border-success/20 bg-background p-4 shadow-lg",
-            "animate-in slide-in-from-right-full fade-in-0 duration-300",
-            "max-w-[380px]"
-          )}
-          onMouseEnter={() => toast.dismiss(t)}
-          role="alert"
-          aria-live="polite"
+        <ToastContainer
+          variant="success"
+          duration={duration}
+          onDismiss={() => toast.dismiss(t)}
+          toastId={t}
+          showProgress={options.showProgress ?? true}
         >
           <ToastIcon.success />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{options.title}</p>
-            {options.description && (
-              <p className="text-sm text-muted-foreground mt-1">{options.description}</p>
-            )}
-            {options.action && (
-              <button
-                onClick={() => {
-                  options.action?.onClick();
-                  toast.dismiss(t);
-                }}
-                className="mt-2 text-xs font-medium text-success hover:text-success/80 transition-colors"
-              >
-                {options.action.label}
-              </button>
-            )}
-          </div>
-          <CloseButton onClick={() => toast.dismiss(t)} />
-          {options.showProgress && !options.persistent && <ProgressBar duration={duration} variant="success" />}
-        </div>
+          <ToastContent
+            title={options.title}
+            description={options.description}
+            action={options.action}
+            variant="success"
+            onActionClick={() => {
+              options.action?.onClick();
+              toast.dismiss(t);
+            }}
+          />
+        </ToastContainer>
       ),
       { duration, onDismiss: options.onDismiss }
     );
   },
 
   error: (options: ToastOptions) => {
+    // Errors auto-dismiss after 6 seconds by default
     const duration = options.persistent ? Infinity : (options.duration ?? 6000);
     return toast.custom(
       (t) => (
-        <div
-          className={cn(
-            "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-            "rounded-xl border border-destructive/20 bg-background p-4 shadow-lg",
-            "animate-in slide-in-from-right-full fade-in-0 duration-300",
-            "max-w-[380px]"
-          )}
-          role="alert"
-          aria-live="assertive"
+        <ToastContainer
+          variant="error"
+          duration={duration}
+          onDismiss={() => toast.dismiss(t)}
+          toastId={t}
+          showProgress={options.showProgress ?? true}
         >
           <ToastIcon.error />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{options.title}</p>
-            {options.description && (
-              <p className="text-sm text-muted-foreground mt-1">{options.description}</p>
-            )}
-            {options.action && (
-              <button
-                onClick={() => {
-                  options.action?.onClick();
-                  toast.dismiss(t);
-                }}
-                className="mt-2 text-xs font-medium text-destructive hover:text-destructive/80 transition-colors"
-              >
-                {options.action.label}
-              </button>
-            )}
-          </div>
-          <CloseButton onClick={() => toast.dismiss(t)} />
-          {options.showProgress && !options.persistent && <ProgressBar duration={duration} variant="error" />}
-        </div>
+          <ToastContent
+            title={options.title}
+            description={options.description}
+            action={options.action}
+            variant="error"
+            onActionClick={() => {
+              options.action?.onClick();
+              toast.dismiss(t);
+            }}
+          />
+        </ToastContainer>
       ),
       { duration, onDismiss: options.onDismiss }
     );
@@ -207,77 +305,53 @@ const showToast = {
     const duration = options.persistent ? Infinity : (options.duration ?? 5000);
     return toast.custom(
       (t) => (
-        <div
-          className={cn(
-            "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-            "rounded-xl border border-warning/20 bg-background p-4 shadow-lg",
-            "animate-in slide-in-from-right-full fade-in-0 duration-300",
-            "max-w-[380px]"
-          )}
-          role="alert"
-          aria-live="polite"
+        <ToastContainer
+          variant="warning"
+          duration={duration}
+          onDismiss={() => toast.dismiss(t)}
+          toastId={t}
+          showProgress={options.showProgress ?? true}
         >
           <ToastIcon.warning />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{options.title}</p>
-            {options.description && (
-              <p className="text-sm text-muted-foreground mt-1">{options.description}</p>
-            )}
-            {options.action && (
-              <button
-                onClick={() => {
-                  options.action?.onClick();
-                  toast.dismiss(t);
-                }}
-                className="mt-2 text-xs font-medium text-warning hover:text-warning/80 transition-colors"
-              >
-                {options.action.label}
-              </button>
-            )}
-          </div>
-          <CloseButton onClick={() => toast.dismiss(t)} />
-          {options.showProgress && !options.persistent && <ProgressBar duration={duration} variant="warning" />}
-        </div>
+          <ToastContent
+            title={options.title}
+            description={options.description}
+            action={options.action}
+            variant="warning"
+            onActionClick={() => {
+              options.action?.onClick();
+              toast.dismiss(t);
+            }}
+          />
+        </ToastContainer>
       ),
       { duration, onDismiss: options.onDismiss }
     );
   },
 
   info: (options: ToastOptions) => {
-    const duration = options.persistent ? Infinity : (options.duration ?? 4000);
+    const duration = options.persistent ? Infinity : (options.duration ?? 3500);
     return toast.custom(
       (t) => (
-        <div
-          className={cn(
-            "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-            "rounded-xl border border-primary/20 bg-background p-4 shadow-lg",
-            "animate-in slide-in-from-right-full fade-in-0 duration-300",
-            "max-w-[380px]"
-          )}
-          role="status"
-          aria-live="polite"
+        <ToastContainer
+          variant="info"
+          duration={duration}
+          onDismiss={() => toast.dismiss(t)}
+          toastId={t}
+          showProgress={options.showProgress ?? true}
         >
           <ToastIcon.info />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{options.title}</p>
-            {options.description && (
-              <p className="text-sm text-muted-foreground mt-1">{options.description}</p>
-            )}
-            {options.action && (
-              <button
-                onClick={() => {
-                  options.action?.onClick();
-                  toast.dismiss(t);
-                }}
-                className="mt-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                {options.action.label}
-              </button>
-            )}
-          </div>
-          <CloseButton onClick={() => toast.dismiss(t)} />
-          {options.showProgress && !options.persistent && <ProgressBar duration={duration} variant="info" />}
-        </div>
+          <ToastContent
+            title={options.title}
+            description={options.description}
+            action={options.action}
+            variant="info"
+            onActionClick={() => {
+              options.action?.onClick();
+              toast.dismiss(t);
+            }}
+          />
+        </ToastContainer>
       ),
       { duration, onDismiss: options.onDismiss }
     );
@@ -286,24 +360,20 @@ const showToast = {
   loading: (title: string, description?: string) => {
     return toast.custom(
       (t) => (
-        <div
-          className={cn(
-            "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-            "rounded-xl border bg-background p-4 shadow-lg",
-            "animate-in slide-in-from-right-full fade-in-0 duration-300",
-            "max-w-[380px]"
-          )}
-          role="status"
-          aria-live="polite"
+        <ToastContainer
+          variant="loading"
+          duration={Infinity}
+          onDismiss={() => toast.dismiss(t)}
+          toastId={t}
+          showProgress={false}
         >
           <ToastIcon.loading />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{title}</p>
-            {description && (
-              <p className="text-sm text-muted-foreground mt-1">{description}</p>
-            )}
-          </div>
-        </div>
+          <ToastContent
+            title={title}
+            description={description}
+            variant="loading"
+          />
+        </ToastContainer>
       ),
       { duration: Infinity }
     );

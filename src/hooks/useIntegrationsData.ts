@@ -218,6 +218,22 @@ export function useIntegrationsData() {
     return { success: true };
   }, []);
 
+  const createWebhook = useCallback(async (name: string, url: string, events: string[]): Promise<{ success: boolean }> => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const newWebhook: WebhookEndpoint = {
+      id: `wh-${Date.now()}`,
+      name,
+      url,
+      events,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    setWebhooks(prev => [newWebhook, ...prev]);
+    return { success: true };
+  }, []);
+
   return {
     integrations,
     apiKeys,
@@ -227,5 +243,6 @@ export function useIntegrationsData() {
     createAPIKey,
     revokeAPIKey,
     toggleAPIKey,
+    createWebhook,
   };
 }

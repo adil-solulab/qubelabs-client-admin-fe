@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MessageSquare,
   Palette,
@@ -33,6 +33,43 @@ interface ChatConfigPanelProps {
   onUpdate: (updates: Partial<ChatConfig>) => Promise<void>;
   isSaving: boolean;
   onSave: () => void;
+}
+
+// Component for debounced text input to prevent lag
+function DebouncedInput({
+  value,
+  onChange,
+  placeholder,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localValue !== value) {
+        onChange(localValue);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localValue, value, onChange]);
+
+  return (
+    <Input
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
 }
 
 const BORDER_RADIUS_OPTIONS = [
@@ -97,10 +134,9 @@ export function ChatConfigPanel({
                     className="w-10 h-10 rounded-lg border cursor-pointer"
                     style={{ backgroundColor: config.theme.primaryColor }}
                   />
-                  <Input
-                    type="text"
+                  <DebouncedInput
                     value={config.theme.primaryColor}
-                    onChange={(e) => updateTheme({ primaryColor: e.target.value })}
+                    onChange={(value) => updateTheme({ primaryColor: value })}
                     className="flex-1"
                   />
                 </div>
@@ -112,10 +148,9 @@ export function ChatConfigPanel({
                     className="w-10 h-10 rounded-lg border cursor-pointer"
                     style={{ backgroundColor: config.theme.headerColor }}
                   />
-                  <Input
-                    type="text"
+                  <DebouncedInput
                     value={config.theme.headerColor}
-                    onChange={(e) => updateTheme({ headerColor: e.target.value })}
+                    onChange={(value) => updateTheme({ headerColor: value })}
                     className="flex-1"
                   />
                 </div>
@@ -127,10 +162,9 @@ export function ChatConfigPanel({
                     className="w-10 h-10 rounded-lg border cursor-pointer"
                     style={{ backgroundColor: config.theme.backgroundColor }}
                   />
-                  <Input
-                    type="text"
+                  <DebouncedInput
                     value={config.theme.backgroundColor}
-                    onChange={(e) => updateTheme({ backgroundColor: e.target.value })}
+                    onChange={(value) => updateTheme({ backgroundColor: value })}
                     className="flex-1"
                   />
                 </div>
@@ -142,10 +176,9 @@ export function ChatConfigPanel({
                     className="w-10 h-10 rounded-lg border cursor-pointer"
                     style={{ backgroundColor: config.theme.textColor }}
                   />
-                  <Input
-                    type="text"
+                  <DebouncedInput
                     value={config.theme.textColor}
-                    onChange={(e) => updateTheme({ textColor: e.target.value })}
+                    onChange={(value) => updateTheme({ textColor: value })}
                     className="flex-1"
                   />
                 </div>
@@ -264,27 +297,27 @@ export function ChatConfigPanel({
 
             <div className="space-y-2">
               <Label>Bot Name</Label>
-              <Input
+              <DebouncedInput
                 value={config.botName}
-                onChange={(e) => onUpdate({ botName: e.target.value })}
+                onChange={(value) => onUpdate({ botName: value })}
                 placeholder="AI Assistant"
               />
             </div>
 
             <div className="space-y-2">
               <Label>Initial Message</Label>
-              <Input
+              <DebouncedInput
                 value={config.initialMessage}
-                onChange={(e) => onUpdate({ initialMessage: e.target.value })}
+                onChange={(value) => onUpdate({ initialMessage: value })}
                 placeholder="Hello! How can I help you?"
               />
             </div>
 
             <div className="space-y-2">
               <Label>Input Placeholder</Label>
-              <Input
+              <DebouncedInput
                 value={config.inputPlaceholder}
-                onChange={(e) => onUpdate({ inputPlaceholder: e.target.value })}
+                onChange={(value) => onUpdate({ inputPlaceholder: value })}
                 placeholder="Type your message..."
               />
             </div>

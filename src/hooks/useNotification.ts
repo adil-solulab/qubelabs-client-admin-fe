@@ -118,9 +118,9 @@ export function useNotification() {
   };
 }
 
-// Quick toast functions for common actions
+// Quick toast functions for common actions - Premium enterprise styling
 export const notify = {
-  // Generic success/error/warning/info
+  // Generic success/error/warning/info with refined messaging
   success: (message: string, description?: string) => showToast.success({
     title: message,
     description,
@@ -145,80 +145,77 @@ export const notify = {
     showProgress: true,
   }),
 
-  // Specific action shortcuts
+  // Specific action shortcuts with professional messaging
   copied: () => showToast.success({
     title: 'Copied to clipboard',
-    description: 'The content has been copied successfully',
     duration: 2000,
     showProgress: false,
   }),
 
   saved: (itemName?: string) => showToast.success({
     title: 'Changes saved',
-    description: itemName ? `${itemName} has been updated successfully` : 'Your changes have been saved',
+    description: itemName ? `${itemName} updated successfully` : undefined,
     showProgress: true,
   }),
 
   created: (itemName: string) => showToast.success({
     title: `${itemName} created`,
-    description: `The ${itemName.toLowerCase()} has been created successfully`,
     showProgress: true,
   }),
 
   deleted: (itemName: string) => showToast.success({
-    title: itemName,
-    description: 'Successfully removed',
+    title: `${itemName} deleted`,
     showProgress: true,
   }),
 
   uploaded: (fileName?: string) => showToast.success({
     title: 'Upload complete',
-    description: fileName ? `${fileName} has been uploaded successfully` : 'File uploaded successfully',
+    description: fileName || undefined,
     showProgress: true,
   }),
 
   published: (itemName?: string) => showToast.success({
     title: 'Published successfully',
-    description: itemName ? `${itemName} is now live` : 'Changes are now live',
+    description: itemName ? `${itemName} is now live` : undefined,
     showProgress: true,
   }),
 
   connected: (serviceName: string) => showToast.success({
-    title: 'Connected',
-    description: `Successfully connected to ${serviceName}`,
+    title: `Connected to ${serviceName}`,
     showProgress: true,
   }),
 
   disconnected: (serviceName: string) => showToast.info({
-    title: 'Disconnected',
-    description: `${serviceName} has been disconnected`,
+    title: `Disconnected from ${serviceName}`,
     showProgress: true,
   }),
 
   networkError: () => showToast.error({
-    title: 'Network error',
-    description: 'Please check your internet connection and try again',
+    title: 'Connection failed',
+    description: 'Check your internet connection and try again',
     persistent: false,
-    showProgress: true,
   }),
 
   serverError: () => showToast.error({
-    title: 'Server error',
-    description: 'Something went wrong. Please try again later',
+    title: 'Something went wrong',
+    description: 'Please try again in a moment',
     persistent: false,
-    showProgress: true,
   }),
 
   unauthorized: () => showToast.error({
-    title: 'Unauthorized',
-    description: 'You do not have permission to perform this action',
+    title: 'Access denied',
+    description: 'You don\'t have permission for this action',
     persistent: false,
-    showProgress: true,
   }),
 
   validationError: (message?: string) => showToast.error({
-    title: 'Validation error',
+    title: 'Invalid input',
     description: message || 'Please check your input and try again',
-    showProgress: true,
+    persistent: false,
   }),
+  
+  // Additional premium shortcuts
+  loading: (message: string) => showToast.loading(message),
+  
+  dismiss: (id?: string | number) => showToast.dismiss(id),
 };

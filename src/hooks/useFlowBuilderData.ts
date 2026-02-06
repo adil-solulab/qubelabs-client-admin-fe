@@ -153,6 +153,21 @@ export function useFlowBuilderData() {
         content: type === 'message' ? 'Enter your message here...' : undefined,
         condition: type === 'condition' ? { variable: '', operator: 'equals', value: '' } : undefined,
         apiConfig: type === 'api_call' ? { method: 'GET', url: '' } : undefined,
+        dtmfConfig: type === 'dtmf' ? { 
+          prompt: 'Press 1 for sales, 2 for support, or 0 for operator.',
+          timeout: 10,
+          maxDigits: 1,
+          branches: [
+            { key: '1', label: 'Sales' },
+            { key: '2', label: 'Support' },
+            { key: '0', label: 'Operator' },
+          ]
+        } : undefined,
+        assistantConfig: type === 'assistant' ? {
+          personaId: '',
+          personaName: 'Select Assistant',
+          handoffCondition: 'escalation_requested',
+        } : undefined,
       },
       connections: [],
     };
@@ -198,13 +213,24 @@ export function useFlowBuilderData() {
   }, []);
 
   const updateNodeData = useCallback((nodeId: string, dataUpdates: Partial<NodeData>) => {
-    setFlow(prev => ({
-      ...prev,
-      nodes: prev.nodes.map(node =>
+    setFlow(prev => {
+      const newNodes = prev.nodes.map(node =>
         node.id === nodeId ? { ...node, data: { ...node.data, ...dataUpdates } } : node
-      ),
-      status: 'draft',
-    }));
+      );
+      return {
+        ...prev,
+        nodes: newNodes,
+        status: 'draft',
+      };
+    });
+    
+    // Keep selected node in sync
+    setSelectedNode(prev => {
+      if (prev && prev.id === nodeId) {
+        return { ...prev, data: { ...prev.data, ...dataUpdates } };
+      }
+      return prev;
+    });
   }, []);
 
   const deleteNode = useCallback((nodeId: string) => {

@@ -35,10 +35,9 @@ export function DeletePersonaModal({ persona, open, onOpenChange, onDelete }: De
     }
   };
 
-  if (!persona) return null;
-
+  // Always render AlertDialog to avoid ref issues, but only show when open & persona exists
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open && persona !== null} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
@@ -53,20 +52,22 @@ export function DeletePersonaModal({ persona, open, onOpenChange, onDelete }: De
         </AlertDialogHeader>
 
         {/* Persona Preview */}
-        <div className="my-4 p-4 rounded-xl border border-destructive/20 bg-destructive/5">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
-              <Bot className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold">{persona.name}</h4>
-              <p className="text-sm text-muted-foreground line-clamp-1">{persona.description}</p>
-              <Badge variant="outline" className="mt-1 text-xs">
-                {PERSONA_TYPE_LABELS[persona.type]}
-              </Badge>
+        {persona && (
+          <div className="my-4 p-4 rounded-xl border border-destructive/20 bg-destructive/5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
+                <Bot className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold">{persona.name}</h4>
+                <p className="text-sm text-muted-foreground line-clamp-1">{persona.description}</p>
+                <Badge variant="outline" className="mt-1 text-xs">
+                  {PERSONA_TYPE_LABELS[persona.type]}
+                </Badge>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Warning */}
         <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 text-sm">
