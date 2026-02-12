@@ -39,6 +39,7 @@ import {
   CSATTrendChart,
   NPSBreakdownChart,
   AgentPerformanceTable,
+  OutcomeKPIWidget,
 } from '@/components/dashboard/AnalyticsWidgets';
 import { CustomizeDashboardModal } from '@/components/dashboard/CustomizeDashboardModal';
 
@@ -174,6 +175,13 @@ export default function Dashboard() {
                     return <NPSScoreKPI key={id} data={analyticsData.csatNpsData} />;
                   case 'handoff-rate':
                     return <HandoffRateKPI key={id} data={analyticsData.conversationMetrics} />;
+                  case 'time-saved':
+                  case 'effort-saved':
+                  case 'conversion-rate':
+                  case 'engagement-rate': {
+                    const kpi = analyticsData.outcomeKPIs?.find(k => k.id === id);
+                    return kpi ? <OutcomeKPIWidget key={id} kpi={kpi} /> : null;
+                  }
                   default:
                     return null;
                 }

@@ -12,7 +12,11 @@ export type AnalyticsWidgetId =
   | 'avg-duration'
   | 'csat-score'
   | 'nps-score'
-  | 'handoff-rate';
+  | 'handoff-rate'
+  | 'time-saved'
+  | 'effort-saved'
+  | 'conversion-rate'
+  | 'engagement-rate';
 
 export interface AnalyticsWidgetConfig {
   id: AnalyticsWidgetId;
@@ -29,6 +33,10 @@ export const ANALYTICS_WIDGET_REGISTRY: AnalyticsWidgetConfig[] = [
   { id: 'csat-score', label: 'CSAT Score', description: 'Customer satisfaction score with trend', category: 'kpi', defaultEnabled: true },
   { id: 'nps-score', label: 'NPS Score', description: 'Net promoter score with trend', category: 'kpi', defaultEnabled: false },
   { id: 'handoff-rate', label: 'Handoff Rate', description: 'Human handoff percentage', category: 'kpi', defaultEnabled: false },
+  { id: 'time-saved', label: 'Time Saved', description: 'Total hours saved by AI automation', category: 'kpi', defaultEnabled: false },
+  { id: 'effort-saved', label: 'Effort Saved', description: 'Percentage of effort automated', category: 'kpi', defaultEnabled: false },
+  { id: 'conversion-rate', label: 'Conversion Rate', description: 'Lead-to-customer conversion percentage', category: 'kpi', defaultEnabled: false },
+  { id: 'engagement-rate', label: 'Engagement Rate', description: 'User engagement percentage', category: 'kpi', defaultEnabled: false },
   { id: 'conversation-volume', label: 'Conversation Volume', description: 'Area chart showing voice, chat, and email trends', category: 'chart', defaultEnabled: true },
   { id: 'sentiment-trends', label: 'Sentiment Trends', description: 'Line chart tracking positive, neutral, negative sentiment', category: 'chart', defaultEnabled: true },
   { id: 'channel-utilization', label: 'Channel Utilization', description: 'Pie chart of channel distribution', category: 'chart', defaultEnabled: false },

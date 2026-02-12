@@ -10,6 +10,9 @@ import {
   Mail,
   BarChart3,
   ExternalLink,
+  Zap,
+  Target,
+  Heart,
 } from 'lucide-react';
 import {
   LineChart,
@@ -39,6 +42,7 @@ import type {
   CSATNPSData,
   SentimentDataPoint,
   ConversationTrend,
+  OutcomeKPI,
 } from '@/types/analytics';
 
 const COLORS = {
@@ -51,7 +55,7 @@ const COLORS = {
   escalated: '#ef4444',
 };
 
-function DiveDeepButton() {
+function DiveDeepButton({ tab = 'overview' }: { tab?: string }) {
   const navigate = useNavigate();
   return (
     <Button
@@ -60,7 +64,7 @@ function DiveDeepButton() {
       className="text-xs text-primary hover:text-primary gap-1 h-7 px-2"
       onClick={(e) => {
         e.stopPropagation();
-        navigate('/analytics');
+        navigate(`/analytics?tab=${tab}`);
       }}
     >
       Dive Deep
@@ -296,7 +300,7 @@ export function SentimentTrendsChart({
           <CardTitle className="text-base font-medium">
             Sentiment Trends
           </CardTitle>
-          <DiveDeepButton />
+          <DiveDeepButton tab="sentiment" />
         </div>
       </CardHeader>
       <CardContent>
@@ -385,7 +389,7 @@ export function ChannelUtilizationChart({
           <CardTitle className="text-base font-medium">
             Channel Utilization
           </CardTitle>
-          <DiveDeepButton />
+          <DiveDeepButton tab="channels" />
         </div>
       </CardHeader>
       <CardContent>
@@ -614,6 +618,46 @@ export function AgentPerformanceTable({
             </tbody>
           </table>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function OutcomeKPIWidget({ kpi }: { kpi: OutcomeKPI }) {
+  const iconMap: Record<string, React.ElementType> = {
+    clock: Clock,
+    zap: Zap,
+    target: Target,
+    heart: Heart,
+    star: BarChart3,
+  };
+  const Icon = iconMap[kpi.icon] || BarChart3;
+
+  return (
+    <Card className="gradient-card">
+      <CardContent className="pt-4">
+        <div className="flex items-center justify-between">
+          <Icon className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-1">
+            <Badge
+              variant="secondary"
+              className={cn(
+                'text-[10px]',
+                kpi.trendDirection === 'up' ? 'text-success' : kpi.trendDirection === 'down' ? 'text-destructive' : ''
+              )}
+            >
+              {kpi.trendDirection === 'up' ? (
+                <TrendingUp className="w-3 h-3 mr-1" />
+              ) : kpi.trendDirection === 'down' ? (
+                <TrendingDown className="w-3 h-3 mr-1" />
+              ) : null}
+              {kpi.change > 0 ? '+' : ''}{kpi.change}%
+            </Badge>
+            <DiveDeepButton />
+          </div>
+        </div>
+        <p className="text-2xl font-bold mt-2">{kpi.value}</p>
+        <p className="text-xs text-muted-foreground">{kpi.label}</p>
       </CardContent>
     </Card>
   );

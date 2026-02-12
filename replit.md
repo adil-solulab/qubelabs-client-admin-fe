@@ -106,6 +106,20 @@ Preferred communication style: Simple, everyday language.
 - Each integration has configuration fields, setup instructions, and connection management
 - API Keys and Webhooks remain in separate tabs
 
+### Analytics Module (Enhanced)
+- **Subtab Navigation**: 7 tabs - Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns
+- **Outcome KPIs**: Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score with sparkline charts and trend indicators
+- **KPICard Component**: Reusable card with icon mapping, sparkline (recharts LineChart), trend direction, and color variants
+- **Campaign Analytics**: Email open rate, CTR, bounce rate, conversion funnel visualization, campaign performance table
+- **Channel Analytics**: Per-channel metrics (chat/voice/email) with volume sparklines and comparison charts
+- **LLM Analytics**: Model usage breakdown, token usage over time, accuracy tracking, prompt categories
+- **Transcription Analytics**: Accuracy tracking, language breakdown, keyword extraction with sentiment, error categorization
+- **Compliance Monitoring**: Risk distribution, flagged interactions, violation categories with severity, recent violations table
+- **Sentiment & Speech**: Intent detection, emotion analysis, sentiment breakdown pie chart, speech-to-text accuracy
+- **Dashboard Integration**: Dive Deep buttons on KPI cards link to specific analytics tabs via URL query params (?tab=xxx)
+- **Widget Registry**: Extended with outcome KPIs (time-saved, effort-saved, conversion-rate, engagement-rate)
+- Components in `src/components/analytics/`: KPICard, OverviewTab, ChannelsTab, SentimentSpeechTab, LLMAnalyticsTab, TranscriptionTab, ComplianceTab, CampaignAnalytics
+
 ### No Backend Currently
 - Application runs entirely in the browser
 - All data is mocked and stored in React state

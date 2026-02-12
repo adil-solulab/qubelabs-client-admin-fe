@@ -1,0 +1,109 @@
+Update the Analytics module with the following enhancements. 
+Keep the architecture modular, scalable, and aligned with the existing UI.
+
+====================================
+1. CONFIGURABLE DASHBOARD WIDGETS
+====================================
+
+Create a configurable "My Dashboard" inside Analytics:
+
+- Users should be able to:
+  - View available analytics widgets
+  - Select multiple widgets using checkboxes/toggles
+  - Add selected widgets dynamically to the Main Dashboard
+- Widgets should render in a responsive grid layout
+- Store user preferences (local storage or backend)
+- Allow future extensibility for role-based dashboards
+
+On the main dashboard:
+- Add a “Dive Deep” button near KPI cards
+- Clicking it should redirect to the full Analytics page
+- Ensure routing works without breaking existing dashboard logic
+
+====================================
+2. OUTCOME-BASED KPIs
+====================================
+
+Add new KPI cards including:
+
+- Time Saved
+- Effort Saved
+- Conversion Rate
+- Engagement Rate
+- CSAT Score
+
+Each KPI card must include:
+- Primary metric value
+- Percentage change indicator
+- Trend direction icon (up/down)
+- Optional mini sparkline chart
+- Reusable KPI card component
+
+====================================
+3. CAMPAIGN MANAGEMENT & EMAIL ANALYTICS
+====================================
+
+Create a Campaign Analytics section including:
+
+- Campaign performance overview
+- Email analysis metrics:
+  - Open Rate
+  - Click Through Rate (CTR)
+  - Bounce Rate
+- Campaign success analysis
+- Conversion funnel visualization
+- Engagement metrics summary
+
+Use existing charting library.
+
+====================================
+4. ANALYTICS SUBTABS STRUCTURE
+====================================
+
+Inside Analytics page, create separate subtabs for:
+
+1. Channels
+   - Channel performance comparison
+   - Engagement metrics per channel
+
+2. Sentiment & Speech
+   - Sentiment analysis (positive / neutral / negative)
+   - Speech and intent recognition analytics
+
+3. LLM Analytics
+   - Prompt success rate
+   - Token usage
+   - Response accuracy metrics
+
+4. Transcription Analysis
+   - Transcription accuracy
+   - Error detection metrics
+   - Keyword extraction insights
+
+5. Compliance Monitoring
+   - Policy violations
+   - Flagged interactions
+   - Risk scoring metrics
+
+====================================
+UI/UX REQUIREMENTS
+====================================
+
+- Clean enterprise dashboard design
+- Smooth tab transitions
+- Fully responsive (desktop + tablet)
+- Component-based architecture
+- Maintain consistency with existing theme
+- Do not break current functionality
+
+====================================
+TECH REQUIREMENTS
+====================================
+
+Create reusable components:
+- KPI Card Component
+- Widget Selector Component
+- Analytics Tabs Component
+- Campaign Analytics Component
+
+Ensure scalability and maintain backward compatibility.
