@@ -127,11 +127,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Flow Builder (Multi-Flow Architecture)
 - **Two-View Layout**: Flow listing page + Flow editor view, toggled by selecting/deselecting a flow
-- **Flow Listing Page**: Collapsible category groups (Base, FAQs, Operations), table with columns (Flow Name, Description, Last Edited, Status), search, Create Flow modal, kebab menu per flow (Open, Duplicate, Delete)
+- **Flow Listing Page**: Collapsible folder groups, table with columns (Flow Name, Description, Last Edited, Channel, Status), search, Create Flow modal, kebab menu per flow (Open, Duplicate, Delete)
+- **Folder Management**: Create, rename, and delete folders to organize flows; folders act as category groups in the listing
+- **Channel Selection**: Each flow belongs to a channel (Voice, Chat, Email) chosen at creation time; displayed as colored badges in the listing and editor breadcrumb
 - **Flow Editor View**: Breadcrumb navigation (Flows / Flow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
-- **Multiple Flows**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), and all node/edge mutations scoped to selected flow
+- **Multiple Flows**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), folder CRUD (createFolder, renameFolder, deleteFolder), and all node/edge mutations scoped to selected flow
 - **Node Tools Sidebar**: Left panel listing 7 addable node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End) with icons, descriptions, and search; collapsible to icon-only mode
-- **Types**: `Flow` type includes `category` field; `FlowSummary` type for list view
+- **Types**: `Flow` type includes `category` and `channel` fields; `FlowSummary` type for list view; `FlowChannel` type for voice/chat/email
 - Components: `FlowListView`, `NodeToolsSidebar`, plus existing `FlowCanvas`, `FlowNode`, `NodePropertiesPanel`, `LivePreviewPanel`, `PublishFlowModal`, `RollbackModal`, `UnsavedChangesModal`
 
 ### Integrations Page

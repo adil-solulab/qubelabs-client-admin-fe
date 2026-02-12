@@ -10,6 +10,9 @@ import {
   AlertCircle,
   Lock,
   ChevronRight,
+  Phone,
+  MessageSquare,
+  Mail,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -39,6 +42,9 @@ export default function FlowBuilderPage() {
     createFlow,
     deleteFlow,
     duplicateFlow,
+    createFolder,
+    renameFolder,
+    deleteFolder,
     selectedNode,
     setSelectedNode,
     isConnecting,
@@ -187,6 +193,9 @@ export default function FlowBuilderPage() {
             duplicateFlow(id);
             notify.created('Flow duplicated');
           }}
+          onCreateFolder={createFolder}
+          onRenameFolder={renameFolder}
+          onDeleteFolder={deleteFolder}
         />
       </AppLayout>
     );
@@ -222,6 +231,12 @@ export default function FlowBuilderPage() {
               {flow.status}
             </Badge>
             <Badge variant="outline" className="text-xs">v{flow.currentVersion}</Badge>
+            <Badge variant="outline" className="text-xs gap-1">
+              {flow.channel === 'voice' && <Phone className="w-3 h-3" />}
+              {flow.channel === 'chat' && <MessageSquare className="w-3 h-3" />}
+              {flow.channel === 'email' && <Mail className="w-3 h-3" />}
+              {flow.channel.charAt(0).toUpperCase() + flow.channel.slice(1)}
+            </Badge>
             {hasUnsavedChanges && (
               <Badge variant="destructive" className="gap-1 text-xs">
                 <AlertCircle className="w-3 h-3" />

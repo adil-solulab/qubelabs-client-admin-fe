@@ -2,6 +2,8 @@ export type NodeType = 'start' | 'message' | 'condition' | 'api_call' | 'transfe
 
 export type FlowStatus = 'draft' | 'published';
 
+export type FlowChannel = 'voice' | 'chat' | 'email';
+
 export interface FlowNode {
   id: string;
   type: NodeType;
@@ -71,6 +73,7 @@ export interface Flow {
   name: string;
   description: string;
   category: string;
+  channel: FlowChannel;
   currentVersion: string;
   status: FlowStatus;
   nodes: FlowNode[];
@@ -85,6 +88,7 @@ export interface FlowSummary {
   name: string;
   description: string;
   category: string;
+  channel: FlowChannel;
   status: FlowStatus;
   currentVersion: string;
   updatedAt: string;

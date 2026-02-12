@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary } from '@/types/flowBuilder';
+import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary, FlowChannel } from '@/types/flowBuilder';
 
 const generateMockFlows = (): Flow[] => [
   {
@@ -7,6 +7,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Customer Support Flow',
     description: 'Main customer support conversation flow',
     category: 'Base',
+    channel: 'voice',
     currentVersion: '2.1',
     status: 'published',
     nodes: [
@@ -105,6 +106,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Handle Customer',
     description: 'Customer inquiry handling and routing',
     category: 'Base',
+    channel: 'chat',
     currentVersion: '1.2',
     status: 'published',
     nodes: [
@@ -154,6 +156,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Product FAQ',
     description: 'Automated product FAQ responses',
     category: 'FAQs',
+    channel: 'chat',
     currentVersion: '1.0',
     status: 'published',
     nodes: [
@@ -211,6 +214,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Billing FAQ',
     description: 'Handle billing and payment inquiries',
     category: 'FAQs',
+    channel: 'voice',
     currentVersion: '1.1',
     status: 'draft',
     nodes: [
@@ -260,6 +264,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Appointment Booking',
     description: 'Schedule and manage customer appointments',
     category: 'Operations',
+    channel: 'email',
     currentVersion: '1.0',
     status: 'published',
     nodes: [
@@ -346,28 +351,32 @@ export function useFlowBuilderData() {
   }, [flows]);
 
   const getFlowSummaries = useCallback((): FlowSummary[] => {
-    return flows.map(f => ({
-      id: f.id,
-      name: f.name,
-      description: f.description,
-      category: f.category,
-      status: f.status,
-      currentVersion: f.currentVersion,
-      updatedAt: f.updatedAt,
-      nodeCount: f.nodes.length,
-    }));
+    return flows
+      .filter(f => f.name !== '__folder_placeholder__')
+      .map(f => ({
+        id: f.id,
+        name: f.name,
+        description: f.description,
+        category: f.category,
+        channel: f.channel,
+        status: f.status,
+        currentVersion: f.currentVersion,
+        updatedAt: f.updatedAt,
+        nodeCount: f.nodes.length,
+      }));
   }, [flows]);
 
   const getCategories = useCallback((): string[] => {
     return [...new Set(flows.map(f => f.category))];
   }, [flows]);
 
-  const createFlow = useCallback((name: string, description: string, category: string) => {
+  const createFlow = useCallback((name: string, description: string, category: string, channel: FlowChannel = 'chat') => {
     const newFlow: Flow = {
       id: `flow-${Date.now()}`,
       name,
       description,
       category,
+      channel,
       currentVersion: '1.0',
       status: 'draft',
       nodes: [
@@ -384,7 +393,10 @@ export function useFlowBuilderData() {
       createdAt: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
     };
-    setFlows(prev => [...prev, newFlow]);
+    setFlows(prev => {
+      const cleaned = prev.filter(f => !(f.name === '__folder_placeholder__' && f.category === category));
+      return [...cleaned, newFlow];
+    });
     return newFlow;
   }, []);
 
@@ -413,8 +425,38 @@ export function useFlowBuilderData() {
     return newFlow;
   }, [flows]);
 
-  const updateFlowMeta = useCallback((flowId: string, updates: { name?: string; description?: string; category?: string }) => {
+  const updateFlowMeta = useCallback((flowId: string, updates: { name?: string; description?: string; category?: string; channel?: FlowChannel }) => {
     setFlows(prev => prev.map(f => f.id === flowId ? { ...f, ...updates } : f));
+  }, []);
+
+  const createFolder = useCallback((folderName: string) => {
+    const existing = [...new Set(flows.map(f => f.category))];
+    if (existing.includes(folderName)) return false;
+    const placeholder: Flow = {
+      id: `folder-placeholder-${Date.now()}`,
+      name: '__folder_placeholder__',
+      description: '',
+      category: folderName,
+      channel: 'chat',
+      currentVersion: '0',
+      status: 'draft',
+      nodes: [],
+      edges: [],
+      versions: [],
+      createdAt: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+    };
+    setFlows(prev => [...prev, placeholder]);
+    return true;
+  }, [flows]);
+
+  const renameFolder = useCallback((oldName: string, newName: string) => {
+    if (!newName.trim() || oldName === newName) return;
+    setFlows(prev => prev.map(f => f.category === oldName ? { ...f, category: newName } : f));
+  }, []);
+
+  const deleteFolder = useCallback((folderName: string) => {
+    setFlows(prev => prev.filter(f => f.category !== folderName));
   }, []);
 
   const updateCurrentFlow = useCallback((updater: (f: Flow) => Flow) => {
@@ -635,6 +677,9 @@ export function useFlowBuilderData() {
     deleteFlow,
     duplicateFlow,
     updateFlowMeta,
+    createFolder,
+    renameFolder,
+    deleteFolder,
     selectedNode,
     setSelectedNode,
     isConnecting,
