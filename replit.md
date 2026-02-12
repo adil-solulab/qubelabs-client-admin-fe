@@ -2,9 +2,20 @@
 
 ## Overview
 
-CONX is an enterprise AI platform built as a single-page application (SPA) for managing conversational AI operations. The platform provides comprehensive tools for managing AI agents, knowledge bases, live operations monitoring, outbound calling campaigns, analytics, and team management. It features a role-based access control system with three user types: Client Admin, Supervisor, and Agent.
+QubeLabs is an enterprise AI platform built as a single-page application (SPA) for managing conversational AI operations. The platform provides comprehensive tools for managing AI agents, knowledge bases, live operations monitoring, outbound calling campaigns, analytics, and team management. It features a role-based access control system with three user types: Client Admin, Supervisor, and Agent. Tagline: "responsible intelligence".
 
 The application is a frontend-only implementation using in-memory state management, designed as an interactive prototype that maintains state across navigation without requiring a backend.
+
+### Brand Identity
+- **Name**: QubeLabs
+- **Tagline**: responsible intelligence
+- **Primary Blue**: #0094FF (HSL 215 100% 50%)
+- **Primary Green**: #00FF7A (HSL 149 100% 50%)
+- **Dark Navy**: #011B40
+- **Dark**: #000A17
+- **White**: #FFFFFF
+- **Font**: DM Sans (Bold for headings, Regular for body/UI)
+- **Logo**: 3D cube icon in blue and green (stored as conx-logomark.png in public/)
 
 ## User Preferences
 

@@ -33,14 +33,14 @@ export function WebRTCEmbedModal({ open, onOpenChange }: WebRTCEmbedModalProps) 
   const [isGenerating, setIsGenerating] = useState(false);
   const [config, setConfig] = useState({
     widgetPosition: 'bottom-right',
-    primaryColor: '#7C3AED',
+    primaryColor: '#0094FF',
     buttonText: 'Start Call',
     showBranding: true,
     autoConnect: false,
     enableVideo: false,
   });
 
-  const widgetId = 'conx-widget-' + Math.random().toString(36).substr(2, 9);
+  const widgetId = 'qubelabs-widget-' + Math.random().toString(36).substr(2, 9);
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -56,10 +56,10 @@ export function WebRTCEmbedModal({ open, onOpenChange }: WebRTCEmbedModalProps) 
     notify.success('Embed code generated', 'Your WebRTC widget is ready to use.');
   };
 
-  const scriptCode = `<!-- ConX-AI WebRTC Widget -->
-<script src="https://cdn.conx-ai.com/widget/v1/webrtc.js"></script>
+  const scriptCode = `<!-- QubeLabs WebRTC Widget -->
+<script src="https://cdn.qubelabs.ai/widget/v1/webrtc.js"></script>
 <script>
-  ConXWidget.init({
+  QLabsWidget.init({
     widgetId: '${widgetId}',
     position: '${config.widgetPosition}',
     primaryColor: '${config.primaryColor}',
@@ -79,9 +79,9 @@ export function WebRTCEmbedModal({ open, onOpenChange }: WebRTCEmbedModalProps) 
   });
 </script>`;
 
-  const iframeCode = `<!-- ConX-AI WebRTC Iframe Embed -->
+  const iframeCode = `<!-- QubeLabs WebRTC Iframe Embed -->
 <iframe
-  src="https://app.conx-ai.com/embed/webrtc/${widgetId}"
+  src="https://app.qubelabs.ai/embed/webrtc/${widgetId}"
   width="400"
   height="600"
   frameborder="0"
@@ -89,12 +89,12 @@ export function WebRTCEmbedModal({ open, onOpenChange }: WebRTCEmbedModalProps) 
   style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
 ></iframe>`;
 
-  const reactCode = `// ConX-AI React Component
-import { ConXWebRTC } from '@conx-ai/react';
+  const reactCode = `// QubeLabs React Component
+import { QLabsWebRTC } from '@qubelabs/react';
 
 function MyApp() {
   return (
-    <ConXWebRTC
+    <QLabsWebRTC
       widgetId="${widgetId}"
       position="${config.widgetPosition}"
       primaryColor="${config.primaryColor}"
@@ -108,7 +108,7 @@ function MyApp() {
   );
 }`;
 
-  const apiEndpoint = `POST https://api.conx-ai.com/v1/calls/webrtc
+  const apiEndpoint = `POST https://api.qubelabs.ai/v1/calls/webrtc
 
 Headers:
   Authorization: Bearer YOUR_API_KEY
@@ -260,7 +260,7 @@ Body:
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Label>React Component</Label>
-                  <Badge variant="secondary" className="text-[10px]">npm install @conx-ai/react</Badge>
+                  <Badge variant="secondary" className="text-[10px]">npm install @qubelabs/react</Badge>
                 </div>
                 <Button
                   variant="ghost"

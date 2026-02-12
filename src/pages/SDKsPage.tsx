@@ -214,7 +214,7 @@ export default function SDKsPage() {
                     <div className="flex-1">
                       <p className="font-medium text-sm">Install the SDK</p>
                       <div className="mt-2 p-3 rounded-lg bg-muted/50">
-                        <code className="text-xs">npm install @company/ai-sdk</code>
+                        <code className="text-xs">npm install @qubelabs/ai-sdk</code>
                       </div>
                     </div>
                   </div>
@@ -227,7 +227,7 @@ export default function SDKsPage() {
                       <p className="font-medium text-sm">Initialize with your API key</p>
                       <div className="mt-2 p-3 rounded-lg bg-muted/50">
                         <pre className="text-xs">
-{`import { AIClient } from '@company/ai-sdk';
+{`import { AIClient } from '@qubelabs/ai-sdk';
 
 const client = new AIClient({
   apiKey: '${productionPublishableKey || 'YOUR_API_KEY'}'

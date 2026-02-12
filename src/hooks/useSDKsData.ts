@@ -8,8 +8,8 @@ const mockSDKs: SDK[] = [
     name: 'Web SDK',
     description: 'JavaScript/TypeScript SDK for web applications',
     version: '2.4.1',
-    installCommand: 'npm install @company/ai-sdk',
-    documentationUrl: 'https://docs.example.com/sdk/web',
+    installCommand: 'npm install @qubelabs/ai-sdk',
+    documentationUrl: 'https://docs.qubelabs.ai/sdk/web',
     icon: 'web',
     language: 'JavaScript/TypeScript',
   },
@@ -21,14 +21,14 @@ const mockEmbedWidgets: EmbedWidget[] = [
     name: 'Chat Widget',
     type: 'chat',
     description: 'Embeddable chat widget for customer support',
-    embedCode: `<!-- AI Chat Widget -->
+    embedCode: `<!-- QubeLabs Chat Widget -->
 <script>
   (function(w,d,s,o,f,js,fjs){
     w['AIChat']=o;w[o]=w[o]||function(){
     (w[o].q=w[o].q||[]).push(arguments)};
     js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
     js.id=o;js.src=f;js.async=1;fjs.parentNode.insertBefore(js,fjs);
-  }(window,document,'script','aichat','https://cdn.example.com/chat.js'));
+  }(window,document,'script','aichat','https://cdn.qubelabs.ai/chat.js'));
   aichat('init', { 
     projectKey: 'YOUR_PROJECT_KEY',
     theme: 'light',
@@ -42,14 +42,14 @@ const mockEmbedWidgets: EmbedWidget[] = [
     name: 'WebRTC Calling Widget',
     type: 'webrtc',
     description: 'Voice and video calling widget with WebRTC',
-    embedCode: `<!-- WebRTC Calling Widget -->
+    embedCode: `<!-- QubeLabs WebRTC Calling Widget -->
 <script>
   (function(w,d,s,o,f,js,fjs){
     w['AICall']=o;w[o]=w[o]||function(){
     (w[o].q=w[o].q||[]).push(arguments)};
     js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
     js.id=o;js.src=f;js.async=1;fjs.parentNode.insertBefore(js,fjs);
-  }(window,document,'script','aicall','https://cdn.example.com/call.js'));
+  }(window,document,'script','aicall','https://cdn.qubelabs.ai/call.js'));
   aicall('init', { 
     projectKey: 'YOUR_PROJECT_KEY',
     enableVideo: true,
