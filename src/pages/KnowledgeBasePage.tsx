@@ -33,10 +33,7 @@ import { DocumentCard } from '@/components/knowledgeBase/DocumentCard';
 import { URLSourceCard } from '@/components/knowledgeBase/URLSourceCard';
 import { SitemapSourceCard } from '@/components/knowledgeBase/SitemapSourceCard';
 import { IntegrationSourceCard } from '@/components/knowledgeBase/IntegrationSourceCard';
-import { UploadDocumentModal } from '@/components/knowledgeBase/UploadDocumentModal';
-import { AddURLModal } from '@/components/knowledgeBase/AddURLModal';
-import { AddSitemapModal } from '@/components/knowledgeBase/AddSitemapModal';
-import { AddIntegrationSourceModal } from '@/components/knowledgeBase/AddIntegrationSourceModal';
+import { AddSourceModal } from '@/components/knowledgeBase/AddSourceModal';
 import { DeleteDocumentModal } from '@/components/knowledgeBase/DeleteDocumentModal';
 import { VersionHistoryModal } from '@/components/knowledgeBase/VersionHistoryModal';
 import { TrainingProgressWidget } from '@/components/knowledgeBase/TrainingProgressWidget';
@@ -77,10 +74,7 @@ export default function KnowledgeBasePage() {
   const [statusFilter, setStatusFilter] = useState<TrainingStatus | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<FileCategory | 'all'>('all');
 
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [urlModalOpen, setUrlModalOpen] = useState(false);
-  const [sitemapModalOpen, setSitemapModalOpen] = useState(false);
-  const [integrationModalOpen, setIntegrationModalOpen] = useState(false);
+  const [addSourceModalOpen, setAddSourceModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<KnowledgeDocument | null>(null);
@@ -129,17 +123,12 @@ export default function KnowledgeBasePage() {
 
   const handleAddClick = () => {
     withPermission('create', () => {
-      switch (activeTab) {
-        case 'files': setUploadModalOpen(true); break;
-        case 'urls': setUrlModalOpen(true); break;
-        case 'sitemaps': setSitemapModalOpen(true); break;
-        case 'integrations': setIntegrationModalOpen(true); break;
-      }
+      setAddSourceModalOpen(true);
     });
   };
 
-  const handleUploadComplete = (docName: string) => {
-    notify.uploaded(docName);
+  const handleSourceAdded = (label: string) => {
+    notify.success('Source added', `"${label}" has been added to your knowledge base.`);
   };
 
   const handleTrain = async (doc: KnowledgeDocument) => {
@@ -280,23 +269,9 @@ export default function KnowledgeBasePage() {
     });
   };
 
-  const getAddButtonLabel = () => {
-    switch (activeTab) {
-      case 'files': return 'Upload Document';
-      case 'urls': return 'Add URLs';
-      case 'sitemaps': return 'Add Sitemap';
-      case 'integrations': return 'Add Integration';
-    }
-  };
+  const getAddButtonLabel = () => 'Add Source';
 
-  const getAddButtonIcon = () => {
-    switch (activeTab) {
-      case 'files': return <Upload className="w-4 h-4 mr-2" />;
-      case 'urls': return <Globe className="w-4 h-4 mr-2" />;
-      case 'sitemaps': return <Map className="w-4 h-4 mr-2" />;
-      case 'integrations': return <Plug className="w-4 h-4 mr-2" />;
-    }
-  };
+  const getAddButtonIcon = () => <Plus className="w-4 h-4 mr-2" />;
 
   const getActiveCount = () => {
     switch (activeTab) {
@@ -431,12 +406,6 @@ export default function KnowledgeBasePage() {
                       className="pl-9"
                     />
                   </div>
-                  {activeTab !== 'files' && canCreate && (
-                    <Button onClick={handleAddClick} size="sm" className="shrink-0">
-                      <Plus className="w-4 h-4 mr-1" />
-                      {getAddButtonLabel()}
-                    </Button>
-                  )}
                   {activeTab === 'files' && (
                     <div className="flex gap-2 flex-wrap">
                       <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as FileType | 'all')}>
@@ -739,29 +708,14 @@ export default function KnowledgeBasePage() {
         </div>
       </div>
 
-      <UploadDocumentModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUpload={uploadDocument}
-        onUploadComplete={handleUploadComplete}
-      />
-
-      <AddURLModal
-        open={urlModalOpen}
-        onOpenChange={setUrlModalOpen}
-        onAdd={addURLSource}
-      />
-
-      <AddSitemapModal
-        open={sitemapModalOpen}
-        onOpenChange={setSitemapModalOpen}
-        onAdd={addSitemapSource}
-      />
-
-      <AddIntegrationSourceModal
-        open={integrationModalOpen}
-        onOpenChange={setIntegrationModalOpen}
-        onAdd={addIntegrationSource}
+      <AddSourceModal
+        open={addSourceModalOpen}
+        onOpenChange={setAddSourceModalOpen}
+        onUploadFile={uploadDocument}
+        onAddURLs={addURLSource}
+        onAddSitemap={addSitemapSource}
+        onAddIntegration={addIntegrationSource}
+        onComplete={handleSourceAdded}
       />
 
       <DeleteDocumentModal

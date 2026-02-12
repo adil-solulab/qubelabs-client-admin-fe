@@ -121,8 +121,9 @@ Preferred communication style: Simple, everyday language.
 - **Sitemap Discovery**: XML sitemap parsing to auto-discover and crawl all website pages
 - **Integration Import**: Import from third-party services (Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, Database)
 - **Auto-Sync**: Configurable sync frequency (manual, hourly, daily, weekly) for URLs, sitemaps, and integrations
-- Each source type has its own tab, card component, add modal, and training/sync/delete actions
-- Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddURLModal`, `AddSitemapModal`, `AddIntegrationSourceModal`
+- **Unified Add Source Modal**: Single modal (`AddSourceModal`) with type selector that dynamically shows relevant fields based on selected source type (File, URL, Sitemap, Integration). Replaces the previous 4 separate modals.
+- Each source type has its own tab, card component, and training/sync/delete actions
+- Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddSourceModal`
 
 ### Integrations Page
 - Redesigned with category sidebar, grouped card grid, and integration detail view
