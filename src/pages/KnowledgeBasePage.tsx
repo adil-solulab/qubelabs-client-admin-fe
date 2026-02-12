@@ -10,6 +10,7 @@ import {
   Globe,
   Map,
   Plug,
+  Plus,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Input } from '@/components/ui/input';
@@ -430,6 +431,12 @@ export default function KnowledgeBasePage() {
                       className="pl-9"
                     />
                   </div>
+                  {activeTab !== 'files' && canCreate && (
+                    <Button onClick={handleAddClick} size="sm" className="shrink-0">
+                      <Plus className="w-4 h-4 mr-1" />
+                      {getAddButtonLabel()}
+                    </Button>
+                  )}
                   {activeTab === 'files' && (
                     <div className="flex gap-2 flex-wrap">
                       <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as FileType | 'all')}>
@@ -504,6 +511,15 @@ export default function KnowledgeBasePage() {
                         canDelete={canDelete}
                       />
                     ))}
+                    {canCreate && (
+                      <button
+                        onClick={handleAddClick}
+                        className="w-full border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 rounded-xl p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Upload another document
+                      </button>
+                    )}
                   </div>
                 )}
               </>
@@ -517,10 +533,10 @@ export default function KnowledgeBasePage() {
                       <Globe className="w-12 h-12 text-muted-foreground mb-4" />
                       <h3 className="font-semibold mb-1">No URLs added</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        {searchQuery ? 'Try adjusting your search' : 'Add website URLs to scrape and extract content'}
+                        {searchQuery ? 'Try adjusting your search' : 'Add website URLs to scrape and extract content for your knowledge base'}
                       </p>
                       {!searchQuery && canCreate && (
-                        <Button onClick={handleAddClick}>
+                        <Button onClick={handleAddClick} size="lg">
                           <Globe className="w-4 h-4 mr-2" />
                           Add URLs
                         </Button>
@@ -540,6 +556,15 @@ export default function KnowledgeBasePage() {
                         canDelete={canDelete}
                       />
                     ))}
+                    {canCreate && (
+                      <button
+                        onClick={handleAddClick}
+                        className="w-full border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 rounded-xl p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add more URLs
+                      </button>
+                    )}
                   </div>
                 )}
               </>
@@ -553,10 +578,10 @@ export default function KnowledgeBasePage() {
                       <Map className="w-12 h-12 text-muted-foreground mb-4" />
                       <h3 className="font-semibold mb-1">No sitemaps added</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        {searchQuery ? 'Try adjusting your search' : 'Add a sitemap XML URL to auto-discover pages'}
+                        {searchQuery ? 'Try adjusting your search' : 'Add a sitemap XML URL to auto-discover and crawl all pages on your website'}
                       </p>
                       {!searchQuery && canCreate && (
-                        <Button onClick={handleAddClick}>
+                        <Button onClick={handleAddClick} size="lg">
                           <Map className="w-4 h-4 mr-2" />
                           Add Sitemap
                         </Button>
@@ -576,6 +601,15 @@ export default function KnowledgeBasePage() {
                         canDelete={canDelete}
                       />
                     ))}
+                    {canCreate && (
+                      <button
+                        onClick={handleAddClick}
+                        className="w-full border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 rounded-xl p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add another sitemap
+                      </button>
+                    )}
                   </div>
                 )}
               </>
@@ -592,7 +626,7 @@ export default function KnowledgeBasePage() {
                         {searchQuery ? 'Try adjusting your search' : 'Connect services like Salesforce, Confluence, or Zendesk to import content'}
                       </p>
                       {!searchQuery && canCreate && (
-                        <Button onClick={handleAddClick}>
+                        <Button onClick={handleAddClick} size="lg">
                           <Plug className="w-4 h-4 mr-2" />
                           Add Integration
                         </Button>
@@ -612,6 +646,15 @@ export default function KnowledgeBasePage() {
                         canDelete={canDelete}
                       />
                     ))}
+                    {canCreate && (
+                      <button
+                        onClick={handleAddClick}
+                        className="w-full border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 rounded-xl p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add another integration
+                      </button>
+                    )}
                   </div>
                 )}
               </>
