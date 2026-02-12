@@ -28,10 +28,71 @@ export interface DataRetentionSettings {
   maskSSN: boolean;
 }
 
+export interface ZeroRetentionSettings {
+  enabled: boolean;
+  scope: 'all' | 'pii_only' | 'conversations_only';
+  realTimeProcessingOnly: boolean;
+  noLogsMode: boolean;
+  excludeAuditLogs: boolean;
+}
+
+export interface SSOSettings {
+  enabled: boolean;
+  provider: 'saml' | 'oidc' | 'azure_ad' | 'okta' | 'google' | 'none';
+  entityId: string;
+  ssoUrl: string;
+  certificate: string;
+  enforceSSO: boolean;
+  allowPasswordFallback: boolean;
+  autoProvision: boolean;
+  defaultRole: 'agent' | 'supervisor' | 'client_admin';
+  domains: string[];
+  sessionTimeout: number;
+}
+
+export interface RBACSettings {
+  enabled: boolean;
+  enforceIPRestriction: boolean;
+  allowedIPs: string[];
+  requireMFA: boolean;
+  mfaMethod: 'totp' | 'sms' | 'email' | 'none';
+  passwordPolicy: {
+    minLength: number;
+    requireUppercase: boolean;
+    requireNumbers: boolean;
+    requireSpecialChars: boolean;
+    expiryDays: number;
+    preventReuse: number;
+  };
+  sessionPolicy: {
+    maxConcurrentSessions: number;
+    idleTimeoutMinutes: number;
+    absoluteTimeoutHours: number;
+  };
+}
+
+export interface PIIProtectionSettings {
+  enabled: boolean;
+  autoDetect: boolean;
+  detectionTypes: {
+    names: boolean;
+    emails: boolean;
+    phones: boolean;
+    addresses: boolean;
+    ssn: boolean;
+    creditCards: boolean;
+    dateOfBirth: boolean;
+    medicalRecords: boolean;
+  };
+  action: 'redact' | 'mask' | 'hash' | 'tokenize';
+  notifyOnDetection: boolean;
+  logDetections: boolean;
+}
+
 export interface ModerationRule {
   id: string;
   name: string;
-  type: 'profanity' | 'pii' | 'spam' | 'hate_speech' | 'custom';
+  type: 'profanity' | 'spam' | 'hate_speech' | 'custom';
   action: 'block' | 'flag' | 'redact' | 'warn';
   severity: 'low' | 'medium' | 'high';
   isActive: boolean;
@@ -52,7 +113,6 @@ export interface AuditLogEntry {
 
 export const MODERATION_TYPES = {
   profanity: { label: 'Profanity Filter', icon: '🤬' },
-  pii: { label: 'PII Detection', icon: '🔐' },
   spam: { label: 'Spam Detection', icon: '📧' },
   hate_speech: { label: 'Hate Speech', icon: '🚫' },
   custom: { label: 'Custom Rule', icon: '⚙️' },
@@ -63,4 +123,13 @@ export const MODERATION_ACTIONS = {
   flag: { label: 'Flag for Review', color: 'text-warning' },
   redact: { label: 'Redact Content', color: 'text-primary' },
   warn: { label: 'Warn User', color: 'text-muted-foreground' },
+};
+
+export const SSO_PROVIDERS = {
+  none: { label: 'Not Configured', icon: '⚪' },
+  saml: { label: 'SAML 2.0', icon: '🔐' },
+  oidc: { label: 'OpenID Connect', icon: '🌐' },
+  azure_ad: { label: 'Azure Active Directory', icon: '☁️' },
+  okta: { label: 'Okta', icon: '🔑' },
+  google: { label: 'Google Workspace', icon: '🅖' },
 };

@@ -17,6 +17,14 @@ import {
   Lock,
   Trash2,
   Bot,
+  KeyRound,
+  Users,
+  Fingerprint,
+  ShieldAlert,
+  ShieldCheck,
+  Ban,
+  Plus,
+  X,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -45,7 +53,7 @@ import {
 import { useSecurityData } from '@/hooks/useSecurityData';
 import { notify } from '@/hooks/useNotification';
 import type { DataRetentionSettings } from '@/types/security';
-import { MODERATION_TYPES, MODERATION_ACTIONS } from '@/types/security';
+import { MODERATION_TYPES, MODERATION_ACTIONS, SSO_PROVIDERS } from '@/types/security';
 import { cn } from '@/lib/utils';
 
 export default function SecurityPage() {
@@ -56,6 +64,14 @@ export default function SecurityPage() {
     setGDPRSettings,
     dataRetention,
     setDataRetention,
+    zeroRetention,
+    setZeroRetention,
+    ssoSettings,
+    setSSOSettings,
+    rbacSettings,
+    setRBACSettings,
+    piiProtection,
+    setPIIProtection,
     moderationRules,
     auditLogs,
     isSaving,
@@ -67,6 +83,8 @@ export default function SecurityPage() {
 
   const [logFilter, setLogFilter] = useState<'all' | 'success' | 'failure'>('all');
   const [logSearch, setLogSearch] = useState('');
+  const [newIP, setNewIP] = useState('');
+  const [newDomain, setNewDomain] = useState('');
 
   const filteredLogs = auditLogs.filter(log => {
     const matchesFilter = logFilter === 'all' || log.status === logFilter;
@@ -119,15 +137,36 @@ export default function SecurityPage() {
     }
   };
 
+  const addIP = () => {
+    if (newIP.trim() && !rbacSettings.allowedIPs.includes(newIP.trim())) {
+      setRBACSettings(prev => ({ ...prev, allowedIPs: [...prev.allowedIPs, newIP.trim()] }));
+      setNewIP('');
+    }
+  };
+
+  const removeIP = (ip: string) => {
+    setRBACSettings(prev => ({ ...prev, allowedIPs: prev.allowedIPs.filter(i => i !== ip) }));
+  };
+
+  const addDomain = () => {
+    if (newDomain.trim() && !ssoSettings.domains.includes(newDomain.trim())) {
+      setSSOSettings(prev => ({ ...prev, domains: [...prev.domains, newDomain.trim()] }));
+      setNewDomain('');
+    }
+  };
+
+  const removeDomain = (domain: string) => {
+    setSSOSettings(prev => ({ ...prev, domains: prev.domains.filter(d => d !== domain) }));
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Security & Compliance</h1>
             <p className="text-sm text-muted-foreground">
-              Manage privacy, data protection, and content moderation
+              Manage authentication, access control, privacy, and content moderation
             </p>
           </div>
           <Button onClick={handleSaveSettings} disabled={isSaving}>
@@ -140,126 +179,282 @@ export default function SecurityPage() {
           </Button>
         </div>
 
-        <Tabs defaultValue="consent" className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
-            <TabsTrigger value="consent">Consent</TabsTrigger>
-            <TabsTrigger value="gdpr">GDPR</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
-            <TabsTrigger value="moderation">Moderation</TabsTrigger>
-            <TabsTrigger value="audit">Audit Logs</TabsTrigger>
+        <Tabs defaultValue="compliance" className="space-y-6">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+            <TabsTrigger value="compliance" className="gap-1.5">
+              <Shield className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Compliance</span>
+            </TabsTrigger>
+            <TabsTrigger value="sso" className="gap-1.5">
+              <KeyRound className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">SSO</span>
+            </TabsTrigger>
+            <TabsTrigger value="rbac" className="gap-1.5">
+              <Users className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">RBAC</span>
+            </TabsTrigger>
+            <TabsTrigger value="moderation" className="gap-1.5">
+              <Bot className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Moderation</span>
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="gap-1.5">
+              <FileCheck className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Audit Logs</span>
+            </TabsTrigger>
           </TabsList>
 
-          {/* Consent Management Tab */}
-          <TabsContent value="consent" className="space-y-6">
+          {/* ========== COMPLIANCE TAB ========== */}
+          <TabsContent value="compliance" className="space-y-6">
+            {/* PII Protection */}
             <Card className="gradient-card">
               <CardHeader>
                 <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <FileCheck className="w-5 h-5 text-primary" />
-                  Consent Management
+                  <Fingerprint className="w-5 h-5 text-primary" />
+                  PII Protection
                 </CardTitle>
                 <CardDescription>
-                  Configure user consent requirements and preferences
+                  Automatically detect and protect personally identifiable information
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {/* Consent Banner */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Consent Banner</p>
-                        <p className="text-sm text-muted-foreground">
-                          Show cookie consent banner to visitors
+              <CardContent className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                    <div>
+                      <p className="font-medium text-sm">Enable PII Protection</p>
+                      <p className="text-xs text-muted-foreground">Detect and handle PII in conversations</p>
+                    </div>
+                    <Switch
+                      checked={piiProtection.enabled}
+                      onCheckedChange={(checked) => setPIIProtection(prev => ({ ...prev, enabled: checked }))}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                    <div>
+                      <p className="font-medium text-sm">Auto-Detect PII</p>
+                      <p className="text-xs text-muted-foreground">Use AI to find PII automatically</p>
+                    </div>
+                    <Switch
+                      checked={piiProtection.autoDetect}
+                      onCheckedChange={(checked) => setPIIProtection(prev => ({ ...prev, autoDetect: checked }))}
+                    />
+                  </div>
+                </div>
+
+                {piiProtection.enabled && (
+                  <>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {[
+                        { key: 'names', label: 'Names', desc: 'Full names and identities' },
+                        { key: 'emails', label: 'Email Addresses', desc: 'All email formats' },
+                        { key: 'phones', label: 'Phone Numbers', desc: 'International formats' },
+                        { key: 'addresses', label: 'Physical Addresses', desc: 'Street and mailing addresses' },
+                        { key: 'ssn', label: 'Social Security Numbers', desc: 'SSN patterns' },
+                        { key: 'creditCards', label: 'Credit Card Numbers', desc: 'All card formats' },
+                        { key: 'dateOfBirth', label: 'Date of Birth', desc: 'DOB patterns' },
+                        { key: 'medicalRecords', label: 'Medical Records', desc: 'HIPAA-protected data' },
+                      ].map(item => (
+                        <div key={item.key} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div>
+                            <p className="font-medium text-sm">{item.label}</p>
+                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+                          </div>
+                          <Switch
+                            checked={piiProtection.detectionTypes[item.key as keyof typeof piiProtection.detectionTypes]}
+                            onCheckedChange={(checked) =>
+                              setPIIProtection(prev => ({
+                                ...prev,
+                                detectionTypes: { ...prev.detectionTypes, [item.key]: checked },
+                              }))
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg border bg-muted/30">
+                        <Label className="text-sm font-medium mb-2 block">Action on Detection</Label>
+                        <Select
+                          value={piiProtection.action}
+                          onValueChange={(value: 'redact' | 'mask' | 'hash' | 'tokenize') =>
+                            setPIIProtection(prev => ({ ...prev, action: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="redact">Redact (Remove)</SelectItem>
+                            <SelectItem value="mask">Mask (Replace with ***)</SelectItem>
+                            <SelectItem value="hash">Hash (One-way encrypt)</SelectItem>
+                            <SelectItem value="tokenize">Tokenize (Reversible)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div>
+                            <p className="font-medium text-sm">Notify on Detection</p>
+                            <p className="text-xs text-muted-foreground">Alert admins</p>
+                          </div>
+                          <Switch
+                            checked={piiProtection.notifyOnDetection}
+                            onCheckedChange={(checked) =>
+                              setPIIProtection(prev => ({ ...prev, notifyOnDetection: checked }))
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div>
+                            <p className="font-medium text-sm">Log Detections</p>
+                            <p className="text-xs text-muted-foreground">Record in audit log</p>
+                          </div>
+                          <Switch
+                            checked={piiProtection.logDetections}
+                            onCheckedChange={(checked) =>
+                              setPIIProtection(prev => ({ ...prev, logDetections: checked }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Zero Retention Policy */}
+            <Card className="gradient-card">
+              <CardHeader>
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <Ban className="w-5 h-5 text-primary" />
+                  Zero Retention Policy
+                </CardTitle>
+                <CardDescription>
+                  Process data in real-time without storing it permanently
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                  <div>
+                    <p className="font-medium text-sm">Enable Zero Retention</p>
+                    <p className="text-xs text-muted-foreground">Data is processed but never stored on disk</p>
+                  </div>
+                  <Switch
+                    checked={zeroRetention.enabled}
+                    onCheckedChange={(checked) => setZeroRetention(prev => ({ ...prev, enabled: checked }))}
+                  />
+                </div>
+
+                {zeroRetention.enabled && (
+                  <>
+                    <div className="p-3 rounded-lg border bg-destructive/5 border-destructive/20">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-destructive">
+                          Zero Retention mode will prevent data from being stored. Analytics and historical reporting will be limited. This cannot be undone for data processed during this period.
                         </p>
                       </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg border bg-muted/30">
+                      <Label className="text-sm font-medium mb-2 block">Retention Scope</Label>
+                      <Select
+                        value={zeroRetention.scope}
+                        onValueChange={(value: 'all' | 'pii_only' | 'conversations_only') =>
+                          setZeroRetention(prev => ({ ...prev, scope: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Data</SelectItem>
+                          <SelectItem value="pii_only">PII Data Only</SelectItem>
+                          <SelectItem value="conversations_only">Conversations Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <p className="font-medium text-sm">Real-Time Only</p>
+                          <p className="text-xs text-muted-foreground">Process in memory</p>
+                        </div>
+                        <Switch
+                          checked={zeroRetention.realTimeProcessingOnly}
+                          onCheckedChange={(checked) =>
+                            setZeroRetention(prev => ({ ...prev, realTimeProcessingOnly: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <p className="font-medium text-sm">No Logs Mode</p>
+                          <p className="text-xs text-muted-foreground">Suppress all logs</p>
+                        </div>
+                        <Switch
+                          checked={zeroRetention.noLogsMode}
+                          onCheckedChange={(checked) =>
+                            setZeroRetention(prev => ({ ...prev, noLogsMode: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <p className="font-medium text-sm">Preserve Audit Logs</p>
+                          <p className="text-xs text-muted-foreground">Keep audit trail even with zero retention</p>
+                        </div>
+                        <Switch
+                          checked={zeroRetention.excludeAuditLogs}
+                          onCheckedChange={(checked) =>
+                            setZeroRetention(prev => ({ ...prev, excludeAuditLogs: checked }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Consent & GDPR - collapsed into summary cards */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="gradient-card">
+                <CardHeader>
+                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                    <FileCheck className="w-5 h-5 text-primary" />
+                    Consent Management
+                  </CardTitle>
+                  <CardDescription>Configure user consent requirements</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    { key: 'consentBannerEnabled', label: 'Consent Banner', desc: 'Show cookie consent banner' },
+                    { key: 'cookieConsent', label: 'Cookie Consent', desc: 'Require consent before tracking' },
+                    { key: 'marketingConsent', label: 'Marketing Consent', desc: 'Opt-in for marketing' },
+                    { key: 'analyticsConsent', label: 'Analytics Consent', desc: 'Consent for analytics' },
+                    { key: 'thirdPartySharing', label: 'Third-Party Sharing', desc: 'Allow data sharing' },
+                  ].map(item => (
+                    <div key={item.key} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                      <div>
+                        <p className="font-medium text-sm">{item.label}</p>
+                        <p className="text-xs text-muted-foreground">{item.desc}</p>
+                      </div>
                       <Switch
-                        checked={consentSettings.consentBannerEnabled}
+                        checked={consentSettings[item.key as keyof typeof consentSettings] as boolean}
                         onCheckedChange={(checked) =>
-                          setConsentSettings(prev => ({ ...prev, consentBannerEnabled: checked }))
+                          setConsentSettings(prev => ({ ...prev, [item.key]: checked }))
                         }
                       />
                     </div>
-                  </div>
-
-                  {/* Cookie Consent */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Cookie Consent</p>
-                        <p className="text-sm text-muted-foreground">
-                          Require cookie consent before tracking
-                        </p>
-                      </div>
-                      <Switch
-                        checked={consentSettings.cookieConsent}
-                        onCheckedChange={(checked) =>
-                          setConsentSettings(prev => ({ ...prev, cookieConsent: checked }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Marketing Consent */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Marketing Consent</p>
-                        <p className="text-sm text-muted-foreground">
-                          Require opt-in for marketing communications
-                        </p>
-                      </div>
-                      <Switch
-                        checked={consentSettings.marketingConsent}
-                        onCheckedChange={(checked) =>
-                          setConsentSettings(prev => ({ ...prev, marketingConsent: checked }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Analytics Consent */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Analytics Consent</p>
-                        <p className="text-sm text-muted-foreground">
-                          Require consent for analytics tracking
-                        </p>
-                      </div>
-                      <Switch
-                        checked={consentSettings.analyticsConsent}
-                        onCheckedChange={(checked) =>
-                          setConsentSettings(prev => ({ ...prev, analyticsConsent: checked }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Third Party Sharing */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Third-Party Sharing</p>
-                        <p className="text-sm text-muted-foreground">
-                          Allow data sharing with third parties
-                        </p>
-                      </div>
-                      <Switch
-                        checked={consentSettings.thirdPartySharing}
-                        onCheckedChange={(checked) =>
-                          setConsentSettings(prev => ({ ...prev, thirdPartySharing: checked }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Consent Expiry */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="mb-3">
-                      <p className="font-medium">Consent Expiry</p>
-                      <p className="text-sm text-muted-foreground">
-                        Days until consent expires: {consentSettings.consentExpiryDays}
-                      </p>
+                  ))}
+                  <div className="p-3 rounded-lg border bg-muted/30">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm font-medium">Consent Expiry</p>
+                      <span className="text-sm text-muted-foreground">{consentSettings.consentExpiryDays} days</span>
                     </div>
                     <Slider
                       value={[consentSettings.consentExpiryDays]}
@@ -271,87 +466,53 @@ export default function SecurityPage() {
                       }
                     />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
 
-          {/* GDPR Tab */}
-          <TabsContent value="gdpr" className="space-y-6">
-            <Card className="gradient-card">
-              <CardHeader>
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" />
-                  GDPR Controls
-                </CardTitle>
-                <CardDescription>
-                  European data protection compliance settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {/* Data Portability */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Data Portability</p>
-                        <p className="text-sm text-muted-foreground">
-                          Allow users to export their data
-                        </p>
-                      </div>
-                      <Switch
-                        checked={gdprSettings.dataPortabilityEnabled}
-                        onCheckedChange={(checked) =>
-                          setGDPRSettings(prev => ({ ...prev, dataPortabilityEnabled: checked }))
-                        }
-                      />
+              <Card className="gradient-card">
+                <CardHeader>
+                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-primary" />
+                    GDPR Controls
+                  </CardTitle>
+                  <CardDescription>European data protection compliance</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                    <div>
+                      <p className="font-medium text-sm">Data Portability</p>
+                      <p className="text-xs text-muted-foreground">Allow users to export data</p>
                     </div>
+                    <Switch
+                      checked={gdprSettings.dataPortabilityEnabled}
+                      onCheckedChange={(checked) =>
+                        setGDPRSettings(prev => ({ ...prev, dataPortabilityEnabled: checked }))
+                      }
+                    />
                   </div>
-
-                  {/* Right to Erasure */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Right to Erasure</p>
-                        <p className="text-sm text-muted-foreground">
-                          Allow users to delete their data
-                        </p>
-                      </div>
-                      <Switch
-                        checked={gdprSettings.rightToErasureEnabled}
-                        onCheckedChange={(checked) =>
-                          setGDPRSettings(prev => ({ ...prev, rightToErasureEnabled: checked }))
-                        }
-                      />
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                    <div>
+                      <p className="font-medium text-sm">Right to Erasure</p>
+                      <p className="text-xs text-muted-foreground">Allow users to delete data</p>
                     </div>
+                    <Switch
+                      checked={gdprSettings.rightToErasureEnabled}
+                      onCheckedChange={(checked) =>
+                        setGDPRSettings(prev => ({ ...prev, rightToErasureEnabled: checked }))
+                      }
+                    />
                   </div>
-
-                  {/* Data Processing Agreement */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium">Data Processing Agreement</p>
-                        <p className="text-sm text-muted-foreground">
-                          DPA signed with all processors
-                        </p>
-                      </div>
-                      <Badge variant={gdprSettings.dataProcessingAgreement ? 'default' : 'destructive'}>
-                        {gdprSettings.dataProcessingAgreement ? 'Active' : 'Missing'}
-                      </Badge>
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                    <div>
+                      <p className="font-medium text-sm">Data Processing Agreement</p>
+                      <p className="text-xs text-muted-foreground">DPA signed with processors</p>
                     </div>
+                    <Badge variant={gdprSettings.dataProcessingAgreement ? 'default' : 'destructive'}>
+                      {gdprSettings.dataProcessingAgreement ? 'Active' : 'Missing'}
+                    </Badge>
                   </div>
-
-                  {/* Data Residency */}
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <div className="mb-3">
-                      <p className="font-medium flex items-center gap-2">
-                        <Globe className="w-4 h-4" />
-                        Data Residency
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Where your data is stored
-                      </p>
-                    </div>
+                  <div className="p-3 rounded-lg border bg-muted/30">
+                    <Label className="text-sm font-medium mb-2 block">Data Residency</Label>
                     <Select
                       value={gdprSettings.dataResidency}
                       onValueChange={(value: 'us' | 'eu' | 'asia') =>
@@ -368,68 +529,45 @@ export default function SecurityPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                {/* DPO Email */}
-                <div className="p-4 rounded-xl border bg-muted/30">
-                  <div className="mb-3">
-                    <p className="font-medium">Data Protection Officer</p>
-                    <p className="text-sm text-muted-foreground">
-                      Contact email for GDPR requests
-                    </p>
+                  <div className="p-3 rounded-lg border bg-muted/30">
+                    <Label className="text-sm font-medium mb-2 block">DPO Email</Label>
+                    <Input
+                      type="email"
+                      value={gdprSettings.dpoEmail}
+                      onChange={(e) => setGDPRSettings(prev => ({ ...prev, dpoEmail: e.target.value }))}
+                      placeholder="dpo@company.com"
+                    />
                   </div>
-                  <Input
-                    type="email"
-                    value={gdprSettings.dpoEmail}
-                    onChange={(e) =>
-                      setGDPRSettings(prev => ({ ...prev, dpoEmail: e.target.value }))
-                    }
-                    placeholder="dpo@company.com"
-                  />
-                </div>
-
-                {/* Sub-Processors */}
-                <div className="p-4 rounded-xl border bg-muted/30">
-                  <div className="mb-3">
-                    <p className="font-medium">Authorized Sub-Processors</p>
-                    <p className="text-sm text-muted-foreground">
-                      Third-party services that process data
-                    </p>
+                  <div className="p-3 rounded-lg border bg-muted/30">
+                    <p className="text-sm font-medium mb-2">Sub-Processors</p>
+                    <div className="flex flex-wrap gap-2">
+                      {gdprSettings.subProcessorList.map((processor, i) => (
+                        <Badge key={i} variant="secondary">{processor}</Badge>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {gdprSettings.subProcessorList.map((processor, i) => (
-                      <Badge key={i} variant="secondary">
-                        {processor}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Data Masking & Retention Tab */}
-          <TabsContent value="data" className="space-y-6">
+            {/* Data Retention & Masking */}
             <div className="grid lg:grid-cols-2 gap-6">
-              {/* Data Masking */}
               <Card className="gradient-card">
                 <CardHeader>
                   <CardTitle className="text-base font-medium flex items-center gap-2">
                     <EyeOff className="w-5 h-5 text-primary" />
                     Data Masking
                   </CardTitle>
-                  <CardDescription>
-                    Automatically mask sensitive data in conversations
-                  </CardDescription>
+                  <CardDescription>Mask sensitive data in conversations</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
                   {[
-                    { key: 'maskPII', label: 'Personal Identifiable Information', desc: 'Names, addresses, IDs' },
-                    { key: 'maskCreditCards', label: 'Credit Card Numbers', desc: 'All card formats' },
+                    { key: 'maskPII', label: 'PII', desc: 'Names, addresses, IDs' },
+                    { key: 'maskCreditCards', label: 'Credit Cards', desc: 'All card formats' },
                     { key: 'maskPhoneNumbers', label: 'Phone Numbers', desc: 'International formats' },
                     { key: 'maskEmails', label: 'Email Addresses', desc: 'All email formats' },
-                    { key: 'maskSSN', label: 'Social Security Numbers', desc: 'SSN patterns' },
-                  ].map((item) => (
+                    { key: 'maskSSN', label: 'SSN', desc: 'SSN patterns' },
+                  ].map(item => (
                     <div key={item.key} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                       <div>
                         <p className="font-medium text-sm">{item.label}</p>
@@ -446,28 +584,22 @@ export default function SecurityPage() {
                 </CardContent>
               </Card>
 
-              {/* Data Retention */}
               <Card className="gradient-card">
                 <CardHeader>
                   <CardTitle className="text-base font-medium flex items-center gap-2">
                     <Clock className="w-5 h-5 text-primary" />
                     Data Retention
                   </CardTitle>
-                  <CardDescription>
-                    Configure how long data is stored
-                  </CardDescription>
+                  <CardDescription>How long data is stored</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Auto Delete */}
+                <CardContent className="space-y-4">
                   <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                     <div>
                       <p className="font-medium text-sm flex items-center gap-2">
                         <Trash2 className="w-4 h-4" />
-                        Auto-Delete Expired Data
+                        Auto-Delete Expired
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Automatically remove data past retention period
-                      </p>
+                      <p className="text-xs text-muted-foreground">Remove data past retention period</p>
                     </div>
                     <Switch
                       checked={dataRetention.autoDeleteEnabled}
@@ -476,69 +608,500 @@ export default function SecurityPage() {
                       }
                     />
                   </div>
-
-                  {/* Retention Periods */}
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-lg border bg-muted/30">
+                  {[
+                    { key: 'conversationRetentionDays', label: 'Conversations', min: 30, max: 365, step: 30 },
+                    { key: 'logRetentionDays', label: 'System Logs', min: 30, max: 730, step: 30 },
+                    { key: 'backupRetentionDays', label: 'Backups', min: 90, max: 1095, step: 90 },
+                  ].map(item => (
+                    <div key={item.key} className="p-3 rounded-lg border bg-muted/30">
                       <div className="flex justify-between mb-2">
-                        <p className="text-sm font-medium">Conversations</p>
+                        <p className="text-sm font-medium">{item.label}</p>
                         <span className="text-sm text-muted-foreground">
-                          {dataRetention.conversationRetentionDays} days
+                          {dataRetention[item.key as keyof DataRetentionSettings] as number} days
                         </span>
                       </div>
                       <Slider
-                        value={[dataRetention.conversationRetentionDays]}
-                        min={30}
-                        max={365}
-                        step={30}
+                        value={[dataRetention[item.key as keyof DataRetentionSettings] as number]}
+                        min={item.min}
+                        max={item.max}
+                        step={item.step}
                         onValueChange={([value]) =>
-                          setDataRetention(prev => ({ ...prev, conversationRetentionDays: value }))
+                          setDataRetention(prev => ({ ...prev, [item.key]: value }))
                         }
                       />
                     </div>
-
-                    <div className="p-4 rounded-lg border bg-muted/30">
-                      <div className="flex justify-between mb-2">
-                        <p className="text-sm font-medium">System Logs</p>
-                        <span className="text-sm text-muted-foreground">
-                          {dataRetention.logRetentionDays} days
-                        </span>
-                      </div>
-                      <Slider
-                        value={[dataRetention.logRetentionDays]}
-                        min={30}
-                        max={730}
-                        step={30}
-                        onValueChange={([value]) =>
-                          setDataRetention(prev => ({ ...prev, logRetentionDays: value }))
-                        }
-                      />
-                    </div>
-
-                    <div className="p-4 rounded-lg border bg-muted/30">
-                      <div className="flex justify-between mb-2">
-                        <p className="text-sm font-medium">Backups</p>
-                        <span className="text-sm text-muted-foreground">
-                          {dataRetention.backupRetentionDays} days
-                        </span>
-                      </div>
-                      <Slider
-                        value={[dataRetention.backupRetentionDays]}
-                        min={90}
-                        max={1095}
-                        step={90}
-                        onValueChange={([value]) =>
-                          setDataRetention(prev => ({ ...prev, backupRetentionDays: value }))
-                        }
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* AI Content Moderation Tab */}
+          {/* ========== SSO TAB ========== */}
+          <TabsContent value="sso" className="space-y-6">
+            <Card className="gradient-card">
+              <CardHeader>
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <KeyRound className="w-5 h-5 text-primary" />
+                  Single Sign-On (SSO)
+                </CardTitle>
+                <CardDescription>
+                  Configure SSO to allow users to authenticate with your identity provider
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
+                  <div>
+                    <p className="font-medium">Enable SSO</p>
+                    <p className="text-sm text-muted-foreground">Allow sign-in through your identity provider</p>
+                  </div>
+                  <Switch
+                    checked={ssoSettings.enabled}
+                    onCheckedChange={(checked) => setSSOSettings(prev => ({ ...prev, enabled: checked }))}
+                  />
+                </div>
+
+                {ssoSettings.enabled && (
+                  <>
+                    <div className="p-4 rounded-xl border bg-muted/30">
+                      <Label className="text-sm font-medium mb-3 block">Identity Provider</Label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {Object.entries(SSO_PROVIDERS).filter(([key]) => key !== 'none').map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => setSSOSettings(prev => ({ ...prev, provider: key as any }))}
+                            className={cn(
+                              'p-3 rounded-lg border text-left transition-all',
+                              ssoSettings.provider === key
+                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                : 'hover:border-primary/50 bg-muted/30'
+                            )}
+                          >
+                            <span className="text-lg mr-2">{config.icon}</span>
+                            <span className="text-sm font-medium">{config.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Entity ID / Issuer</Label>
+                        <Input
+                          value={ssoSettings.entityId}
+                          onChange={(e) => setSSOSettings(prev => ({ ...prev, entityId: e.target.value }))}
+                          placeholder="https://idp.company.com/entity"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">SSO Login URL</Label>
+                        <Input
+                          value={ssoSettings.ssoUrl}
+                          onChange={(e) => setSSOSettings(prev => ({ ...prev, ssoUrl: e.target.value }))}
+                          placeholder="https://idp.company.com/sso/login"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">X.509 Certificate</Label>
+                      <textarea
+                        className="w-full min-h-[80px] p-3 rounded-lg border bg-background text-sm font-mono resize-y"
+                        value={ssoSettings.certificate}
+                        onChange={(e) => setSSOSettings(prev => ({ ...prev, certificate: e.target.value }))}
+                        placeholder="-----BEGIN CERTIFICATE-----&#10;Paste your certificate here...&#10;-----END CERTIFICATE-----"
+                      />
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <p className="font-medium text-sm">Enforce SSO</p>
+                          <p className="text-xs text-muted-foreground">Require SSO for all users</p>
+                        </div>
+                        <Switch
+                          checked={ssoSettings.enforceSSO}
+                          onCheckedChange={(checked) => setSSOSettings(prev => ({ ...prev, enforceSSO: checked }))}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <p className="font-medium text-sm">Password Fallback</p>
+                          <p className="text-xs text-muted-foreground">Allow email/password login</p>
+                        </div>
+                        <Switch
+                          checked={ssoSettings.allowPasswordFallback}
+                          onCheckedChange={(checked) =>
+                            setSSOSettings(prev => ({ ...prev, allowPasswordFallback: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <p className="font-medium text-sm">Auto-Provision Users</p>
+                          <p className="text-xs text-muted-foreground">Create accounts on first login</p>
+                        </div>
+                        <Switch
+                          checked={ssoSettings.autoProvision}
+                          onCheckedChange={(checked) =>
+                            setSSOSettings(prev => ({ ...prev, autoProvision: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="p-3 rounded-lg border bg-muted/30">
+                        <Label className="text-sm font-medium mb-2 block">Default Role</Label>
+                        <Select
+                          value={ssoSettings.defaultRole}
+                          onValueChange={(value: 'agent' | 'supervisor' | 'client_admin') =>
+                            setSSOSettings(prev => ({ ...prev, defaultRole: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="agent">Agent</SelectItem>
+                            <SelectItem value="supervisor">Supervisor</SelectItem>
+                            <SelectItem value="client_admin">Client Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border bg-muted/30">
+                      <Label className="text-sm font-medium mb-3 block">Allowed Email Domains</Label>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {ssoSettings.domains.map((domain) => (
+                          <Badge key={domain} variant="secondary" className="gap-1 pr-1">
+                            {domain}
+                            <button
+                              onClick={() => removeDomain(domain)}
+                              className="ml-1 rounded-full hover:bg-destructive/20 p-0.5"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={newDomain}
+                          onChange={(e) => setNewDomain(e.target.value)}
+                          placeholder="example.com"
+                          onKeyDown={(e) => e.key === 'Enter' && addDomain()}
+                        />
+                        <Button variant="outline" size="sm" onClick={addDomain}>
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg border bg-muted/30">
+                      <div className="flex justify-between mb-2">
+                        <p className="text-sm font-medium">Session Timeout</p>
+                        <span className="text-sm text-muted-foreground">{ssoSettings.sessionTimeout} min</span>
+                      </div>
+                      <Slider
+                        value={[ssoSettings.sessionTimeout]}
+                        min={15}
+                        max={1440}
+                        step={15}
+                        onValueChange={([value]) => setSSOSettings(prev => ({ ...prev, sessionTimeout: value }))}
+                      />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ========== RBAC TAB ========== */}
+          <TabsContent value="rbac" className="space-y-6">
+            <Card className="gradient-card">
+              <CardHeader>
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Role-Based Access Control
+                </CardTitle>
+                <CardDescription>
+                  Manage access policies, MFA, password requirements, and session controls
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
+                  <div>
+                    <p className="font-medium">Enable RBAC</p>
+                    <p className="text-sm text-muted-foreground">Enforce role-based permissions across the platform</p>
+                  </div>
+                  <Switch
+                    checked={rbacSettings.enabled}
+                    onCheckedChange={(checked) => setRBACSettings(prev => ({ ...prev, enabled: checked }))}
+                  />
+                </div>
+
+                {rbacSettings.enabled && (
+                  <>
+                    {/* MFA */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-primary" />
+                          Multi-Factor Authentication
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div>
+                            <p className="font-medium text-sm">Require MFA</p>
+                            <p className="text-xs text-muted-foreground">All users must use MFA</p>
+                          </div>
+                          <Switch
+                            checked={rbacSettings.requireMFA}
+                            onCheckedChange={(checked) =>
+                              setRBACSettings(prev => ({ ...prev, requireMFA: checked }))
+                            }
+                          />
+                        </div>
+                        {rbacSettings.requireMFA && (
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <Label className="text-sm font-medium mb-2 block">MFA Method</Label>
+                            <Select
+                              value={rbacSettings.mfaMethod}
+                              onValueChange={(value: 'totp' | 'sms' | 'email') =>
+                                setRBACSettings(prev => ({ ...prev, mfaMethod: value }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="totp">Authenticator App (TOTP)</SelectItem>
+                                <SelectItem value="sms">SMS Code</SelectItem>
+                                <SelectItem value="email">Email Code</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Password Policy */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <Lock className="w-4 h-4 text-primary" />
+                          Password Policy
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-lg border bg-muted/30">
+                          <div className="flex justify-between mb-2">
+                            <p className="text-sm font-medium">Minimum Length</p>
+                            <span className="text-sm text-muted-foreground">{rbacSettings.passwordPolicy.minLength} chars</span>
+                          </div>
+                          <Slider
+                            value={[rbacSettings.passwordPolicy.minLength]}
+                            min={6}
+                            max={32}
+                            step={1}
+                            onValueChange={([value]) =>
+                              setRBACSettings(prev => ({
+                                ...prev,
+                                passwordPolicy: { ...prev.passwordPolicy, minLength: value },
+                              }))
+                            }
+                          />
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          {[
+                            { key: 'requireUppercase', label: 'Require Uppercase' },
+                            { key: 'requireNumbers', label: 'Require Numbers' },
+                            { key: 'requireSpecialChars', label: 'Require Special Characters' },
+                          ].map(item => (
+                            <div key={item.key} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                              <p className="font-medium text-sm">{item.label}</p>
+                              <Switch
+                                checked={rbacSettings.passwordPolicy[item.key as keyof typeof rbacSettings.passwordPolicy] as boolean}
+                                onCheckedChange={(checked) =>
+                                  setRBACSettings(prev => ({
+                                    ...prev,
+                                    passwordPolicy: { ...prev.passwordPolicy, [item.key]: checked },
+                                  }))
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex justify-between mb-2">
+                              <p className="text-sm font-medium">Password Expiry</p>
+                              <span className="text-sm text-muted-foreground">{rbacSettings.passwordPolicy.expiryDays} days</span>
+                            </div>
+                            <Slider
+                              value={[rbacSettings.passwordPolicy.expiryDays]}
+                              min={30}
+                              max={365}
+                              step={30}
+                              onValueChange={([value]) =>
+                                setRBACSettings(prev => ({
+                                  ...prev,
+                                  passwordPolicy: { ...prev.passwordPolicy, expiryDays: value },
+                                }))
+                              }
+                            />
+                          </div>
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex justify-between mb-2">
+                              <p className="text-sm font-medium">Prevent Reuse</p>
+                              <span className="text-sm text-muted-foreground">Last {rbacSettings.passwordPolicy.preventReuse}</span>
+                            </div>
+                            <Slider
+                              value={[rbacSettings.passwordPolicy.preventReuse]}
+                              min={1}
+                              max={24}
+                              step={1}
+                              onValueChange={([value]) =>
+                                setRBACSettings(prev => ({
+                                  ...prev,
+                                  passwordPolicy: { ...prev.passwordPolicy, preventReuse: value },
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Session Policy */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-primary" />
+                          Session Policy
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-lg border bg-muted/30">
+                          <div className="flex justify-between mb-2">
+                            <p className="text-sm font-medium">Max Concurrent Sessions</p>
+                            <span className="text-sm text-muted-foreground">{rbacSettings.sessionPolicy.maxConcurrentSessions}</span>
+                          </div>
+                          <Slider
+                            value={[rbacSettings.sessionPolicy.maxConcurrentSessions]}
+                            min={1}
+                            max={10}
+                            step={1}
+                            onValueChange={([value]) =>
+                              setRBACSettings(prev => ({
+                                ...prev,
+                                sessionPolicy: { ...prev.sessionPolicy, maxConcurrentSessions: value },
+                              }))
+                            }
+                          />
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex justify-between mb-2">
+                              <p className="text-sm font-medium">Idle Timeout</p>
+                              <span className="text-sm text-muted-foreground">{rbacSettings.sessionPolicy.idleTimeoutMinutes} min</span>
+                            </div>
+                            <Slider
+                              value={[rbacSettings.sessionPolicy.idleTimeoutMinutes]}
+                              min={5}
+                              max={120}
+                              step={5}
+                              onValueChange={([value]) =>
+                                setRBACSettings(prev => ({
+                                  ...prev,
+                                  sessionPolicy: { ...prev.sessionPolicy, idleTimeoutMinutes: value },
+                                }))
+                              }
+                            />
+                          </div>
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex justify-between mb-2">
+                              <p className="text-sm font-medium">Absolute Timeout</p>
+                              <span className="text-sm text-muted-foreground">{rbacSettings.sessionPolicy.absoluteTimeoutHours} hrs</span>
+                            </div>
+                            <Slider
+                              value={[rbacSettings.sessionPolicy.absoluteTimeoutHours]}
+                              min={1}
+                              max={24}
+                              step={1}
+                              onValueChange={([value]) =>
+                                setRBACSettings(prev => ({
+                                  ...prev,
+                                  sessionPolicy: { ...prev.sessionPolicy, absoluteTimeoutHours: value },
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* IP Restrictions */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-primary" />
+                          IP Restrictions
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div>
+                            <p className="font-medium text-sm">Enforce IP Allowlist</p>
+                            <p className="text-xs text-muted-foreground">Only allow access from listed IPs</p>
+                          </div>
+                          <Switch
+                            checked={rbacSettings.enforceIPRestriction}
+                            onCheckedChange={(checked) =>
+                              setRBACSettings(prev => ({ ...prev, enforceIPRestriction: checked }))
+                            }
+                          />
+                        </div>
+                        {rbacSettings.enforceIPRestriction && (
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {rbacSettings.allowedIPs.length === 0 && (
+                                <p className="text-sm text-muted-foreground">No IPs added yet</p>
+                              )}
+                              {rbacSettings.allowedIPs.map((ip) => (
+                                <Badge key={ip} variant="secondary" className="gap-1 pr-1 font-mono text-xs">
+                                  {ip}
+                                  <button
+                                    onClick={() => removeIP(ip)}
+                                    className="ml-1 rounded-full hover:bg-destructive/20 p-0.5"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                value={newIP}
+                                onChange={(e) => setNewIP(e.target.value)}
+                                placeholder="192.168.1.0/24"
+                                className="font-mono text-sm"
+                                onKeyDown={(e) => e.key === 'Enter' && addIP()}
+                              />
+                              <Button variant="outline" size="sm" onClick={addIP}>
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ========== MODERATION TAB ========== */}
           <TabsContent value="moderation" className="space-y-6">
             <Card className="gradient-card">
               <CardHeader>
@@ -651,7 +1214,7 @@ export default function SecurityPage() {
             </Card>
           </TabsContent>
 
-          {/* Audit Logs Tab */}
+          {/* ========== AUDIT LOGS TAB ========== */}
           <TabsContent value="audit" className="space-y-6">
             <Card className="gradient-card">
               <CardHeader>
@@ -676,7 +1239,6 @@ export default function SecurityPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Filters */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -701,7 +1263,6 @@ export default function SecurityPage() {
                   </div>
                 </div>
 
-                {/* Logs Table */}
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>

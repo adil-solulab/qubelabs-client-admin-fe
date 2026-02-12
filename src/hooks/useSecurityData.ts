@@ -3,6 +3,10 @@ import type {
   ConsentSettings,
   GDPRSettings,
   DataRetentionSettings,
+  ZeroRetentionSettings,
+  SSOSettings,
+  RBACSettings,
+  PIIProtectionSettings,
   ModerationRule,
   AuditLogEntry,
 } from '@/types/security';
@@ -37,6 +41,67 @@ const mockDataRetention: DataRetentionSettings = {
   maskSSN: true,
 };
 
+const mockZeroRetention: ZeroRetentionSettings = {
+  enabled: false,
+  scope: 'pii_only',
+  realTimeProcessingOnly: false,
+  noLogsMode: false,
+  excludeAuditLogs: true,
+};
+
+const mockSSOSettings: SSOSettings = {
+  enabled: false,
+  provider: 'none',
+  entityId: '',
+  ssoUrl: '',
+  certificate: '',
+  enforceSSO: false,
+  allowPasswordFallback: true,
+  autoProvision: false,
+  defaultRole: 'agent',
+  domains: ['company.com'],
+  sessionTimeout: 480,
+};
+
+const mockRBACSettings: RBACSettings = {
+  enabled: true,
+  enforceIPRestriction: false,
+  allowedIPs: [],
+  requireMFA: false,
+  mfaMethod: 'none',
+  passwordPolicy: {
+    minLength: 8,
+    requireUppercase: true,
+    requireNumbers: true,
+    requireSpecialChars: false,
+    expiryDays: 90,
+    preventReuse: 5,
+  },
+  sessionPolicy: {
+    maxConcurrentSessions: 3,
+    idleTimeoutMinutes: 30,
+    absoluteTimeoutHours: 12,
+  },
+};
+
+const mockPIIProtection: PIIProtectionSettings = {
+  enabled: true,
+  autoDetect: true,
+  detectionTypes: {
+    names: true,
+    emails: true,
+    phones: true,
+    addresses: true,
+    ssn: true,
+    creditCards: true,
+    dateOfBirth: false,
+    medicalRecords: false,
+  },
+  action: 'redact',
+  notifyOnDetection: true,
+  logDetections: true,
+};
+
 const mockModerationRules: ModerationRule[] = [
   {
     id: 'rule-1',
@@ -44,14 +109,6 @@ const mockModerationRules: ModerationRule[] = [
     type: 'profanity',
     action: 'redact',
     severity: 'medium',
-    isActive: true,
-  },
-  {
-    id: 'rule-2',
-    name: 'PII Protection',
-    type: 'pii',
-    action: 'block',
-    severity: 'high',
     isActive: true,
   },
   {
@@ -131,9 +188,9 @@ const mockAuditLogs: AuditLogEntry[] = [
     timestamp: '2025-02-01T14:00:00Z',
     userId: 'user-2',
     userName: 'Sarah Manager',
-    action: 'moderation.update',
-    resource: 'Content Moderation',
-    details: 'Enabled hate speech filter',
+    action: 'sso.configure',
+    resource: 'SSO Settings',
+    details: 'Configured SAML SSO provider',
     ipAddress: '192.168.1.101',
     status: 'success',
   },
@@ -164,9 +221,9 @@ const mockAuditLogs: AuditLogEntry[] = [
     timestamp: '2025-01-31T18:45:00Z',
     userId: 'user-4',
     userName: 'Mike Developer',
-    action: 'integration.connect',
-    resource: 'Integrations',
-    details: 'Connected Salesforce integration',
+    action: 'rbac.update',
+    resource: 'RBAC Settings',
+    details: 'Updated password policy requirements',
     ipAddress: '192.168.1.105',
     status: 'success',
   },
@@ -176,6 +233,10 @@ export function useSecurityData() {
   const [consentSettings, setConsentSettings] = useState<ConsentSettings>(mockConsentSettings);
   const [gdprSettings, setGDPRSettings] = useState<GDPRSettings>(mockGDPRSettings);
   const [dataRetention, setDataRetention] = useState<DataRetentionSettings>(mockDataRetention);
+  const [zeroRetention, setZeroRetention] = useState<ZeroRetentionSettings>(mockZeroRetention);
+  const [ssoSettings, setSSOSettings] = useState<SSOSettings>(mockSSOSettings);
+  const [rbacSettings, setRBACSettings] = useState<RBACSettings>(mockRBACSettings);
+  const [piiProtection, setPIIProtection] = useState<PIIProtectionSettings>(mockPIIProtection);
   const [moderationRules, setModerationRules] = useState<ModerationRule[]>(mockModerationRules);
   const [auditLogs] = useState<AuditLogEntry[]>(mockAuditLogs);
   const [isSaving, setIsSaving] = useState(false);
@@ -215,6 +276,14 @@ export function useSecurityData() {
     setGDPRSettings,
     dataRetention,
     setDataRetention,
+    zeroRetention,
+    setZeroRetention,
+    ssoSettings,
+    setSSOSettings,
+    rbacSettings,
+    setRBACSettings,
+    piiProtection,
+    setPIIProtection,
     moderationRules,
     auditLogs,
     isSaving,

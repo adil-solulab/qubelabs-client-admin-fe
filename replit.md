@@ -133,6 +133,16 @@ Preferred communication style: Simple, everyday language.
 - **Widget Registry**: Extended with outcome KPIs (time-saved, effort-saved, conversion-rate, engagement-rate)
 - Components in `src/components/analytics/`: KPICard, OverviewTab, ChannelsTab, SentimentSpeechTab, LLMAnalyticsTab, TranscriptionTab, ComplianceTab, CampaignAnalytics
 
+### Security & Compliance Module (Enhanced)
+- **5-Tab Structure**: Compliance, SSO, RBAC, Moderation, Audit Logs
+- **Compliance Tab**: PII Protection (8 detection types, 4 action modes), Zero Retention Policy (scope/mode controls), Consent Management, GDPR Controls, Data Masking, Data Retention
+- **SSO Tab**: 5 identity providers (SAML, OIDC, Azure AD, Okta, Google), domain allowlist, session timeout, auto-provision, enforce/fallback controls
+- **RBAC Tab**: MFA (TOTP/SMS/Email), password policy (length/complexity/expiry/reuse), session policy (concurrent/idle/absolute timeouts), IP restrictions with allowlist
+- **Moderation Tab**: Content rules (profanity, spam, hate speech, custom patterns) with action/severity controls
+- **Audit Logs Tab**: Searchable/filterable log table with export
+- PII Protection moved from Moderation to Compliance for clearer grouping
+- Types in `src/types/security.ts`, data hook in `src/hooks/useSecurityData.ts`
+
 ### No Backend Currently
 - Application runs entirely in the browser
 - All data is mocked and stored in React state
