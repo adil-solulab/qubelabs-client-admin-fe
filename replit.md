@@ -91,6 +91,21 @@ Preferred communication style: Simple, everyday language.
 - **ESLint** - Linting with React hooks and refresh plugins
 - **PostCSS** with Autoprefixer - CSS processing
 
+### Knowledge Base Multi-Source Architecture
+- **File Uploads**: Traditional document upload (PDF, DOCX, TXT, MD, CSV, XLSX) with drag & drop
+- **URL Scraping**: Single or bulk URL crawling with content extraction and cleaning
+- **Sitemap Discovery**: XML sitemap parsing to auto-discover and crawl all website pages
+- **Integration Import**: Import from third-party services (Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, Database)
+- **Auto-Sync**: Configurable sync frequency (manual, hourly, daily, weekly) for URLs, sitemaps, and integrations
+- Each source type has its own tab, card component, add modal, and training/sync/delete actions
+- Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddURLModal`, `AddSitemapModal`, `AddIntegrationSourceModal`
+
+### Integrations Page (Yellow.ai Style)
+- Redesigned with category sidebar, grouped card grid, and integration detail view
+- 24 integrations across 8 categories (CRM, ITSM, HR, Tools, Payment, Live Chat, Retail, Communication)
+- Each integration has configuration fields, setup instructions, and connection management
+- API Keys and Webhooks remain in separate tabs
+
 ### No Backend Currently
 - Application runs entirely in the browser
 - All data is mocked and stored in React state
