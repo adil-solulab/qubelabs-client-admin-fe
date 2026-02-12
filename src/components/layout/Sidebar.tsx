@@ -24,6 +24,7 @@ import {
   User,
   Zap,
   Star,
+  Home,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -39,6 +40,7 @@ interface NavItem {
 }
 
 const allNavItems: NavItem[] = [
+  { icon: Home, label: 'Home', path: '/home', screenId: 'home' },
   { icon: LayoutDashboard, label: 'Dashboard', path: '/', screenId: 'dashboard' },
   { icon: Users, label: 'Users', path: '/users', screenId: 'users' },
   { icon: Bot, label: 'AI Agents', path: '/ai-agents', screenId: 'ai-agents', badge: '5' },

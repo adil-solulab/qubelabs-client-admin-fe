@@ -27,6 +27,7 @@ import ThemeSettingsPage from "./pages/ThemeSettingsPage";
 import RolesPage from "./pages/RolesPage";
 import AIEnginePage from "./pages/AIEnginePage";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,11 @@ const App = () => (
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <UserProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/home" element={
+                <ProtectedRoute screenId="home">
+                  <HomePage />
                 </ProtectedRoute>
               } />
               <Route path="/" element={

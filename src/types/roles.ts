@@ -1,5 +1,6 @@
 // Screen/Module identifiers for permission management
 export type ScreenId = 
+  | 'home'
   | 'dashboard'
   | 'users'
   | 'ai-agents'
@@ -48,6 +49,7 @@ export interface ScreenMeta {
 
 // All available screens with metadata
 export const AVAILABLE_SCREENS: ScreenMeta[] = [
+  { id: 'home', label: 'Home', path: '/home', category: 'core' },
   { id: 'dashboard', label: 'Dashboard', path: '/', category: 'core' },
   { id: 'users', label: 'Users', path: '/users', category: 'core' },
   { id: 'ai-agents', label: 'AI Agents', path: '/ai-agents', category: 'core' },
@@ -96,6 +98,7 @@ export const SYSTEM_ROLES: Role[] = [
     description: 'Manage team operations, monitor live conversations, and access analytics.',
     isSystem: true,
     permissions: [
+      { screenId: 'home', actions: ['view'] },
       { screenId: 'dashboard', actions: ['view'] },
       { screenId: 'users', actions: ['view'] },
       { screenId: 'ai-agents', actions: ['view'] },
@@ -116,6 +119,7 @@ export const SYSTEM_ROLES: Role[] = [
     description: 'Handle customer interactions and access assigned conversations.',
     isSystem: true,
     permissions: [
+      { screenId: 'home', actions: ['view'] },
       { screenId: 'dashboard', actions: ['view'] },
       { screenId: 'knowledge-base', actions: ['view'] },
       { screenId: 'live-ops', actions: ['view'] },
