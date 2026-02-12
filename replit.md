@@ -51,6 +51,19 @@ Preferred communication style: Simple, everyday language.
 - `useNotification` hook provides standardized success, error, warning, info, and promise-based notifications
 - `notify` export for direct access outside React components
 
+### Sidebar Navigation (Grouped)
+- Grouped navigation with collapsible section headers in `src/components/layout/Sidebar.tsx`
+- **Main**: Home, Dashboard (no header)
+- **AI Platform**: AI Agents, Knowledge Base, AI Engine, Flow Builder
+- **Operations**: Live Ops, Callbacks, Outbound Calls, Channels
+- **Insights**: Analytics, Surveys
+- **Management**: Users, Roles, Security
+- **Configure**: Integrations, Billing, SDKs, Theme, Profile
+- Section headers are clickable to collapse/expand groups
+- Collapsed sidebar shows divider lines between groups
+- Active group headers highlighted in primary color
+- Role-based filtering preserved across all groups
+
 ### Key Design Patterns
 - Feature modules are self-contained with types, hooks, and components
 - Type definitions in `src/types/` define domain models

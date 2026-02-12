@@ -20,6 +20,7 @@ import {
   Palette,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   User,
   Zap,
@@ -35,56 +36,167 @@ interface NavItem {
   icon: React.ElementType;
   label: string;
   path: string;
-  screenId: ScreenId | 'profile'; // profile is always accessible
+  screenId: ScreenId | 'profile';
   badge?: string | number;
 }
 
-const allNavItems: NavItem[] = [
-  { icon: Home, label: 'Home', path: '/home', screenId: 'home' },
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/', screenId: 'dashboard' },
-  { icon: Users, label: 'Users', path: '/users', screenId: 'users' },
-  { icon: Bot, label: 'AI Agents', path: '/ai-agents', screenId: 'ai-agents', badge: '5' },
-  { icon: BookOpen, label: 'Knowledge Base', path: '/knowledge-base', screenId: 'knowledge-base' },
-  { icon: MessageSquare, label: 'Channels', path: '/channels', screenId: 'channels' },
-  { icon: GitBranch, label: 'Flow Builder', path: '/flow-builder', screenId: 'flow-builder' },
-  { icon: Headphones, label: 'Live Ops', path: '/live-ops', screenId: 'live-ops', badge: '12' },
-  { icon: PhoneCall, label: 'Callbacks', path: '/callbacks', screenId: 'live-ops', badge: '3' },
-  { icon: PhoneOutgoing, label: 'Outbound Calls', path: '/outbound-calls', screenId: 'outbound-calls' },
-  { icon: Star, label: 'Surveys', path: '/surveys', screenId: 'analytics' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics', screenId: 'analytics' },
-  { icon: Puzzle, label: 'Integrations', path: '/integrations', screenId: 'integrations' },
-  { icon: CreditCard, label: 'Billing', path: '/billing', screenId: 'billing' },
-  { icon: Shield, label: 'Security', path: '/security', screenId: 'security' },
-  { icon: Zap, label: 'AI Engine', path: '/ai-engine', screenId: 'ai-engine' },
-  { icon: ShieldCheck, label: 'Roles', path: '/roles', screenId: 'roles' },
-  { icon: Code2, label: 'SDKs', path: '/sdks', screenId: 'sdks' },
-  { icon: Palette, label: 'Theme', path: '/theme', screenId: 'theme' },
-  { icon: User, label: 'Profile', path: '/profile', screenId: 'profile' },
+interface NavGroup {
+  id: string;
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    id: 'main',
+    label: '',
+    items: [
+      { icon: Home, label: 'Home', path: '/home', screenId: 'home' },
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/', screenId: 'dashboard' },
+    ],
+  },
+  {
+    id: 'ai-platform',
+    label: 'AI Platform',
+    items: [
+      { icon: Bot, label: 'AI Agents', path: '/ai-agents', screenId: 'ai-agents', badge: '5' },
+      { icon: BookOpen, label: 'Knowledge Base', path: '/knowledge-base', screenId: 'knowledge-base' },
+      { icon: Zap, label: 'AI Engine', path: '/ai-engine', screenId: 'ai-engine' },
+      { icon: GitBranch, label: 'Flow Builder', path: '/flow-builder', screenId: 'flow-builder' },
+    ],
+  },
+  {
+    id: 'operations',
+    label: 'Operations',
+    items: [
+      { icon: Headphones, label: 'Live Ops', path: '/live-ops', screenId: 'live-ops', badge: '12' },
+      { icon: PhoneCall, label: 'Callbacks', path: '/callbacks', screenId: 'live-ops', badge: '3' },
+      { icon: PhoneOutgoing, label: 'Outbound Calls', path: '/outbound-calls', screenId: 'outbound-calls' },
+      { icon: MessageSquare, label: 'Channels', path: '/channels', screenId: 'channels' },
+    ],
+  },
+  {
+    id: 'insights',
+    label: 'Insights',
+    items: [
+      { icon: BarChart3, label: 'Analytics', path: '/analytics', screenId: 'analytics' },
+      { icon: Star, label: 'Surveys', path: '/surveys', screenId: 'analytics' },
+    ],
+  },
+  {
+    id: 'management',
+    label: 'Management',
+    items: [
+      { icon: Users, label: 'Users', path: '/users', screenId: 'users' },
+      { icon: ShieldCheck, label: 'Roles', path: '/roles', screenId: 'roles' },
+      { icon: Shield, label: 'Security', path: '/security', screenId: 'security' },
+    ],
+  },
+  {
+    id: 'configure',
+    label: 'Configure',
+    items: [
+      { icon: Puzzle, label: 'Integrations', path: '/integrations', screenId: 'integrations' },
+      { icon: CreditCard, label: 'Billing', path: '/billing', screenId: 'billing' },
+      { icon: Code2, label: 'SDKs', path: '/sdks', screenId: 'sdks' },
+      { icon: Palette, label: 'Theme', path: '/theme', screenId: 'theme' },
+      { icon: User, label: 'Profile', path: '/profile', screenId: 'profile' },
+    ],
+  },
 ];
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const { canAccessScreen, isClientAdmin } = useAuth();
 
-  // Filter nav items based on role permissions
-  const navItems = allNavItems.filter(item => {
-    // Profile is always accessible
+  const canAccess = (item: NavItem) => {
     if (item.screenId === 'profile') return true;
-    // Client admin sees everything
     if (isClientAdmin) return true;
-    // Check permission for other roles
     return canAccessScreen(item.screenId as ScreenId);
-  });
+  };
+
+  const filteredGroups = navGroups
+    .map(group => ({
+      ...group,
+      items: group.items.filter(canAccess),
+    }))
+    .filter(group => group.items.length > 0);
+
+  const toggleGroup = (groupId: string) => {
+    setCollapsedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
+
+  const isGroupActive = (group: NavGroup) =>
+    group.items.some(item => location.pathname === item.path);
+
+  const renderNavLink = (item: NavItem) => {
+    const isActive = location.pathname === item.path;
+    const Icon = item.icon;
+
+    const linkContent = (
+      <NavLink
+        to={item.path}
+        className={cn(
+          'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group',
+          isActive
+            ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-glow'
+            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+        )}
+      >
+        <Icon className={cn(
+          'w-[18px] h-[18px] flex-shrink-0 transition-transform duration-200',
+          !isActive && 'group-hover:scale-110'
+        )} />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-[13px] font-medium">{item.label}</span>
+            {item.badge && (
+              <span className={cn(
+                'px-1.5 py-0.5 text-[10px] font-medium rounded-full min-w-[20px] text-center',
+                isActive
+                  ? 'bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground'
+                  : 'bg-sidebar-primary/20 text-sidebar-primary'
+              )}>
+                {item.badge}
+              </span>
+            )}
+          </>
+        )}
+      </NavLink>
+    );
+
+    return (
+      <li key={item.path}>
+        {collapsed ? (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              {linkContent}
+            </TooltipTrigger>
+            <TooltipContent side="right" className="flex items-center gap-2">
+              {item.label}
+              {item.badge && (
+                <span className="px-1.5 py-0.5 text-xs bg-primary/20 text-primary rounded">
+                  {item.badge}
+                </span>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          linkContent
+        )}
+      </li>
+    );
+  };
 
   return (
     <aside
       className={cn(
         'h-screen gradient-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out',
-        collapsed ? 'w-[68px]' : 'w-64'
+        collapsed ? 'w-[68px]' : 'w-60'
       )}
     >
-      {/* Logo Section */}
       <div className={cn(
         'h-16 flex items-center border-b border-sidebar-border px-4',
         collapsed ? 'justify-center' : 'gap-3'
@@ -100,71 +212,48 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
-            
-            const linkContent = (
-              <NavLink
-                to={item.path}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
-                  isActive
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-glow'
-                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                )}
-              >
-                <Icon className={cn(
-                  'w-5 h-5 flex-shrink-0 transition-transform duration-200',
-                  !isActive && 'group-hover:scale-110'
-                )} />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 text-sm font-medium">{item.label}</span>
-                    {item.badge && (
-                      <span className={cn(
-                        'px-2 py-0.5 text-xs font-medium rounded-full',
-                        isActive
-                          ? 'bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground'
-                          : 'bg-sidebar-primary/20 text-sidebar-primary'
-                      )}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            );
+      <nav className="flex-1 py-3 px-2 overflow-y-auto scrollbar-thin">
+        <div className="space-y-1">
+          {filteredGroups.map((group) => {
+            const isCollapsed = collapsedGroups[group.id] && !collapsed;
+            const hasHeader = group.label !== '';
+            const groupActive = isGroupActive(group);
 
             return (
-              <li key={item.path}>
-                {collapsed ? (
-                  <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      {linkContent}
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="flex items-center gap-2">
-                      {item.label}
-                      {item.badge && (
-                        <span className="px-1.5 py-0.5 text-xs bg-primary/20 text-primary rounded">
-                          {item.badge}
-                        </span>
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  linkContent
+              <div key={group.id}>
+                {hasHeader && !collapsed && (
+                  <button
+                    onClick={() => toggleGroup(group.id)}
+                    className={cn(
+                      'w-full flex items-center justify-between px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider',
+                      groupActive
+                        ? 'text-sidebar-primary'
+                        : 'text-sidebar-foreground/40 hover:text-sidebar-foreground/60'
+                    )}
+                  >
+                    <span>{group.label}</span>
+                    <ChevronDown className={cn(
+                      'w-3 h-3 transition-transform duration-200',
+                      isCollapsed && '-rotate-90'
+                    )} />
+                  </button>
                 )}
-              </li>
+
+                {hasHeader && collapsed && (
+                  <div className="mx-auto my-2 w-6 border-t border-sidebar-border" />
+                )}
+
+                {!isCollapsed && (
+                  <ul className="space-y-0.5">
+                    {group.items.map(renderNavLink)}
+                  </ul>
+                )}
+              </div>
             );
           })}
-        </ul>
+        </div>
       </nav>
 
-      {/* Collapse Button */}
       <div className="p-3 border-t border-sidebar-border">
         <Button
           variant="ghost"
