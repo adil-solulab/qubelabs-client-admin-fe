@@ -69,7 +69,7 @@ export default function IntegrationsPage() {
   const [addWebhookModalOpen, setAddWebhookModalOpen] = useState(false);
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
 
-  const categoryOrder: IntegrationCategory[] = ['crm', 'itsm', 'hr', 'tools', 'payment', 'live_chat', 'retail', 'communication'];
+  const categoryOrder: IntegrationCategory[] = ['crm', 'voice', 'communication', 'live_chat', 'payment'];
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};

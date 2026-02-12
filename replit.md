@@ -113,9 +113,9 @@ Preferred communication style: Simple, everyday language.
 - Each source type has its own tab, card component, add modal, and training/sync/delete actions
 - Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddURLModal`, `AddSitemapModal`, `AddIntegrationSourceModal`
 
-### Integrations Page (Yellow.ai Style)
+### Integrations Page
 - Redesigned with category sidebar, grouped card grid, and integration detail view
-- 24 integrations across 8 categories (CRM, ITSM, HR, Tools, Payment, Live Chat, Retail, Communication)
+- 19 integrations across 5 categories: CRM (Salesforce, HubSpot, Zoho, Dynamics 365), Voice (Twilio, Vonage, Genesys Cloud, Five9), Communications (WhatsApp, Gmail, Slack, Microsoft Teams), LiveChat (Intercom, Zendesk Chat, LiveChat, Freshchat), Payments (Stripe, Razorpay, PayPal)
 - Each integration has configuration fields, setup instructions, and connection management
 - API Keys and Webhooks remain in separate tabs
 

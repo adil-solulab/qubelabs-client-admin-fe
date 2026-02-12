@@ -1,4 +1,4 @@
-export type IntegrationCategory = 'crm' | 'itsm' | 'hr' | 'tools' | 'payment' | 'live_chat' | 'retail' | 'communication';
+export type IntegrationCategory = 'crm' | 'voice' | 'communication' | 'live_chat' | 'payment';
 export type IntegrationStatus = 'connected' | 'disconnected' | 'error' | 'pending';
 export type AuthType = 'oauth' | 'api_key' | 'webhook';
 
@@ -59,13 +59,10 @@ export const CATEGORY_CONFIG: Record<IntegrationCategory, {
   bgColor: string;
 }> = {
   crm: { label: 'CRM', color: 'text-blue-600', bgColor: 'bg-blue-500/10' },
-  itsm: { label: 'ITSM', color: 'text-purple-600', bgColor: 'bg-purple-500/10' },
-  hr: { label: 'HR', color: 'text-green-600', bgColor: 'bg-green-500/10' },
-  tools: { label: 'Tools & Utilities', color: 'text-orange-600', bgColor: 'bg-orange-500/10' },
-  payment: { label: 'Payment', color: 'text-emerald-600', bgColor: 'bg-emerald-500/10' },
-  live_chat: { label: 'Live Chat', color: 'text-cyan-600', bgColor: 'bg-cyan-500/10' },
-  retail: { label: 'Retail & eCommerce', color: 'text-pink-600', bgColor: 'bg-pink-500/10' },
-  communication: { label: 'Communication', color: 'text-indigo-600', bgColor: 'bg-indigo-500/10' },
+  voice: { label: 'Voice', color: 'text-violet-600', bgColor: 'bg-violet-500/10' },
+  communication: { label: 'Communications', color: 'text-indigo-600', bgColor: 'bg-indigo-500/10' },
+  live_chat: { label: 'LiveChat', color: 'text-cyan-600', bgColor: 'bg-cyan-500/10' },
+  payment: { label: 'Payments', color: 'text-emerald-600', bgColor: 'bg-emerald-500/10' },
 };
 
 export const STATUS_CONFIG: Record<IntegrationStatus, {
@@ -84,26 +81,19 @@ export const INTEGRATION_ICONS: Record<string, string> = {
   hubspot: '🧡',
   zoho: '📊',
   dynamics: '▶️',
-  freshdesk: '🎫',
-  servicenow: '🔧',
-  jira: '🔷',
-  bamboo: '🌿',
-  workday: '💼',
-  personio: '👥',
+  twilio: '📞',
+  vonage: '📱',
+  genesys: '🎧',
+  five9: '5️⃣',
+  whatsapp: '💬',
+  gmail: '📧',
   slack: '💬',
-  zapier: '⚡',
-  google_sheets: '📗',
-  power_automate: '🔄',
-  stripe: '💳',
-  razorpay: '💰',
-  paypal: '🅿️',
+  microsoft_teams: '👥',
   intercom: '💭',
   zendesk_chat: '🗨️',
   livechat: '🟢',
-  twilio: '📞',
-  whatsapp: '💬',
-  gmail: '📧',
-  shopify: '🛍️',
-  woocommerce: '🛒',
-  sap: '🔷',
+  freshchat: '💚',
+  stripe: '💳',
+  razorpay: '💰',
+  paypal: '🅿️',
 };
