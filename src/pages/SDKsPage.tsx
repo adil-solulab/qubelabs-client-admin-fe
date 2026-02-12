@@ -119,7 +119,7 @@ export default function SDKsPage() {
           </div>
           <Badge variant="outline" className="w-fit">
             <Sparkles className="w-3 h-3 mr-1" />
-            {sdks.length} SDKs Available
+            Web SDK
           </Badge>
         </div>
 
@@ -132,7 +132,7 @@ export default function SDKsPage() {
 
           {/* SDKs Tab */}
           <TabsContent value="sdks" className="space-y-6">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               {sdks.map((sdk) => {
                 const icon = SDK_ICONS[sdk.platform];
 
