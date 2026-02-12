@@ -1,4 +1,16 @@
-export type DocumentType = 'faq' | 'pdf' | 'manual' | 'article' | 'policy';
+export type FileType = 'pdf' | 'docx' | 'doc' | 'txt' | 'md' | 'csv' | 'xlsx';
+
+export type FileCategory = 
+  | 'FAQ'
+  | 'Memo'
+  | 'Customer Support'
+  | 'Sales Materials'
+  | 'Policy'
+  | 'Technical Guide'
+  | 'Onboarding'
+  | 'Training Manual'
+  | 'SOP'
+  | 'Knowledge Article';
 
 export type TrainingStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
@@ -14,8 +26,8 @@ export interface DocumentVersion {
 export interface KnowledgeDocument {
   id: string;
   name: string;
-  type: DocumentType;
-  category: string;
+  fileType: FileType;
+  category: FileCategory;
   size: string;
   uploadedAt: string;
   uploadedBy: string;
@@ -26,12 +38,24 @@ export interface KnowledgeDocument {
   tokensUsed?: number;
 }
 
-export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
-  faq: 'FAQ',
-  pdf: 'PDF Document',
-  manual: 'Manual',
-  article: 'Article',
-  policy: 'Policy',
+export const FILE_TYPE_LABELS: Record<FileType, string> = {
+  pdf: 'PDF',
+  docx: 'DOCX',
+  doc: 'DOC',
+  txt: 'TXT',
+  md: 'Markdown',
+  csv: 'CSV',
+  xlsx: 'Excel',
+};
+
+export const FILE_TYPE_EXTENSIONS: Record<FileType, string> = {
+  pdf: '.pdf',
+  docx: '.docx',
+  doc: '.doc',
+  txt: '.txt',
+  md: '.md',
+  csv: '.csv',
+  xlsx: '.xlsx',
 };
 
 export const TRAINING_STATUS_LABELS: Record<TrainingStatus, string> = {
@@ -41,12 +65,19 @@ export const TRAINING_STATUS_LABELS: Record<TrainingStatus, string> = {
   failed: 'Failed',
 };
 
-export const DOCUMENT_CATEGORIES = [
-  'Product Documentation',
+export const FILE_CATEGORIES: FileCategory[] = [
+  'FAQ',
+  'Memo',
   'Customer Support',
   'Sales Materials',
-  'Policies & Procedures',
-  'Technical Guides',
+  'Policy',
+  'Technical Guide',
   'Onboarding',
-  'FAQs',
+  'Training Manual',
+  'SOP',
+  'Knowledge Article',
 ];
+
+export const DOCUMENT_TYPE_LABELS = FILE_TYPE_LABELS;
+export const DOCUMENT_CATEGORIES = FILE_CATEGORIES;
+export type DocumentType = FileType;

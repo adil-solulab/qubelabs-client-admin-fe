@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { KnowledgeDocument } from '@/types/knowledgeBase';
-import { DOCUMENT_TYPE_LABELS } from '@/types/knowledgeBase';
+import { FILE_TYPE_LABELS } from '@/types/knowledgeBase';
 
 interface DeleteDocumentModalProps {
   document: KnowledgeDocument | null;
@@ -42,13 +42,14 @@ export function DeleteDocumentModal({
 
   if (!document) return null;
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'faq': return '❓';
+  const getFileTypeIcon = (fileType: string) => {
+    switch (fileType) {
       case 'pdf': return '📄';
-      case 'manual': return '📚';
-      case 'article': return '📰';
-      case 'policy': return '📋';
+      case 'docx': case 'doc': return '📝';
+      case 'txt': return '📃';
+      case 'md': return '📋';
+      case 'csv': return '📊';
+      case 'xlsx': return '📈';
       default: return '📁';
     }
   };
@@ -72,14 +73,14 @@ export function DeleteDocumentModal({
         <div className="my-4 p-4 rounded-xl border border-destructive/20 bg-destructive/5">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-2xl">
-              {getTypeIcon(document.type)}
+              {getFileTypeIcon(document.fileType)}
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{document.name}</h4>
               <p className="text-sm text-muted-foreground">{document.category}</p>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline" className="text-xs">
-                  {DOCUMENT_TYPE_LABELS[document.type]}
+                  .{document.fileType.toUpperCase()}
                 </Badge>
                 <span className="text-xs text-muted-foreground">{document.size}</span>
               </div>

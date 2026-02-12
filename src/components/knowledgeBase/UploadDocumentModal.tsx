@@ -18,8 +18,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
-import type { DocumentType } from '@/types/knowledgeBase';
-import { DOCUMENT_TYPE_LABELS, DOCUMENT_CATEGORIES } from '@/types/knowledgeBase';
+import type { FileType } from '@/types/knowledgeBase';
+import { FILE_TYPE_LABELS, FILE_CATEGORIES } from '@/types/knowledgeBase';
 import { cn } from '@/lib/utils';
 
 interface UploadDocumentModalProps {
@@ -27,7 +27,7 @@ interface UploadDocumentModalProps {
   onOpenChange: (open: boolean) => void;
   onUpload: (
     file: File,
-    metadata: { type: DocumentType; category: string },
+    metadata: { type: FileType; category: string },
     onProgress: (progress: number) => void
   ) => Promise<any>;
   onUploadComplete: (docName: string) => void;
@@ -43,11 +43,25 @@ export function UploadDocumentModal({
 }: UploadDocumentModalProps) {
   const [state, setState] = useState<UploadState>('idle');
   const [file, setFile] = useState<File | null>(null);
-  const [docType, setDocType] = useState<DocumentType>('pdf');
+  const [fileType, setFileType] = useState<FileType>('pdf');
   const [category, setCategory] = useState<string>('');
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const detectFileType = (fileName: string): FileType => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'pdf';
+      case 'docx': return 'docx';
+      case 'doc': return 'doc';
+      case 'txt': return 'txt';
+      case 'md': return 'md';
+      case 'csv': return 'csv';
+      case 'xlsx': case 'xls': return 'xlsx';
+      default: return 'pdf';
+    }
+  };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -67,10 +81,7 @@ export function UploadDocumentModal({
     const droppedFile = e.dataTransfer.files?.[0];
     if (droppedFile) {
       setFile(droppedFile);
-      // Auto-detect type
-      if (droppedFile.name.endsWith('.pdf')) setDocType('pdf');
-      else if (droppedFile.name.includes('faq')) setDocType('faq');
-      else if (droppedFile.name.includes('manual')) setDocType('manual');
+      setFileType(detectFileType(droppedFile.name));
     }
   }, []);
 
@@ -78,7 +89,7 @@ export function UploadDocumentModal({
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      if (selectedFile.name.endsWith('.pdf')) setDocType('pdf');
+      setFileType(detectFileType(selectedFile.name));
     }
   };
 
@@ -89,7 +100,7 @@ export function UploadDocumentModal({
     setProgress(0);
 
     try {
-      const doc = await onUpload(file, { type: docType, category }, setProgress);
+      const doc = await onUpload(file, { type: fileType, category }, setProgress);
       setState('complete');
       onUploadComplete(doc.name);
     } catch (error) {
@@ -100,17 +111,23 @@ export function UploadDocumentModal({
   const handleClose = () => {
     setState('idle');
     setFile(null);
-    setDocType('pdf');
+    setFileType('pdf');
     setCategory('');
     setProgress(0);
     onOpenChange(false);
   };
 
   const getFileIcon = (fileName: string) => {
-    if (fileName.endsWith('.pdf')) return '📄';
-    if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) return '📝';
-    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) return '📊';
-    return '📁';
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return '📄';
+      case 'doc': case 'docx': return '📝';
+      case 'xls': case 'xlsx': return '📊';
+      case 'csv': return '📊';
+      case 'txt': return '📃';
+      case 'md': return '📋';
+      default: return '📁';
+    }
   };
 
   return (
@@ -124,13 +141,12 @@ export function UploadDocumentModal({
             Upload Document
           </DialogTitle>
           <DialogDescription>
-            Upload FAQs, PDFs, or manuals to train your AI agents.
+            Upload files to train your AI agents with custom knowledge.
           </DialogDescription>
         </DialogHeader>
 
         {state === 'idle' && (
           <div className="space-y-4">
-            {/* Drop Zone */}
             <div
               className={cn(
                 'relative border-2 border-dashed rounded-xl p-8 text-center transition-colors',
@@ -187,39 +203,37 @@ export function UploadDocumentModal({
                       </button>
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      PDF, DOC, TXT, MD, CSV up to 50MB
+                      PDF, DOC, DOCX, TXT, MD, CSV, XLSX up to 50MB
                     </p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Document Type */}
             <div className="space-y-2">
-              <Label>Document Type</Label>
-              <Select value={docType} onValueChange={(v) => setDocType(v as DocumentType)}>
+              <Label>File Type</Label>
+              <Select value={fileType} onValueChange={(v) => setFileType(v as FileType)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
+                  {Object.entries(FILE_TYPE_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
-                      {label}
+                      .{value.toUpperCase()} - {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Category */}
             <div className="space-y-2">
-              <Label>Category *</Label>
+              <Label>File Category *</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DOCUMENT_CATEGORIES.map((cat) => (
+                  {FILE_CATEGORIES.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
                     </SelectItem>

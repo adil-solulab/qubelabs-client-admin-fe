@@ -29,8 +29,8 @@ import { UploadDocumentModal } from '@/components/knowledgeBase/UploadDocumentMo
 import { DeleteDocumentModal } from '@/components/knowledgeBase/DeleteDocumentModal';
 import { VersionHistoryModal } from '@/components/knowledgeBase/VersionHistoryModal';
 import { TrainingProgressWidget } from '@/components/knowledgeBase/TrainingProgressWidget';
-import type { KnowledgeDocument, DocumentType, TrainingStatus } from '@/types/knowledgeBase';
-import { DOCUMENT_TYPE_LABELS, DOCUMENT_CATEGORIES, TRAINING_STATUS_LABELS } from '@/types/knowledgeBase';
+import type { KnowledgeDocument, FileType, FileCategory, TrainingStatus } from '@/types/knowledgeBase';
+import { FILE_TYPE_LABELS, FILE_CATEGORIES, TRAINING_STATUS_LABELS } from '@/types/knowledgeBase';
 
 export default function KnowledgeBasePage() {
   const {
@@ -45,9 +45,9 @@ export default function KnowledgeBasePage() {
   const { canCreate, canEdit, canDelete, withPermission } = usePermission('knowledge-base');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<DocumentType | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<FileType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<TrainingStatus | 'all'>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<FileCategory | 'all'>('all');
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -59,7 +59,7 @@ export default function KnowledgeBasePage() {
     const matchesSearch =
       doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doc.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = typeFilter === 'all' || doc.type === typeFilter;
+    const matchesType = typeFilter === 'all' || doc.fileType === typeFilter;
     const matchesStatus = statusFilter === 'all' || doc.trainingStatus === statusFilter;
     const matchesCategory = categoryFilter === 'all' || doc.category === categoryFilter;
     return matchesSearch && matchesType && matchesStatus && matchesCategory;
@@ -228,14 +228,14 @@ export default function KnowledgeBasePage() {
                     />
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as DocumentType | 'all')}>
-                      <SelectTrigger className="w-[130px]">
-                        <SelectValue placeholder="Type" />
+                    <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as FileType | 'all')}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="File Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>{label}</SelectItem>
+                        <SelectItem value="all">All File Types</SelectItem>
+                        {Object.entries(FILE_TYPE_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>.{value.toUpperCase()}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -250,13 +250,13 @@ export default function KnowledgeBasePage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Category" />
+                    <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as FileCategory | 'all')}>
+                      <SelectTrigger className="w-[170px]">
+                        <SelectValue placeholder="File Category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
-                        {DOCUMENT_CATEGORIES.map((cat) => (
+                        {FILE_CATEGORIES.map((cat) => (
                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
                       </SelectContent>

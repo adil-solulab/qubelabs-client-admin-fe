@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
-import type { KnowledgeDocument, DocumentType, TrainingStatus } from '@/types/knowledgeBase';
+import type { KnowledgeDocument, FileType, FileCategory, TrainingStatus } from '@/types/knowledgeBase';
 
 const generateMockDocuments = (): KnowledgeDocument[] => [
   {
     id: '1',
     name: 'Product FAQ 2024',
-    type: 'faq',
-    category: 'FAQs',
+    fileType: 'pdf',
+    category: 'FAQ',
     size: '245 KB',
     uploadedAt: '2024-05-15',
     uploadedBy: 'John Anderson',
@@ -23,7 +23,7 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
   {
     id: '2',
     name: 'Customer Support Guidelines',
-    type: 'manual',
+    fileType: 'docx',
     category: 'Customer Support',
     size: '1.2 MB',
     uploadedAt: '2024-04-20',
@@ -40,7 +40,7 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
   {
     id: '3',
     name: 'Sales Playbook Q2',
-    type: 'pdf',
+    fileType: 'pdf',
     category: 'Sales Materials',
     size: '3.4 MB',
     uploadedAt: '2024-05-01',
@@ -55,8 +55,8 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
   {
     id: '4',
     name: 'Technical Integration Guide',
-    type: 'manual',
-    category: 'Technical Guides',
+    fileType: 'md',
+    category: 'Technical Guide',
     size: '2.8 MB',
     uploadedAt: '2024-04-10',
     uploadedBy: 'Michael Chen',
@@ -71,8 +71,8 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
   {
     id: '5',
     name: 'Privacy Policy',
-    type: 'policy',
-    category: 'Policies & Procedures',
+    fileType: 'pdf',
+    category: 'Policy',
     size: '156 KB',
     uploadedAt: '2024-03-01',
     uploadedBy: 'John Anderson',
@@ -87,7 +87,7 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
   {
     id: '6',
     name: 'New Employee Onboarding',
-    type: 'article',
+    fileType: 'docx',
     category: 'Onboarding',
     size: '890 KB',
     uploadedAt: '2024-05-18',
@@ -99,18 +99,63 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
       { id: 'v1', version: '1.0', uploadedAt: '2024-05-18', uploadedBy: 'Lisa Park', size: '890 KB', changes: 'Initial version' },
     ],
   },
+  {
+    id: '7',
+    name: 'Internal Communications Memo',
+    fileType: 'txt',
+    category: 'Memo',
+    size: '45 KB',
+    uploadedAt: '2024-05-20',
+    uploadedBy: 'John Anderson',
+    trainingStatus: 'completed',
+    trainingProgress: 100,
+    lastTrained: '2024-05-20',
+    tokensUsed: 3200,
+    versions: [
+      { id: 'v1', version: '1.0', uploadedAt: '2024-05-20', uploadedBy: 'John Anderson', size: '45 KB', changes: 'Initial version' },
+    ],
+  },
+  {
+    id: '8',
+    name: 'Standard Operating Procedures',
+    fileType: 'xlsx',
+    category: 'SOP',
+    size: '1.5 MB',
+    uploadedAt: '2024-04-25',
+    uploadedBy: 'Michael Chen',
+    trainingStatus: 'completed',
+    trainingProgress: 100,
+    lastTrained: '2024-04-25',
+    tokensUsed: 28400,
+    versions: [
+      { id: 'v1', version: '1.0', uploadedAt: '2024-04-25', uploadedBy: 'Michael Chen', size: '1.5 MB', changes: 'Initial version' },
+    ],
+  },
 ];
 
 export function useKnowledgeBaseData() {
   const [documents, setDocuments] = useState<KnowledgeDocument[]>(generateMockDocuments());
   const [isLoading, setIsLoading] = useState(false);
 
+  const detectFileType = (fileName: string): FileType => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'pdf';
+      case 'docx': return 'docx';
+      case 'doc': return 'doc';
+      case 'txt': return 'txt';
+      case 'md': return 'md';
+      case 'csv': return 'csv';
+      case 'xlsx': case 'xls': return 'xlsx';
+      default: return 'pdf';
+    }
+  };
+
   const uploadDocument = useCallback(async (
     file: File,
-    metadata: { type: DocumentType; category: string },
+    metadata: { type: FileType; category: string },
     onProgress: (progress: number) => void
   ): Promise<KnowledgeDocument> => {
-    // Simulate upload with progress
     for (let i = 0; i <= 100; i += 10) {
       await new Promise(resolve => setTimeout(resolve, 150));
       onProgress(i);
@@ -119,8 +164,8 @@ export function useKnowledgeBaseData() {
     const newDoc: KnowledgeDocument = {
       id: Date.now().toString(),
       name: file.name.replace(/\.[^/.]+$/, ''),
-      type: metadata.type,
-      category: metadata.category,
+      fileType: metadata.type,
+      category: metadata.category as FileCategory,
       size: `${(file.size / 1024).toFixed(1)} KB`,
       uploadedAt: new Date().toISOString().split('T')[0],
       uploadedBy: 'John Anderson',
@@ -155,7 +200,6 @@ export function useKnowledgeBaseData() {
       )
     );
 
-    // Simulate training progress
     for (let i = 0; i <= 100; i += 5) {
       await new Promise(resolve => setTimeout(resolve, 200));
       onProgress(i);

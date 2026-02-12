@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { KnowledgeDocument } from '@/types/knowledgeBase';
-import { DOCUMENT_TYPE_LABELS, TRAINING_STATUS_LABELS } from '@/types/knowledgeBase';
+import { FILE_TYPE_LABELS, TRAINING_STATUS_LABELS } from '@/types/knowledgeBase';
 import { cn } from '@/lib/utils';
 
 interface DocumentCardProps {
@@ -31,13 +31,14 @@ export function DocumentCard({
   canEdit = true,
   canDelete = true,
 }: DocumentCardProps) {
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'faq': return '❓';
+  const getFileTypeIcon = (fileType: string) => {
+    switch (fileType) {
       case 'pdf': return '📄';
-      case 'manual': return '📚';
-      case 'article': return '📰';
-      case 'policy': return '📋';
+      case 'docx': case 'doc': return '📝';
+      case 'txt': return '📃';
+      case 'md': return '📋';
+      case 'csv': return '📊';
+      case 'xlsx': return '📈';
       default: return '📁';
     }
   };
@@ -66,19 +67,17 @@ export function DocumentCard({
     <Card className="gradient-card hover:shadow-glow transition-all group">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          {/* Icon */}
           <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-2xl flex-shrink-0">
-            {getTypeIcon(document.type)}
+            {getFileTypeIcon(document.fileType)}
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h3 className="font-semibold truncate">{document.name}</h3>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <Badge variant="outline" className="text-xs">
-                    {DOCUMENT_TYPE_LABELS[document.type]}
+                  <Badge variant="outline" className="text-xs font-mono uppercase">
+                    .{document.fileType}
                   </Badge>
                   <Badge variant="secondary" className="text-xs">
                     {document.category}
@@ -117,7 +116,6 @@ export function DocumentCard({
               </DropdownMenu>
             </div>
 
-            {/* Training Status */}
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between">
                 <Badge variant="outline" className={cn('gap-1', getStatusBadge(document.trainingStatus))}>
@@ -134,16 +132,12 @@ export function DocumentCard({
               )}
             </div>
 
-            {/* Meta Info */}
             <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
               <span>{document.size}</span>
-              <span>•</span>
               <span>v{document.versions[0]?.version || '1.0'}</span>
-              <span>•</span>
               <span>{document.uploadedAt}</span>
             </div>
 
-            {/* Tokens Used */}
             {document.trainingStatus === 'completed' && document.tokensUsed && (
               <div className="mt-2 text-xs text-muted-foreground">
                 {document.tokensUsed.toLocaleString()} tokens indexed
