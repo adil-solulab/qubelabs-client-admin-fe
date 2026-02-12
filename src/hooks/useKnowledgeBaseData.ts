@@ -307,7 +307,7 @@ const generateMockIntegrationSources = (): IntegrationSource[] => [
     trainingProgress: 0,
     syncFrequency: 'daily',
     tokensUsed: 0,
-    connectionDetails: 'QubeLabs Help Center - All categories',
+    connectionDetails: 'CONX Help Center - All categories',
   },
 ];
 

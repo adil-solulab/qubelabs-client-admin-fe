@@ -2,7 +2,7 @@
 
 ## Project info
 
-QubeLabs - Enterprise AI Platform
+CONX - Enterprise AI Platform
 
 ## How can I edit this code?
 

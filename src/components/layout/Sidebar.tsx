@@ -21,7 +21,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Sparkles,
   User,
   Zap,
   Star,
@@ -201,12 +200,10 @@ export function Sidebar() {
         'h-16 flex items-center border-b border-sidebar-border px-4',
         collapsed ? 'justify-center' : 'gap-3'
       )}>
-        <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
-          <Sparkles className="w-5 h-5 text-primary-foreground" />
-        </div>
+        <img src="/conx-logomark.png" alt="CONX" className="w-9 h-9 rounded-lg object-contain" />
         {!collapsed && (
           <div className="flex flex-col">
-            <span className="text-sidebar-foreground font-semibold text-sm">QubeLabs</span>
+            <span className="text-sidebar-foreground font-semibold text-sm">CONX</span>
             <span className="text-sidebar-foreground/50 text-xs">Enterprise</span>
           </div>
         )}

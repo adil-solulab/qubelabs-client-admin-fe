@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Mail, Bot, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,8 +70,8 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-md relative z-10 border-border/50 shadow-xl bg-card/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-2">
           {/* Logo */}
-          <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-            <Bot className="w-8 h-8 text-primary-foreground" />
+          <div className="mx-auto mb-4">
+            <img src="/conx-logomark.png" alt="CONX" className="w-14 h-14 object-contain" />
           </div>
           
           {isSubmitted ? (
@@ -196,7 +196,7 @@ export default function ForgotPasswordPage() {
 
       {/* Footer */}
       <div className="absolute bottom-4 text-center text-xs text-muted-foreground">
-        <p>© 2025 QubeLabs. All rights reserved.</p>
+        <p>© 2025 CONX. All rights reserved.</p>
       </div>
     </div>
   );

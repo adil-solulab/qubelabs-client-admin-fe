@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, LogIn, Bot } from 'lucide-react';
+import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -108,8 +108,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md relative z-10 border-border/50 shadow-xl bg-card/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-2">
           {/* Logo */}
-          <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-            <Bot className="w-8 h-8 text-primary-foreground" />
+          <div className="mx-auto mb-4">
+            <img src="/conx-logomark.png" alt="CONX" className="w-14 h-14 object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -247,7 +247,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="absolute bottom-4 text-center text-xs text-muted-foreground">
-        <p>© 2025 QubeLabs. All rights reserved.</p>
+        <p>© 2025 CONX. All rights reserved.</p>
       </div>
     </div>
   );

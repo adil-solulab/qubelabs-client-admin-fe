@@ -2,7 +2,7 @@
 
 ## Overview
 
-QubeLabs is an enterprise AI platform built as a single-page application (SPA) for managing conversational AI operations. The platform provides comprehensive tools for managing AI agents, knowledge bases, live operations monitoring, outbound calling campaigns, analytics, and team management. It features a role-based access control system with three user types: Client Admin, Supervisor, and Agent.
+CONX is an enterprise AI platform built as a single-page application (SPA) for managing conversational AI operations. The platform provides comprehensive tools for managing AI agents, knowledge bases, live operations monitoring, outbound calling campaigns, analytics, and team management. It features a role-based access control system with three user types: Client Admin, Supervisor, and Agent.
 
 The application is a frontend-only implementation using in-memory state management, designed as an interactive prototype that maintains state across navigation without requiring a backend.
 
