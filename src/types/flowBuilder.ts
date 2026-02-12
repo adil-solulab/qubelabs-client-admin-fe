@@ -70,6 +70,7 @@ export interface Flow {
   id: string;
   name: string;
   description: string;
+  category: string;
   currentVersion: string;
   status: FlowStatus;
   nodes: FlowNode[];
@@ -77,6 +78,17 @@ export interface Flow {
   versions: FlowVersion[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface FlowSummary {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: FlowStatus;
+  currentVersion: string;
+  updatedAt: string;
+  nodeCount: number;
 }
 
 export const NODE_TYPE_CONFIG: Record<NodeType, { 

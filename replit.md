@@ -125,6 +125,15 @@ Preferred communication style: Simple, everyday language.
 - Each source type has its own tab, card component, and training/sync/delete actions
 - Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddSourceModal`
 
+### Flow Builder (Multi-Flow Architecture)
+- **Two-View Layout**: Flow listing page + Flow editor view, toggled by selecting/deselecting a flow
+- **Flow Listing Page**: Collapsible category groups (Base, FAQs, Operations), table with columns (Flow Name, Description, Last Edited, Status), search, Create Flow modal, kebab menu per flow (Open, Duplicate, Delete)
+- **Flow Editor View**: Breadcrumb navigation (Flows / Flow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
+- **Multiple Flows**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), and all node/edge mutations scoped to selected flow
+- **Node Tools Sidebar**: Left panel listing 7 addable node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End) with icons, descriptions, and search; collapsible to icon-only mode
+- **Types**: `Flow` type includes `category` field; `FlowSummary` type for list view
+- Components: `FlowListView`, `NodeToolsSidebar`, plus existing `FlowCanvas`, `FlowNode`, `NodePropertiesPanel`, `LivePreviewPanel`, `PublishFlowModal`, `RollbackModal`, `UnsavedChangesModal`
+
 ### Integrations Page
 - Redesigned with category sidebar, grouped card grid, and integration detail view
 - 19 integrations across 5 categories: CRM (Salesforce, HubSpot, Zoho, Dynamics 365), Voice (Twilio, Vonage, Genesys Cloud, Five9), Communications (WhatsApp, Gmail, Slack, Microsoft Teams), LiveChat (Intercom, Zendesk Chat, LiveChat, Freshchat), Payments (Stripe, Razorpay, PayPal)

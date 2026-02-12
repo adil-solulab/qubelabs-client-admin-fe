@@ -1,27 +1,20 @@
 import { useState, useEffect } from 'react';
 import {
-  GitBranch,
-  Plus,
+  ArrowLeft,
   Save,
   Rocket,
   History,
   Eye,
   EyeOff,
   Loader2,
-  ChevronDown,
   AlertCircle,
   Lock,
+  ChevronRight,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useFlowBuilderData } from '@/hooks/useFlowBuilderData';
 import { usePermission } from '@/hooks/usePermission';
 import { FlowCanvas } from '@/components/flowBuilder/FlowCanvas';
@@ -30,6 +23,8 @@ import { PublishFlowModal } from '@/components/flowBuilder/PublishFlowModal';
 import { RollbackModal } from '@/components/flowBuilder/RollbackModal';
 import { LivePreviewPanel } from '@/components/flowBuilder/LivePreviewPanel';
 import { UnsavedChangesModal } from '@/components/flowBuilder/UnsavedChangesModal';
+import { FlowListView } from '@/components/flowBuilder/FlowListView';
+import { NodeToolsSidebar } from '@/components/flowBuilder/NodeToolsSidebar';
 import { NODE_TYPE_CONFIG, type NodeType } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 import { notify } from '@/hooks/useNotification';
@@ -37,6 +32,13 @@ import { notify } from '@/hooks/useNotification';
 export default function FlowBuilderPage() {
   const {
     flow,
+    selectedFlowId,
+    selectFlow,
+    getFlowSummaries,
+    getCategories,
+    createFlow,
+    deleteFlow,
+    duplicateFlow,
     selectedNode,
     setSelectedNode,
     isConnecting,
@@ -60,13 +62,12 @@ export default function FlowBuilderPage() {
 
   const { canEdit, canPublish, withPermission } = usePermission('flow-builder');
 
-  const [showPreview, setShowPreview] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [rollbackModalOpen, setRollbackModalOpen] = useState(false);
   const [unsavedChangesModalOpen, setUnsavedChangesModalOpen] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
 
-  // Warn user before leaving with unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -74,7 +75,6 @@ export default function FlowBuilderPage() {
         e.returnValue = '';
       }
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
@@ -83,8 +83,7 @@ export default function FlowBuilderPage() {
     withPermission('edit', () => {
       const position = { x: 400 + Math.random() * 200, y: 300 + Math.random() * 100 };
       addNode(type, position);
-      // Don't auto-select - require explicit click to select
-      notify.created(`${NODE_TYPE_CONFIG[type].label} node added. Click on the node to select it.`);
+      notify.created(`${NODE_TYPE_CONFIG[type].label} node added`);
     });
   };
 
@@ -119,13 +118,10 @@ export default function FlowBuilderPage() {
   };
 
   const handleDeleteNode = (nodeId: string) => {
+    if (!flow) return;
     const node = flow.nodes.find(n => n.id === nodeId);
     deleteNode(nodeId);
     notify.deleted(`Node "${node?.data.label || 'Unknown'}" deleted`);
-  };
-
-  const handleCanvasClick = (position: { x: number; y: number }) => {
-    // Optional: could open node type picker at position
   };
 
   const handleSaveDraft = async () => {
@@ -137,6 +133,7 @@ export default function FlowBuilderPage() {
 
   const handlePublish = async (changelog: string) => {
     withPermission('publish', async () => {
+      if (!flow) return;
       await publishFlow(changelog);
       notify.success(`Version ${parseInt(flow.currentVersion) + 1}.0 published!`);
     });
@@ -144,10 +141,20 @@ export default function FlowBuilderPage() {
 
   const handleRollback = async (versionId: string) => {
     withPermission('edit', async () => {
+      if (!flow) return;
       const version = flow.versions.find(v => v.id === versionId);
       await rollbackToVersion(versionId);
       notify.success(`Restored to version ${version?.version}`);
     });
+  };
+
+  const handleBackToList = () => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation(() => () => selectFlow(null));
+      setUnsavedChangesModalOpen(true);
+    } else {
+      selectFlow(null);
+    }
   };
 
   const handleDiscardChanges = () => {
@@ -167,140 +174,125 @@ export default function FlowBuilderPage() {
     }
   };
 
-  const nodeTypes: NodeType[] = ['message', 'condition', 'api_call', 'dtmf', 'assistant', 'transfer', 'end'];
+  if (!selectedFlowId || !flow) {
+    return (
+      <AppLayout>
+        <FlowListView
+          flowSummaries={getFlowSummaries()}
+          categories={getCategories()}
+          onSelectFlow={(id) => selectFlow(id)}
+          onCreateFlow={createFlow}
+          onDeleteFlow={deleteFlow}
+          onDuplicateFlow={(id) => {
+            duplicateFlow(id);
+            notify.created('Flow duplicated');
+          }}
+        />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
       <div className="h-[calc(100vh-120px)] flex flex-col animate-fade-in">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-foreground">{flow.name}</h1>
-                <Badge
-                  variant={flow.status === 'published' ? 'default' : 'secondary'}
-                  className={cn(flow.status === 'published' && 'bg-success')}
-                >
-                  {flow.status}
-                </Badge>
-                <Badge variant="outline">v{flow.currentVersion}</Badge>
-                {hasUnsavedChanges && (
-                  <Badge variant="destructive" className="gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    Unsaved
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">{flow.description}</p>
+        <div className="flex items-center justify-between gap-4 mb-3 flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={handleBackToList}
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
+              <button
+                className="hover:text-primary transition-colors cursor-pointer"
+                onClick={handleBackToList}
+              >
+                Flows
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-foreground font-semibold truncate">{flow.name}</span>
             </div>
+            <Badge
+              variant={flow.status === 'published' ? 'default' : 'secondary'}
+              className={cn('ml-2 text-xs', flow.status === 'published' && 'bg-success')}
+            >
+              {flow.status}
+            </Badge>
+            <Badge variant="outline" className="text-xs">v{flow.currentVersion}</Badge>
+            {hasUnsavedChanges && (
+              <Badge variant="destructive" className="gap-1 text-xs">
+                <AlertCircle className="w-3 h-3" />
+                Unsaved
+              </Badge>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Add Node */}
-            {canEdit ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Node
-                    <ChevronDown className="w-4 h-4 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {nodeTypes.map(type => {
-                    const config = NODE_TYPE_CONFIG[type];
-                    return (
-                      <DropdownMenuItem key={type} onClick={() => handleAddNode(type)}>
-                        <span className="mr-2">{config.icon}</span>
-                        {config.label}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" disabled className="opacity-50">
-                    <Lock className="w-4 h-4 mr-2" />
-                    Add Node
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit permission required</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            {/* Preview Toggle */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
-              variant={showPreview ? 'secondary' : 'outline'}
+              variant={showPreview ? 'secondary' : 'ghost'}
+              size="sm"
               onClick={() => setShowPreview(!showPreview)}
             >
-              {showPreview ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+              {showPreview ? <EyeOff className="w-4 h-4 mr-1.5" /> : <Eye className="w-4 h-4 mr-1.5" />}
               Preview
             </Button>
 
-            {/* Rollback */}
-            <Button variant="outline" onClick={() => setRollbackModalOpen(true)}>
-              <History className="w-4 h-4 mr-2" />
+            <Button variant="ghost" size="sm" onClick={() => setRollbackModalOpen(true)}>
+              <History className="w-4 h-4 mr-1.5" />
               Versions
             </Button>
 
-            {/* Save Draft */}
             {canEdit ? (
-              <Button 
-                variant={hasUnsavedChanges ? 'default' : 'outline'} 
-                onClick={handleSaveDraft} 
+              <Button
+                variant={hasUnsavedChanges ? 'default' : 'ghost'}
+                size="sm"
+                onClick={handleSaveDraft}
                 disabled={isSaving}
               >
                 {isSaving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
                 ) : (
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4 mr-1.5" />
                 )}
                 Save
               </Button>
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" disabled className="opacity-50">
-                    <Lock className="w-4 h-4 mr-2" />
+                  <Button variant="ghost" size="sm" disabled className="opacity-50">
+                    <Lock className="w-4 h-4 mr-1.5" />
                     Save
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit permission required</p>
-                </TooltipContent>
+                <TooltipContent><p>Edit permission required</p></TooltipContent>
               </Tooltip>
             )}
 
-            {/* Publish */}
             {canPublish ? (
-              <Button onClick={() => setPublishModalOpen(true)}>
-                <Rocket className="w-4 h-4 mr-2" />
+              <Button size="sm" onClick={() => setPublishModalOpen(true)}>
+                <Rocket className="w-4 h-4 mr-1.5" />
                 Publish
               </Button>
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button disabled className="opacity-50">
-                    <Lock className="w-4 h-4 mr-2" />
+                  <Button size="sm" disabled className="opacity-50">
+                    <Lock className="w-4 h-4 mr-1.5" />
                     Publish
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Publish permission required</p>
-                </TooltipContent>
+                <TooltipContent><p>Publish permission required</p></TooltipContent>
               </Tooltip>
             )}
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex gap-4 min-h-0">
-          {/* Canvas */}
+        <div className="flex-1 flex min-h-0 border rounded-xl overflow-hidden">
+          <NodeToolsSidebar onAddNode={handleAddNode} canEdit={canEdit} />
+
           <div className="flex-1 min-w-0">
             <FlowCanvas
               nodes={flow.nodes}
@@ -321,31 +313,25 @@ export default function FlowBuilderPage() {
                 notify.deleted('Connection removed');
               }}
               onMoveNode={moveNode}
-              onCanvasClick={handleCanvasClick}
+              onCanvasClick={() => {}}
             />
           </div>
 
-          {/* Right Panel */}
-          <div className="flex gap-4 flex-shrink-0">
-            {/* Properties Panel */}
-            {selectedNode && (
-              <NodePropertiesPanel
-                node={selectedNode}
-                onUpdate={(updates) => updateNodeData(selectedNode.id, updates)}
-                onDelete={() => deleteNode(selectedNode.id)}
-                onClose={() => setSelectedNode(null)}
-              />
-            )}
+          {selectedNode && (
+            <NodePropertiesPanel
+              node={selectedNode}
+              onUpdate={(updates) => updateNodeData(selectedNode.id, updates)}
+              onDelete={() => deleteNode(selectedNode.id)}
+              onClose={() => setSelectedNode(null)}
+            />
+          )}
 
-            {/* Live Preview */}
-            {showPreview && (
-              <LivePreviewPanel flow={flow} />
-            )}
-          </div>
+          {showPreview && (
+            <LivePreviewPanel flow={flow} />
+          )}
         </div>
       </div>
 
-      {/* Modals */}
       <PublishFlowModal
         flow={flow}
         open={publishModalOpen}
