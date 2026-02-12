@@ -130,10 +130,17 @@ export function ChatConfigPanel({
               <div className="space-y-2">
                 <Label>Primary Color</Label>
                 <div className="flex gap-2">
-                  <div
-                    className="w-10 h-10 rounded-lg border cursor-pointer"
+                  <label
+                    className="w-10 h-10 rounded-lg border cursor-pointer relative overflow-hidden shrink-0"
                     style={{ backgroundColor: config.theme.primaryColor }}
-                  />
+                  >
+                    <input
+                      type="color"
+                      value={config.theme.primaryColor}
+                      onChange={(e) => updateTheme({ primaryColor: e.target.value })}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </label>
                   <DebouncedInput
                     value={config.theme.primaryColor}
                     onChange={(value) => updateTheme({ primaryColor: value })}
@@ -144,10 +151,17 @@ export function ChatConfigPanel({
               <div className="space-y-2">
                 <Label>Header Color</Label>
                 <div className="flex gap-2">
-                  <div
-                    className="w-10 h-10 rounded-lg border cursor-pointer"
+                  <label
+                    className="w-10 h-10 rounded-lg border cursor-pointer relative overflow-hidden shrink-0"
                     style={{ backgroundColor: config.theme.headerColor }}
-                  />
+                  >
+                    <input
+                      type="color"
+                      value={config.theme.headerColor}
+                      onChange={(e) => updateTheme({ headerColor: e.target.value })}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </label>
                   <DebouncedInput
                     value={config.theme.headerColor}
                     onChange={(value) => updateTheme({ headerColor: value })}
@@ -158,10 +172,17 @@ export function ChatConfigPanel({
               <div className="space-y-2">
                 <Label>Background</Label>
                 <div className="flex gap-2">
-                  <div
-                    className="w-10 h-10 rounded-lg border cursor-pointer"
+                  <label
+                    className="w-10 h-10 rounded-lg border cursor-pointer relative overflow-hidden shrink-0"
                     style={{ backgroundColor: config.theme.backgroundColor }}
-                  />
+                  >
+                    <input
+                      type="color"
+                      value={config.theme.backgroundColor}
+                      onChange={(e) => updateTheme({ backgroundColor: e.target.value })}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </label>
                   <DebouncedInput
                     value={config.theme.backgroundColor}
                     onChange={(value) => updateTheme({ backgroundColor: value })}
@@ -172,10 +193,17 @@ export function ChatConfigPanel({
               <div className="space-y-2">
                 <Label>Text Color</Label>
                 <div className="flex gap-2">
-                  <div
-                    className="w-10 h-10 rounded-lg border cursor-pointer"
+                  <label
+                    className="w-10 h-10 rounded-lg border cursor-pointer relative overflow-hidden shrink-0"
                     style={{ backgroundColor: config.theme.textColor }}
-                  />
+                  >
+                    <input
+                      type="color"
+                      value={config.theme.textColor}
+                      onChange={(e) => updateTheme({ textColor: e.target.value })}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </label>
                   <DebouncedInput
                     value={config.theme.textColor}
                     onChange={(value) => updateTheme({ textColor: value })}
