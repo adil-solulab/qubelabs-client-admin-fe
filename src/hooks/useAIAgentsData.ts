@@ -300,7 +300,12 @@ export function useAIAgentsData() {
     return agents.find(a => a.id === id);
   }, [agents]);
 
+  const hasSuperAgent = superAgents.length > 0;
+
   const addAgent = useCallback(async (agentData: Omit<AIAgent, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (agentData.type === 'super_agent' && agents.some(a => a.type === 'super_agent')) {
+      throw new Error('Only one Super Agent is allowed. The default Super Agent cannot be duplicated.');
+    }
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 800));
     const newAgent: AIAgent = {
@@ -312,7 +317,7 @@ export function useAIAgentsData() {
     setAgents(prev => [...prev, newAgent]);
     setIsLoading(false);
     return newAgent;
-  }, []);
+  }, [agents]);
 
   const updateAgent = useCallback(async (agentId: string, agentData: Partial<AIAgent>) => {
     setIsLoading(true);
@@ -328,11 +333,15 @@ export function useAIAgentsData() {
   }, []);
 
   const deleteAgent = useCallback(async (agentId: string) => {
+    const agent = agents.find(a => a.id === agentId);
+    if (agent?.type === 'super_agent') {
+      throw new Error('The default Super Agent cannot be deleted.');
+    }
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 600));
     setAgents(prev => prev.filter(agent => agent.id !== agentId));
     setIsLoading(false);
-  }, []);
+  }, [agents]);
 
   const toggleAgentStatus = useCallback((agentId: string) => {
     setAgents(prev =>
@@ -347,6 +356,9 @@ export function useAIAgentsData() {
   const duplicateAgent = useCallback(async (agentId: string) => {
     const original = agents.find(a => a.id === agentId);
     if (!original) return null;
+    if (original.type === 'super_agent') {
+      throw new Error('The default Super Agent cannot be duplicated.');
+    }
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 800));
     const newAgent: AIAgent = {
@@ -367,6 +379,7 @@ export function useAIAgentsData() {
     superAgents,
     childAgents,
     isLoading,
+    hasSuperAgent,
     getAgentsBySuper,
     getAgentById,
     addAgent,

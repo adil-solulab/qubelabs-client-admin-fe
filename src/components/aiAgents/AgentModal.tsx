@@ -70,9 +70,10 @@ interface AgentModalProps {
   onOpenChange: (open: boolean) => void;
   onSave: (agentData: Omit<AIAgent, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   superAgents: AIAgent[];
+  hasSuperAgent?: boolean;
 }
 
-export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAgents }: AgentModalProps) {
+export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAgents, hasSuperAgent = false }: AgentModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
 
@@ -260,20 +261,22 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Agent Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isEdit && agent?.type === 'super_agent'}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="super_agent">Super Agent (Orchestrator)</SelectItem>
+                            {(!hasSuperAgent || (isEdit && agent?.type === 'super_agent')) && (
+                              <SelectItem value="super_agent">Super Agent (Orchestrator)</SelectItem>
+                            )}
                             <SelectItem value="agent">Agent (Specialist)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
                           {field.value === 'super_agent'
-                            ? 'Super Agents route queries to specialized agents'
+                            ? 'Super Agents route queries to specialized agents. Only one Super Agent is allowed.'
                             : 'Agents handle specific tasks assigned by a Super Agent'}
                         </FormDescription>
                         <FormMessage />

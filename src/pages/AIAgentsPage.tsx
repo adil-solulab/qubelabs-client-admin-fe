@@ -28,6 +28,7 @@ export default function AIAgentsPage() {
     superAgents,
     childAgents,
     isLoading,
+    hasSuperAgent,
     getAgentsBySuper,
     addAgent,
     updateAgent,
@@ -169,6 +170,7 @@ export default function AIAgentsPage() {
           onOpenChange={setAgentModalOpen}
           onSave={handleSaveAgent}
           superAgents={superAgents}
+          hasSuperAgent={hasSuperAgent}
         />
 
         <DeleteAgentModal
@@ -188,7 +190,7 @@ export default function AIAgentsPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">AI Agents</h1>
             <p className="text-sm text-muted-foreground">
-              Manage your Super Agents and specialized Agents
+              Manage your Super Agent and specialized Agents
             </p>
           </div>
           <PermissionButton
@@ -374,6 +376,7 @@ export default function AIAgentsPage() {
         onOpenChange={setAgentModalOpen}
         onSave={handleSaveAgent}
         superAgents={superAgents}
+        hasSuperAgent={hasSuperAgent}
       />
 
       <DeleteAgentModal
