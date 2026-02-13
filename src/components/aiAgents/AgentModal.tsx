@@ -255,30 +255,6 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                       </FormItem>
                     )}
                   />
-                  {form.watch('type') === 'agent' && superAgents.length > 0 && (
-                    <FormField
-                      control={form.control}
-                      name="superAgentId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Parent Super Agent</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a Super Agent" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {superAgents.map(sa => (
-                                <SelectItem key={sa.id} value={sa.id}>{sa.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </TabsContent>
 
                 <TabsContent value="persona" className="space-y-4 mt-4">
