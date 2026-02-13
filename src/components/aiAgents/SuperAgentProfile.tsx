@@ -320,12 +320,6 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                 />
               </div>
 
-              <div className="flex justify-end mt-8">
-                <Button onClick={() => success('Profile settings saved successfully')} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  Save
-                </Button>
-              </div>
             </div>
           )}
 
