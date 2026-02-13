@@ -255,34 +255,6 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Agent Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isEdit && agent?.type === 'super_agent'}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {(!hasSuperAgent || (isEdit && agent?.type === 'super_agent')) && (
-                              <SelectItem value="super_agent">Super Agent (Orchestrator)</SelectItem>
-                            )}
-                            <SelectItem value="agent">Agent (Specialist)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          {field.value === 'super_agent'
-                            ? 'Super Agents route queries to specialized agents. Only one Super Agent is allowed.'
-                            : 'Agents handle specific tasks assigned by a Super Agent'}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   {form.watch('type') === 'agent' && superAgents.length > 0 && (
                     <FormField
                       control={form.control}

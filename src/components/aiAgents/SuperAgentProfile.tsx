@@ -381,7 +381,7 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
               </div>
 
               <div className="flex justify-end mt-8">
-                <Button onClick={() => success('AI Safety & Conduct settings saved successfully')} className="gap-2">
+                <Button onClick={() => success({ title: 'AI Safety & Conduct settings saved successfully' })} className="gap-2">
                   <Save className="w-4 h-4" />
                   Save
                 </Button>
@@ -497,7 +497,7 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
               </div>
 
               <div className="flex justify-end mt-8">
-                <Button onClick={() => success('Fallback settings saved successfully')} className="gap-2">
+                <Button onClick={() => success({ title: 'Fallback settings saved successfully' })} className="gap-2">
                   <Save className="w-4 h-4" />
                   Save
                 </Button>
