@@ -142,17 +142,21 @@ Preferred communication style: Simple, everyday language.
 - **Two-View UI**: Agent listing (cards with Super Agent section + Agents section, search, type filter) → Agent detail view (collapsible config sections)
 - **Types**: `AIAgent` (unified type for super_agent and agent), `AgentPersona`, `IntentConfig`, `TriggerConfig`, `PromptConfig`, `VariableConfig`, `RoutingConfig`, `FallbackConfig`, `ContextConfig`, `GuardrailConfig`
 - **Data Hook**: `useAIAgentsData` manages agents array with CRUD, toggle status, duplicate, filter by super agent
+- **Single Super Agent Restriction**: Only one Super Agent allowed; create/delete/duplicate actions are blocked for the default Super Agent
 - Components: `AgentCard`, `AgentDetailPanel`, `AgentModal`, `DeleteAgentModal`
 
-### Workflows (Execution Layer) - formerly Flow Builder
-- **Renamed**: "Flow Builder" renamed to "Workflows" across sidebar, page titles, breadcrumbs, and modals to reflect its role as the execution/automation layer
-- **Purpose**: API calls, database queries, CRM updates, sending emails, creating tickets, fetching backend data, business logic execution
-- **Two-View Layout**: Workflow listing page + Workflow editor view, toggled by selecting/deselecting a workflow
-- **Workflow Listing Page**: Collapsible folder groups, table with columns (Workflow Name, Description, Last Edited, Channel, Status), search, Create Workflow modal, kebab menu per workflow (Open, Duplicate, Delete)
-- **Folder Management**: Create, rename, and delete folders to organize workflows; folders act as category groups in the listing
-- **Channel Selection**: Each workflow belongs to a channel (Voice, Chat, Email) chosen at creation time; displayed as colored badges in the listing and editor breadcrumb
-- **Workflow Editor View**: Breadcrumb navigation (Workflows / Workflow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
-- **Multiple Workflows**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), folder CRUD (createFolder, renameFolder, deleteFolder), and all node/edge mutations scoped to selected flow
+### Flow Builder (Flows) - Main USP
+- **UI Design**: Follows Yellow AI design patterns with "Flows" terminology throughout
+- **Environment Selector**: Staging, Sandbox, Production toggle in the page header
+- **Category Sidebar**: Left panel with "All Flows" + category navigation showing per-category flow counts and summary stats (Total flows, Published, Draft)
+- **Category Management**: Create, rename, and delete categories to organize flows (replaces folder terminology)
+- **Two Creation Modes**: "Start from scratch" (conversational flow) and "Create Workflow" (background workflow) via type selector dialog
+- **Purpose**: Visual drag-and-drop canvas for designing conversational flows and background workflows (API calls, CRM updates, emails, etc.)
+- **Two-View Layout**: Flow listing page + Flow editor view, toggled by selecting/deselecting a flow
+- **Flow Listing Page**: Category-grouped table with columns (Flow Name, Description, Last Edited, Channel, Status), search, kebab menu per flow (Open, Duplicate, Delete)
+- **Channel Selection**: Each flow belongs to a channel (Voice, Chat, Email) chosen at creation time; displayed as colored badges
+- **Flow Editor View**: Breadcrumb navigation (Flows / Flow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
+- **Data Hook**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), category CRUD (createFolder, renameFolder, deleteFolder), and all node/edge mutations scoped to selected flow
 - **Node Tools Sidebar**: Left panel listing 7 addable node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End) with icons, descriptions, and search; collapsible to icon-only mode
 - **Types**: `Flow` type includes `category` and `channel` fields; `FlowSummary` type for list view; `FlowChannel` type for voice/chat/email
 - Components: `FlowListView`, `NodeToolsSidebar`, plus existing `FlowCanvas`, `FlowNode`, `NodePropertiesPanel`, `LivePreviewPanel`, `PublishFlowModal`, `RollbackModal`, `UnsavedChangesModal`
