@@ -141,6 +141,7 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
   const [welcomeGreeting, setWelcomeGreeting] = useState(agent.persona.greeting);
   const [rulesModalOpen, setRulesModalOpen] = useState(false);
   const [rules, setRules] = useState<string[]>([]);
+  const [fallbackFlowId, setFallbackFlowId] = useState<string>('');
 
   const [customerQueryFilters, setCustomerQueryFilters] = useState<SafetyCheck[]>([
     { id: 'banned', name: 'Banned Topics', description: 'Restricts conversations on improper topics like violence etc.', enabled: false },
@@ -411,6 +412,39 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {fallbackMode === 'trigger_flow' && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">Select a fallback flow</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Your conversation will be routed to this flow when the super agent is unable to proceed
+                      </p>
+                      <Select value={fallbackFlowId} onValueChange={setFallbackFlowId}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a flow" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="flow-1">Customer Support Flow</SelectItem>
+                          <SelectItem value="flow-2">Handle Customer Queries</SelectItem>
+                          <SelectItem value="flow-3">Product FAQ</SelectItem>
+                          <SelectItem value="flow-4">Billing FAQ</SelectItem>
+                          <SelectItem value="flow-5">Appointment Booking</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {fallbackFlowId && (
+                        <button
+                          onClick={() => {
+                            const names: Record<string, string> = { 'flow-1': 'Customer Support Flow', 'flow-2': 'Handle Customer Queries', 'flow-3': 'Product FAQ', 'flow-4': 'Billing FAQ', 'flow-5': 'Appointment Booking' };
+                            navigate(`/flow-builder?openFlow=${encodeURIComponent(names[fallbackFlowId] || '')}`);
+                          }}
+                          className="flex items-center gap-1.5 text-sm text-primary hover:underline mt-2"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          View fallback flow
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   <Separator />
 
