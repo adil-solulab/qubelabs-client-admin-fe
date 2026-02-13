@@ -323,6 +323,165 @@ export function NodePropertiesPanel({
             </>
           )}
 
+          {/* Channel Settings (WhatsApp, Slack, Telegram, Teams) */}
+          {['whatsapp', 'slack', 'telegram', 'teams'].includes(node.type) && (
+            <>
+              <div className="space-y-2">
+                <Label>Recipient / Channel ID</Label>
+                <Input
+                  value={node.data.channelConfig?.recipientId || ''}
+                  onChange={(e) => handleUpdate({
+                    channelConfig: { ...node.data.channelConfig!, recipientId: e.target.value }
+                  })}
+                  placeholder={node.type === 'slack' ? '#channel-name' : node.type === 'teams' ? 'Team channel ID' : 'Phone number or chat ID'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Message Template</Label>
+                <Textarea
+                  value={node.data.channelConfig?.messageTemplate || ''}
+                  onChange={(e) => handleUpdate({
+                    channelConfig: { ...node.data.channelConfig!, messageTemplate: e.target.value }
+                  })}
+                  placeholder="Type your message template... Use {{variable}} for dynamic content"
+                  rows={4}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Ticketing Settings (Zendesk, Freshdesk) */}
+          {['zendesk', 'freshdesk'].includes(node.type) && (
+            <>
+              <div className="space-y-2">
+                <Label>Action</Label>
+                <Select
+                  value={node.data.ticketConfig?.action || 'create'}
+                  onValueChange={(value) => handleUpdate({
+                    ticketConfig: { ...node.data.ticketConfig!, action: value as any }
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="create">Create Ticket</SelectItem>
+                    <SelectItem value="update">Update Ticket</SelectItem>
+                    <SelectItem value="close">Close Ticket</SelectItem>
+                    <SelectItem value="get">Get Ticket</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Subject</Label>
+                <Input
+                  value={node.data.ticketConfig?.subject || ''}
+                  onChange={(e) => handleUpdate({
+                    ticketConfig: { ...node.data.ticketConfig!, subject: e.target.value }
+                  })}
+                  placeholder="Ticket subject..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Select
+                  value={node.data.ticketConfig?.priority || 'medium'}
+                  onValueChange={(value) => handleUpdate({
+                    ticketConfig: { ...node.data.ticketConfig!, priority: value as any }
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Assignee</Label>
+                <Input
+                  value={node.data.ticketConfig?.assignee || ''}
+                  onChange={(e) => handleUpdate({
+                    ticketConfig: { ...node.data.ticketConfig!, assignee: e.target.value }
+                  })}
+                  placeholder="Agent or team name..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tags</Label>
+                <Input
+                  value={node.data.ticketConfig?.tags || ''}
+                  onChange={(e) => handleUpdate({
+                    ticketConfig: { ...node.data.ticketConfig!, tags: e.target.value }
+                  })}
+                  placeholder="Comma-separated tags..."
+                />
+              </div>
+            </>
+          )}
+
+          {/* CRM Settings (Zoho CRM, Salesforce, HubSpot) */}
+          {['zoho_crm', 'salesforce', 'hubspot'].includes(node.type) && (
+            <>
+              <div className="space-y-2">
+                <Label>Action</Label>
+                <Select
+                  value={node.data.crmConfig?.action || 'create_contact'}
+                  onValueChange={(value) => handleUpdate({
+                    crmConfig: { ...node.data.crmConfig!, action: value as any }
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="create_contact">Create Contact</SelectItem>
+                    <SelectItem value="update_contact">Update Contact</SelectItem>
+                    <SelectItem value="get_contact">Get Contact</SelectItem>
+                    <SelectItem value="create_deal">Create Deal</SelectItem>
+                    <SelectItem value="update_deal">Update Deal</SelectItem>
+                    <SelectItem value="search">Search Records</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Object Type</Label>
+                <Select
+                  value={node.data.crmConfig?.objectType || 'contact'}
+                  onValueChange={(value) => handleUpdate({
+                    crmConfig: { ...node.data.crmConfig!, objectType: value as any }
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contact">Contact</SelectItem>
+                    <SelectItem value="lead">Lead</SelectItem>
+                    <SelectItem value="deal">Deal</SelectItem>
+                    <SelectItem value="account">Account</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Field Mapping (JSON)</Label>
+                <Textarea
+                  value={node.data.crmConfig?.fieldMapping || ''}
+                  onChange={(e) => handleUpdate({
+                    crmConfig: { ...node.data.crmConfig!, fieldMapping: e.target.value }
+                  })}
+                  placeholder='{"first_name": "{{name}}", "email": "{{email}}"}'
+                  rows={4}
+                  className="font-mono text-xs"
+                />
+              </div>
+            </>
+          )}
+
           {/* Delete Button */}
           {node.type !== 'start' && (
             <div className="pt-4 border-t">

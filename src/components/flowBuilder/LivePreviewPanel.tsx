@@ -110,6 +110,63 @@ export function LivePreviewPanel({ flow }: LivePreviewPanelProps) {
         moveToNextNode(node);
         break;
 
+      case 'whatsapp':
+      case 'slack':
+      case 'telegram':
+      case 'teams':
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`,
+          type: 'system',
+          content: `📤 Sending via ${config.label}: "${node.data.channelConfig?.messageTemplate || 'Message template'}"`,
+          nodeId: node.id,
+        }]);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`,
+          type: 'system',
+          content: `✓ ${config.label} message sent`,
+          nodeId: node.id,
+        }]);
+        moveToNextNode(node);
+        break;
+
+      case 'zendesk':
+      case 'freshdesk':
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`,
+          type: 'system',
+          content: `🎫 ${config.label}: ${node.data.ticketConfig?.action || 'create'} ticket "${node.data.ticketConfig?.subject || 'New Ticket'}"`,
+          nodeId: node.id,
+        }]);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`,
+          type: 'system',
+          content: `✓ ${config.label} ticket operation successful`,
+          nodeId: node.id,
+        }]);
+        moveToNextNode(node);
+        break;
+
+      case 'zoho_crm':
+      case 'salesforce':
+      case 'hubspot':
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`,
+          type: 'system',
+          content: `📊 ${config.label}: ${node.data.crmConfig?.action || 'create_contact'} (${node.data.crmConfig?.objectType || 'contact'})`,
+          nodeId: node.id,
+        }]);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`,
+          type: 'system',
+          content: `✓ ${config.label} CRM operation successful`,
+          nodeId: node.id,
+        }]);
+        moveToNextNode(node);
+        break;
+
       case 'end':
         setMessages(prev => [...prev, {
           id: `sys-${Date.now()}`,

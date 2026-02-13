@@ -1,5 +1,63 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary, FlowChannel } from '@/types/flowBuilder';
+import { NODE_TYPE_CONFIG } from '@/types/flowBuilder';
+
+const CHANNEL_TYPES: NodeType[] = ['whatsapp', 'slack', 'telegram', 'teams'];
+const TICKETING_TYPES: NodeType[] = ['zendesk', 'freshdesk'];
+const CRM_TYPES: NodeType[] = ['zoho_crm', 'salesforce', 'hubspot'];
+
+function getDefaultNodeData(type: NodeType): NodeData {
+  const label = `New ${NODE_TYPE_CONFIG[type]?.label || type}`;
+
+  const base: NodeData = { label };
+
+  if (type === 'message') {
+    base.content = 'Enter your message here...';
+  } else if (type === 'condition') {
+    base.condition = { variable: '', operator: 'equals', value: '' };
+  } else if (type === 'api_call') {
+    base.apiConfig = { method: 'GET', url: '' };
+  } else if (type === 'dtmf') {
+    base.dtmfConfig = {
+      prompt: 'Press 1 for sales, 2 for support, or 0 for operator.',
+      timeout: 10,
+      maxDigits: 1,
+      branches: [
+        { key: '1', label: 'Sales' },
+        { key: '2', label: 'Support' },
+        { key: '0', label: 'Operator' },
+      ],
+    };
+  } else if (type === 'assistant') {
+    base.assistantConfig = {
+      personaId: '',
+      personaName: 'Select Assistant',
+      handoffCondition: 'escalation_requested',
+    };
+  } else if (CHANNEL_TYPES.includes(type)) {
+    base.channelConfig = {
+      recipientId: '',
+      messageTemplate: '',
+      channel: type,
+    };
+  } else if (TICKETING_TYPES.includes(type)) {
+    base.ticketConfig = {
+      action: 'create',
+      subject: '',
+      priority: 'medium',
+      assignee: '',
+      tags: '',
+    };
+  } else if (CRM_TYPES.includes(type)) {
+    base.crmConfig = {
+      action: 'create_contact',
+      objectType: 'contact',
+      fieldMapping: '',
+    };
+  }
+
+  return base;
+}
 
 const generateMockFlows = (): Flow[] => [
   {
@@ -469,27 +527,7 @@ export function useFlowBuilderData() {
       id: `${type}-${Date.now()}`,
       type,
       position,
-      data: {
-        label: `New ${type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')}`,
-        content: type === 'message' ? 'Enter your message here...' : undefined,
-        condition: type === 'condition' ? { variable: '', operator: 'equals', value: '' } : undefined,
-        apiConfig: type === 'api_call' ? { method: 'GET', url: '' } : undefined,
-        dtmfConfig: type === 'dtmf' ? {
-          prompt: 'Press 1 for sales, 2 for support, or 0 for operator.',
-          timeout: 10,
-          maxDigits: 1,
-          branches: [
-            { key: '1', label: 'Sales' },
-            { key: '2', label: 'Support' },
-            { key: '0', label: 'Operator' },
-          ]
-        } : undefined,
-        assistantConfig: type === 'assistant' ? {
-          personaId: '',
-          personaName: 'Select Assistant',
-          handoffCondition: 'escalation_requested',
-        } : undefined,
-      },
+      data: getDefaultNodeData(type),
       connections: [],
     };
     updateCurrentFlow(f => ({

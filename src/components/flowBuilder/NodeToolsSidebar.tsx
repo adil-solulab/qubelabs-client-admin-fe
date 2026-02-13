@@ -1,8 +1,14 @@
 import { useState } from 'react';
-import { Search, MessageSquare, GitBranch, Plug, Phone, Bot, ArrowRightLeft, CircleStop, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Search, MessageSquare, GitBranch, Plug, Phone, Bot, ArrowRightLeft, CircleStop, 
+  ChevronLeft, ChevronRight, ChevronDown,
+  MessageCircle, Hash, Send, Users,
+  Ticket, ClipboardList,
+  BarChart3, Cloud, Hexagon
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { NODE_TYPE_CONFIG, type NodeType } from '@/types/flowBuilder';
+import { NODE_TYPE_CONFIG, NODE_CATEGORIES, type NodeType, type NodeCategory } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 
 interface NodeToolsSidebarProps {
@@ -19,6 +25,15 @@ const NODE_ICONS: Record<NodeType, React.ReactNode> = {
   assistant: <Bot className="w-5 h-5" />,
   transfer: <ArrowRightLeft className="w-5 h-5" />,
   end: <CircleStop className="w-5 h-5" />,
+  whatsapp: <MessageCircle className="w-5 h-5" />,
+  slack: <Hash className="w-5 h-5" />,
+  telegram: <Send className="w-5 h-5" />,
+  teams: <Users className="w-5 h-5" />,
+  zendesk: <Ticket className="w-5 h-5" />,
+  freshdesk: <ClipboardList className="w-5 h-5" />,
+  zoho_crm: <BarChart3 className="w-5 h-5" />,
+  salesforce: <Cloud className="w-5 h-5" />,
+  hubspot: <Hexagon className="w-5 h-5" />,
 };
 
 const NODE_DESCRIPTIONS: Record<NodeType, string> = {
@@ -30,20 +45,38 @@ const NODE_DESCRIPTIONS: Record<NodeType, string> = {
   assistant: 'Hand off to an AI assistant',
   transfer: 'Transfer to a live agent',
   end: 'End the conversation',
+  whatsapp: 'Send or receive WhatsApp messages',
+  slack: 'Post messages to Slack channels',
+  telegram: 'Send Telegram bot messages',
+  teams: 'Send Microsoft Teams notifications',
+  zendesk: 'Create or update Zendesk tickets',
+  freshdesk: 'Manage Freshdesk support tickets',
+  zoho_crm: 'Sync data with Zoho CRM',
+  salesforce: 'Manage Salesforce records',
+  hubspot: 'Update HubSpot contacts & deals',
 };
 
-const ADDABLE_TYPES: NodeType[] = ['message', 'condition', 'api_call', 'dtmf', 'assistant', 'transfer', 'end'];
+const CATEGORY_ORDER: NodeCategory[] = ['flow', 'channels', 'ticketing', 'crm'];
 
 export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsed, setCollapsed] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
 
-  const filteredTypes = ADDABLE_TYPES.filter(type => {
-    if (!searchQuery) return true;
-    const config = NODE_TYPE_CONFIG[type];
-    return config.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           NODE_DESCRIPTIONS[type].toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const toggleCategory = (cat: string) => {
+    setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  const getFilteredTypesForCategory = (category: NodeCategory) => {
+    return NODE_CATEGORIES[category].types.filter(type => {
+      if (!searchQuery) return true;
+      const config = NODE_TYPE_CONFIG[type];
+      return config.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             NODE_DESCRIPTIONS[type].toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  };
+
+  const allFilteredTypes = CATEGORY_ORDER.flatMap(cat => getFilteredTypesForCategory(cat));
 
   if (collapsed) {
     return (
@@ -61,31 +94,34 @@ export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) 
             <TooltipContent side="right">Expand tools panel</TooltipContent>
           </Tooltip>
 
-          {ADDABLE_TYPES.map(type => {
-            const config = NODE_TYPE_CONFIG[type];
-            return (
-              <Tooltip key={type}>
-                <TooltipTrigger asChild>
-                  <button
-                    className={cn(
-                      'w-9 h-9 rounded-lg flex items-center justify-center transition-all',
-                      canEdit
-                        ? 'hover:bg-primary/10 hover:text-primary cursor-pointer active:scale-95'
-                        : 'opacity-40 cursor-not-allowed',
-                      config.color
-                    )}
-                    onClick={() => canEdit && onAddNode(type)}
-                    disabled={!canEdit}
-                  >
-                    {NODE_ICONS[type]}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p className="font-medium">{config.label}</p>
-                  <p className="text-xs text-muted-foreground">{NODE_DESCRIPTIONS[type]}</p>
-                </TooltipContent>
-              </Tooltip>
-            );
+          {CATEGORY_ORDER.map(cat => {
+            const types = NODE_CATEGORIES[cat].types;
+            return types.map(type => {
+              const config = NODE_TYPE_CONFIG[type];
+              return (
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={cn(
+                        'w-9 h-9 rounded-lg flex items-center justify-center transition-all',
+                        canEdit
+                          ? 'hover:bg-primary/10 hover:text-primary cursor-pointer active:scale-95'
+                          : 'opacity-40 cursor-not-allowed',
+                        config.color
+                      )}
+                      onClick={() => canEdit && onAddNode(type)}
+                      disabled={!canEdit}
+                    >
+                      {NODE_ICONS[type]}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p className="font-medium">{config.label}</p>
+                    <p className="text-xs text-muted-foreground">{NODE_DESCRIPTIONS[type]}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            });
           })}
         </div>
       </TooltipProvider>
@@ -116,37 +152,59 @@ export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5">
-        {filteredTypes.map(type => {
-          const config = NODE_TYPE_CONFIG[type];
+      <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
+        {CATEGORY_ORDER.map(cat => {
+          const catConfig = NODE_CATEGORIES[cat];
+          const filteredTypes = getFilteredTypesForCategory(cat);
+          if (filteredTypes.length === 0) return null;
+          const isCollapsed = collapsedCategories[cat];
+
           return (
-            <button
-              key={type}
-              className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group',
-                canEdit
-                  ? 'hover:bg-primary/10 cursor-pointer active:scale-[0.98]'
-                  : 'opacity-40 cursor-not-allowed'
+            <div key={cat}>
+              <button
+                className="w-full flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => toggleCategory(cat)}
+              >
+                <span>{catConfig.label}</span>
+                <ChevronDown className={cn("w-3 h-3 transition-transform", isCollapsed && "-rotate-90")} />
+              </button>
+              {!isCollapsed && (
+                <div className="space-y-0.5">
+                  {filteredTypes.map(type => {
+                    const config = NODE_TYPE_CONFIG[type];
+                    return (
+                      <button
+                        key={type}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group',
+                          canEdit
+                            ? 'hover:bg-primary/10 cursor-pointer active:scale-[0.98]'
+                            : 'opacity-40 cursor-not-allowed'
+                        )}
+                        onClick={() => canEdit && onAddNode(type)}
+                        disabled={!canEdit}
+                      >
+                        <div className={cn(
+                          'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors',
+                          config.bgColor,
+                          config.color
+                        )}>
+                          {NODE_ICONS[type]}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-foreground truncate">{config.label}</div>
+                          <div className="text-[11px] text-muted-foreground truncate leading-tight">{NODE_DESCRIPTIONS[type]}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-              onClick={() => canEdit && onAddNode(type)}
-              disabled={!canEdit}
-            >
-              <div className={cn(
-                'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors',
-                config.bgColor,
-                config.color
-              )}>
-                {NODE_ICONS[type]}
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">{config.label}</div>
-                <div className="text-[11px] text-muted-foreground truncate leading-tight">{NODE_DESCRIPTIONS[type]}</div>
-              </div>
-            </button>
+            </div>
           );
         })}
 
-        {filteredTypes.length === 0 && (
+        {allFilteredTypes.length === 0 && (
           <div className="text-center text-xs text-muted-foreground py-6">
             No matching nodes
           </div>
