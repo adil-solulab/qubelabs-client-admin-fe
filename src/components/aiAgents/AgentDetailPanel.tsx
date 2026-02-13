@@ -140,15 +140,17 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
 
         <CollapsibleSection title="Agent Metadata" icon={Bot}>
           <div className="grid gap-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className={cn("grid gap-3", agent.type !== 'super_agent' ? "grid-cols-2" : "grid-cols-1")}>
               <div className="p-2.5 rounded-lg bg-muted/50">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Agent ID</p>
                 <p className="text-sm font-medium font-mono">{agent.id}</p>
               </div>
+              {agent.type !== 'super_agent' && (
               <div className="p-2.5 rounded-lg bg-muted/50">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Business Capability</p>
                 <p className="text-sm font-medium">{agent.businessCapability || '-'}</p>
               </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="p-2.5 rounded-lg bg-muted/50">

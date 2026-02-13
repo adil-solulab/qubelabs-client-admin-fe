@@ -43,7 +43,7 @@ const agentSchema = z.object({
   description: z.string().min(1, 'Description is required').max(500),
   type: z.enum(['super_agent', 'agent']),
   superAgentId: z.string().optional(),
-  businessCapability: z.string().min(1, 'Business capability is required'),
+  businessCapability: z.string(),
   priorityScore: z.number().min(1).max(100),
   allowedChannels: z.array(z.enum(['voice', 'chat', 'email', 'whatsapp', 'sms'])).min(1, 'Select at least one channel'),
   escalationAllowed: z.boolean(),
@@ -371,6 +371,7 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                       </FormItem>
                     )}
                   />
+                  {form.watch('type') !== 'super_agent' && (
                   <FormField
                     control={form.control}
                     name="businessCapability"
@@ -398,6 +399,7 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                       </FormItem>
                     )}
                   />
+                  )}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
