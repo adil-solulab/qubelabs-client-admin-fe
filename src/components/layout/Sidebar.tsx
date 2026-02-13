@@ -8,6 +8,7 @@ import {
   BookOpen,
   MessageSquare,
   GitBranch,
+  Workflow,
   Headphones,
   PhoneOutgoing,
   PhoneCall,
@@ -61,7 +62,8 @@ const navGroups: NavGroup[] = [
       { icon: Bot, label: 'AI Agents', path: '/ai-agents', screenId: 'ai-agents', badge: '5' },
       { icon: BookOpen, label: 'Knowledge Base', path: '/knowledge-base', screenId: 'knowledge-base' },
       { icon: Zap, label: 'AI Engine', path: '/ai-engine', screenId: 'ai-engine' },
-      { icon: GitBranch, label: 'Workflows', path: '/workflows', screenId: 'workflows' },
+      { icon: GitBranch, label: 'Flow Builder', path: '/flow-builder', screenId: 'flow-builder' },
+      { icon: Workflow, label: 'Workflows', path: '/workflows', screenId: 'workflows' },
     ],
   },
   {
