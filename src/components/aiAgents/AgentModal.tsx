@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Bot, Crown, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Bot, Crown, Plus, Trash2, Loader2, Shield } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,8 +35,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import type { AIAgent, AgentType, ToneLevel, FallbackAction, ChannelType } from '@/types/aiAgents';
-import { TONE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS } from '@/types/aiAgents';
+import type { AIAgent, AgentType, ToneLevel, FallbackAction, ChannelType, GuardrailType, GuardrailConfig } from '@/types/aiAgents';
+import { TONE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS, GUARDRAIL_TYPE_LABELS } from '@/types/aiAgents';
 
 const agentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -85,6 +85,28 @@ interface AgentModalProps {
 export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAgents, hasSuperAgent = false }: AgentModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
+  const [guardrails, setGuardrails] = useState<GuardrailConfig[]>([]);
+
+  const addGuardrail = () => {
+    const newGuardrail: GuardrailConfig = {
+      id: `guardrail-${Date.now()}`,
+      type: 'content_filter',
+      name: '',
+      description: '',
+      isActive: true,
+      severity: 'medium',
+      action: 'warn',
+    };
+    setGuardrails(prev => [...prev, newGuardrail]);
+  };
+
+  const updateGuardrail = (id: string, updates: Partial<GuardrailConfig>) => {
+    setGuardrails(prev => prev.map(g => g.id === id ? { ...g, ...updates } : g));
+  };
+
+  const removeGuardrail = (id: string) => {
+    setGuardrails(prev => prev.filter(g => g.id !== id));
+  };
 
   const form = useForm<AgentFormValues>({
     resolver: zodResolver(agentSchema),
@@ -188,6 +210,11 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
       });
     }
     setActiveTab('basics');
+    if (agent && isEdit) {
+      setGuardrails(agent.guardrails || []);
+    } else if (!isEdit) {
+      setGuardrails([]);
+    }
   }, [agent, isEdit, open, form, superAgents]);
 
   const handleSubmit = async (values: AgentFormValues) => {
@@ -238,7 +265,7 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
           contextVariables: agent?.context.contextVariables || [],
           shareContextWithAgents: values.shareContext,
         },
-        guardrails: agent?.guardrails || [],
+        guardrails: guardrails,
       };
       await onSave(agentData);
       onOpenChange(false);
@@ -266,11 +293,12 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
           <Form {...form}>
             <form id="agent-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="w-full grid grid-cols-4">
+                <TabsList className="w-full grid grid-cols-5">
                   <TabsTrigger value="basics" className="text-xs">Basics</TabsTrigger>
                   <TabsTrigger value="persona" className="text-xs">Persona</TabsTrigger>
                   <TabsTrigger value="prompt" className="text-xs">Prompt</TabsTrigger>
                   <TabsTrigger value="behavior" className="text-xs">Behavior</TabsTrigger>
+                  <TabsTrigger value="guardrails" className="text-xs">Guardrails</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="basics" className="space-y-4 mt-4">
@@ -806,6 +834,122 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                         )}
                       />
                     </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="guardrails" className="space-y-4 mt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-semibold">Guardrails</h4>
+                      <p className="text-xs text-muted-foreground">Safety rules that control agent behavior</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={addGuardrail}>
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Rule
+                    </Button>
+                  </div>
+
+                  {guardrails.length === 0 && (
+                    <div className="text-center py-8 border border-dashed rounded-lg">
+                      <Shield className="w-8 h-8 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-sm text-muted-foreground">No guardrails configured</p>
+                      <p className="text-xs text-muted-foreground mt-1">Add rules to control agent safety and compliance</p>
+                      <Button type="button" variant="outline" size="sm" className="mt-3" onClick={addGuardrail}>
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Add First Rule
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    {guardrails.map((guardrail, index) => (
+                      <div key={guardrail.id} className="border rounded-lg p-3 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={guardrail.isActive}
+                              onCheckedChange={(checked) => updateGuardrail(guardrail.id, { isActive: checked })}
+                            />
+                            <span className="text-xs font-medium text-muted-foreground">Rule {index + 1}</span>
+                          </div>
+                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeGuardrail(guardrail.id)}>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Name</Label>
+                            <Input
+                              placeholder="Rule name"
+                              value={guardrail.name}
+                              onChange={(e) => updateGuardrail(guardrail.id, { name: e.target.value })}
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Type</Label>
+                            <Select
+                              value={guardrail.type}
+                              onValueChange={(v) => updateGuardrail(guardrail.id, { type: v as GuardrailType })}
+                            >
+                              <SelectTrigger className="h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(GUARDRAIL_TYPE_LABELS).map(([value, label]) => (
+                                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Description</Label>
+                          <Textarea
+                            placeholder="Describe what this rule does..."
+                            value={guardrail.description}
+                            onChange={(e) => updateGuardrail(guardrail.id, { description: e.target.value })}
+                            rows={2}
+                            className="text-sm"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Severity</Label>
+                            <Select
+                              value={guardrail.severity}
+                              onValueChange={(v) => updateGuardrail(guardrail.id, { severity: v as 'low' | 'medium' | 'high' })}
+                            >
+                              <SelectTrigger className="h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Action</Label>
+                            <Select
+                              value={guardrail.action}
+                              onValueChange={(v) => updateGuardrail(guardrail.id, { action: v as 'warn' | 'block' | 'flag' })}
+                            >
+                              <SelectTrigger className="h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="warn">Warn</SelectItem>
+                                <SelectItem value="block">Block</SelectItem>
+                                <SelectItem value="flag">Flag for Review</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </TabsContent>
               </Tabs>
