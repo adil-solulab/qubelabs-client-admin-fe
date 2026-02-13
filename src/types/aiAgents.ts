@@ -108,6 +108,13 @@ export interface GuardrailConfig {
   action: 'warn' | 'block' | 'flag';
 }
 
+export interface VoiceConfig {
+  id: string;
+  name: string;
+  provider: string;
+  isPrimary: boolean;
+}
+
 export interface AIAgent {
   id: string;
   name: string;
@@ -119,6 +126,15 @@ export interface AIAgent {
   priorityScore: number;
   allowedChannels: ChannelType[];
   escalationAllowed: boolean;
+  timezone: string;
+  interruptible: boolean;
+  expressiveMode: boolean;
+  defaultPersonality: boolean;
+  firstMessage: string;
+  disclosureRequirements: string;
+  voices: VoiceConfig[];
+  languages: string[];
+  llmProvider: string;
   persona: AgentPersona;
   intents: IntentConfig[];
   triggers: TriggerConfig[];
@@ -131,6 +147,34 @@ export interface AIAgent {
   createdAt: string;
   updatedAt: string;
 }
+
+export const LLM_PROVIDERS: Record<string, string[]> = {
+  'OpenAI': ['GPT-4o', 'GPT-4 Turbo', 'GPT-4', 'GPT-3.5 Turbo'],
+  'Anthropic': ['Claude 4 Opus', 'Claude 4 Sonnet', 'Claude 3.5 Haiku'],
+  'Google': ['Gemini 2.5 Flash', 'Gemini 2.5 Pro', 'Gemini 2.0 Flash'],
+  'Meta': ['Llama 3.1 405B', 'Llama 3.1 70B'],
+};
+
+export const VOICE_OPTIONS: VoiceConfig[] = [
+  { id: 'v-eric', name: 'Eric - Smooth, Trustworthy', provider: 'ElevenLabs', isPrimary: true },
+  { id: 'v-sarah', name: 'Sarah - Warm, Professional', provider: 'ElevenLabs', isPrimary: false },
+  { id: 'v-adam', name: 'Adam - Deep, Authoritative', provider: 'ElevenLabs', isPrimary: false },
+  { id: 'v-rachel', name: 'Rachel - Friendly, Upbeat', provider: 'ElevenLabs', isPrimary: false },
+  { id: 'v-josh', name: 'Josh - Calm, Reassuring', provider: 'ElevenLabs', isPrimary: false },
+  { id: 'v-emily', name: 'Emily - Energetic, Clear', provider: 'ElevenLabs', isPrimary: false },
+];
+
+export const LANGUAGE_OPTIONS = [
+  'English', 'Spanish', 'French', 'German', 'Portuguese', 'Italian',
+  'Dutch', 'Japanese', 'Chinese (Mandarin)', 'Korean', 'Arabic', 'Hindi',
+  'Russian', 'Turkish', 'Polish', 'Swedish', 'Thai', 'Vietnamese',
+];
+
+export const TIMEZONE_OPTIONS = [
+  'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+  'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Tokyo', 'Asia/Shanghai',
+  'Asia/Kolkata', 'Asia/Dubai', 'Australia/Sydney', 'Pacific/Auckland',
+];
 
 export const TONE_LABELS: Record<ToneLevel, string> = {
   formal: 'Formal',

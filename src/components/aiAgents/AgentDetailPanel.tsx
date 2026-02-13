@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import {
   Bot, Crown, ArrowLeft, MessageSquare, Zap, Target, Brain, Variable, GitBranch,
-  AlertTriangle, Database, Shield, Pencil, Play, Copy, Trash2, ChevronDown, ChevronRight
+  AlertTriangle, Database, Shield, Pencil, Play, Copy, Trash2, ChevronDown, ChevronRight,
+  Globe, Volume2, Languages, Cpu
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -172,6 +173,78 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
                 {(agent.allowedChannels || []).map(ch => (
                   <Badge key={ch} variant="outline" className="text-[10px]">{CHANNEL_LABELS[ch]}</Badge>
                 ))}
+              </div>
+            </div>
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Agent Settings" icon={Globe}>
+          <div className="grid gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Timezone</p>
+                <p className="text-sm font-medium">{agent.timezone || 'UTC'}</p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Interruptible</p>
+                <Badge variant={agent.interruptible ? 'default' : 'secondary'} className={cn('text-xs', agent.interruptible && 'bg-primary')}>
+                  {agent.interruptible ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Expressive Mode</p>
+                <Badge variant={agent.expressiveMode ? 'default' : 'secondary'} className={cn('text-xs', agent.expressiveMode && 'bg-primary')}>
+                  {agent.expressiveMode ? 'Enabled' : 'Disabled'}
+                </Badge>
+              </div>
+            </div>
+            {agent.firstMessage && (
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">First Message</p>
+                <p className="text-sm">{agent.firstMessage}</p>
+              </div>
+            )}
+            {agent.disclosureRequirements && (
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Disclosure Requirements</p>
+                <p className="text-sm">{agent.disclosureRequirements}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Voices</p>
+                {(agent.voices || []).length > 0 ? (
+                  <div className="space-y-1 mt-1">
+                    {agent.voices.map(v => (
+                      <div key={v.id} className="flex items-center gap-1.5">
+                        <Volume2 className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs">{v.name}</span>
+                        {v.isPrimary && <Badge variant="outline" className="text-[9px] h-4">Primary</Badge>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">No voice configured</p>
+                )}
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Languages</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {(agent.languages || []).map((lang, i) => (
+                    <Badge key={lang} variant="outline" className="text-[10px]">
+                      {lang} {i === 0 && '(Default)'}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-lg bg-muted/50">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">LLM Provider & Model</p>
+              <div className="flex items-center gap-2 mt-1">
+                <Cpu className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-sm font-medium">{agent.llmProvider || 'OpenAI'}</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-sm">{agent.prompt.model}</span>
               </div>
             </div>
           </div>
