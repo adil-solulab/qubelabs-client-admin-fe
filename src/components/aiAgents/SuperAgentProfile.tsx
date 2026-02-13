@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   User, AlertTriangle, Pencil, Bot, ChevronDown, ChevronRight,
   ArrowLeft, MousePointer, MessageCircle, BookOpen, HelpCircle,
-  Headphones, ExternalLink, Plus, Minus
+  Headphones, ExternalLink, Plus, Minus, Save
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import type { AIAgent } from '@/types/aiAgents';
 import { TONE_LABELS } from '@/types/aiAgents';
 import { WelcomeModal } from '@/components/aiAgents/WelcomeModal';
 import { RulesModal } from '@/components/aiAgents/RulesModal';
+import { useNotification } from '@/hooks/useNotification';
 import { cn } from '@/lib/utils';
 
 type ProfileSection = 'profile' | 'safety' | 'fallback';
@@ -133,6 +134,7 @@ function ExpandableSection({ title, subtitle, count, children, defaultOpen = fal
 
 export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgentProfileProps) {
   const navigate = useNavigate();
+  const { success } = useNotification();
   const [activeSection, setActiveSection] = useState<ProfileSection>('profile');
   const [fallbackMode, setFallbackMode] = useState<string>('instruct');
   const [retryCount, setRetryCount] = useState(agent.fallback.maxRetries);
@@ -317,6 +319,13 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                   actionVariant="link"
                 />
               </div>
+
+              <div className="flex justify-end mt-8">
+                <Button onClick={() => success('Profile settings saved successfully')} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save
+                </Button>
+              </div>
             </div>
           )}
 
@@ -375,6 +384,13 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                     </div>
                   </ExpandableSection>
                 </div>
+              </div>
+
+              <div className="flex justify-end mt-8">
+                <Button onClick={() => success('AI Safety & Conduct settings saved successfully')} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save
+                </Button>
               </div>
             </div>
           )}
@@ -484,6 +500,13 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                     </ul>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex justify-end mt-8">
+                <Button onClick={() => success('Fallback settings saved successfully')} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save
+                </Button>
               </div>
             </div>
           )}
