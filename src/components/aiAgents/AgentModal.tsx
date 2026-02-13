@@ -517,6 +517,11 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                             />
                           </FormControl>
                           <FormDescription>Number of previous messages the agent remembers</FormDescription>
+                          {field.value > 20 && (
+                            <p className="text-xs text-amber-500 flex items-center gap-1 mt-1">
+                              ⚠ Higher message count increases token utilization and may raise costs
+                            </p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
