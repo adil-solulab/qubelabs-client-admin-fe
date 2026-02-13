@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import type { AIAgent } from '@/types/aiAgents';
-import { TONE_LABELS, TRIGGER_TYPE_LABELS, VARIABLE_TYPE_LABELS, GUARDRAIL_TYPE_LABELS, FALLBACK_ACTION_LABELS } from '@/types/aiAgents';
+import { TONE_LABELS, TRIGGER_TYPE_LABELS, VARIABLE_TYPE_LABELS, GUARDRAIL_TYPE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS } from '@/types/aiAgents';
 import { cn } from '@/lib/utils';
 
 interface AgentDetailPanelProps {
@@ -137,6 +137,46 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
           </CollapsibleSection>
         )}
 
+        <CollapsibleSection title="Agent Metadata" icon={Bot}>
+          <div className="grid gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Agent ID</p>
+                <p className="text-sm font-medium font-mono">{agent.id}</p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Business Capability</p>
+                <p className="text-sm font-medium">{agent.businessCapability || '-'}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Priority Score</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${agent.priorityScore || 0}%` }} />
+                  </div>
+                  <span className="text-xs font-medium">{agent.priorityScore || 0}</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Escalation Allowed</p>
+                <Badge variant={agent.escalationAllowed ? 'default' : 'secondary'} className={cn('text-xs', agent.escalationAllowed && 'bg-success')}>
+                  {agent.escalationAllowed ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-lg bg-muted/50">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Allowed Channels</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {(agent.allowedChannels || []).map(ch => (
+                  <Badge key={ch} variant="outline" className="text-[10px]">{CHANNEL_LABELS[ch]}</Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CollapsibleSection>
+
         <CollapsibleSection title="Persona" icon={MessageSquare}>
           <div className="grid gap-3">
             <div className="grid grid-cols-2 gap-3">
@@ -157,13 +197,49 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Personality</p>
               <p className="text-sm">{agent.persona.personality}</p>
             </div>
-            <div className="p-2.5 rounded-lg bg-muted/50">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Adaptability</p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-primary" style={{ width: `${agent.persona.adaptability}%` }} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Adaptability</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${agent.persona.adaptability}%` }} />
+                  </div>
+                  <span className="text-xs font-medium">{agent.persona.adaptability}%</span>
                 </div>
-                <span className="text-xs font-medium">{agent.persona.adaptability}%</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Verbosity Level</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${agent.persona.verbosityLevel}%` }} />
+                  </div>
+                  <span className="text-xs font-medium">{agent.persona.verbosityLevel}%</span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Empathy Level</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${agent.persona.empathyLevel}%` }} />
+                  </div>
+                  <span className="text-xs font-medium">{agent.persona.empathyLevel}%</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Risk Tolerance</p>
+                <Badge variant="outline" className="text-xs capitalize">{agent.persona.riskTolerance}</Badge>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Domain Expertise</p>
+                <Badge variant="outline" className="text-xs capitalize">{agent.persona.domainExpertiseLevel}</Badge>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Brand Voice</p>
+                <p className="text-sm font-medium">{agent.persona.brandVoiceProfile || '-'}</p>
               </div>
             </div>
           </div>

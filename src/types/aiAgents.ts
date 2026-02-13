@@ -7,12 +7,27 @@ export type FallbackAction = 'escalate' | 'retry' | 'transfer' | 'end' | 'custom
 export type GuardrailType = 'content_filter' | 'pii_protection' | 'topic_restriction' | 'response_length' | 'language_filter' | 'custom';
 export type VariableType = 'string' | 'number' | 'boolean' | 'date' | 'email' | 'phone' | 'custom';
 
+export type ChannelType = 'voice' | 'chat' | 'email' | 'whatsapp' | 'sms';
+
+export const CHANNEL_LABELS: Record<ChannelType, string> = {
+  voice: 'Voice',
+  chat: 'Chat',
+  email: 'Email',
+  whatsapp: 'WhatsApp',
+  sms: 'SMS',
+};
+
 export interface AgentPersona {
   tone: ToneLevel;
   style: string;
   adaptability: number;
   greeting: string;
   personality: string;
+  verbosityLevel: number;
+  riskTolerance: 'low' | 'medium' | 'high';
+  domainExpertiseLevel: 'beginner' | 'intermediate' | 'expert';
+  empathyLevel: number;
+  brandVoiceProfile: string;
 }
 
 export interface IntentConfig {
@@ -100,6 +115,10 @@ export interface AIAgent {
   type: AgentType;
   superAgentId?: string;
   status: AgentStatus;
+  businessCapability: string;
+  priorityScore: number;
+  allowedChannels: ChannelType[];
+  escalationAllowed: boolean;
   persona: AgentPersona;
   intents: IntentConfig[];
   triggers: TriggerConfig[];

@@ -35,19 +35,28 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import type { AIAgent, AgentType, ToneLevel, FallbackAction } from '@/types/aiAgents';
-import { TONE_LABELS, FALLBACK_ACTION_LABELS } from '@/types/aiAgents';
+import type { AIAgent, AgentType, ToneLevel, FallbackAction, ChannelType } from '@/types/aiAgents';
+import { TONE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS } from '@/types/aiAgents';
 
 const agentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().min(1, 'Description is required').max(500),
   type: z.enum(['super_agent', 'agent']),
   superAgentId: z.string().optional(),
+  businessCapability: z.string().min(1, 'Business capability is required'),
+  priorityScore: z.number().min(1).max(100),
+  allowedChannels: z.array(z.enum(['voice', 'chat', 'email', 'whatsapp', 'sms'])).min(1, 'Select at least one channel'),
+  escalationAllowed: z.boolean(),
   personaTone: z.enum(['formal', 'friendly', 'casual', 'empathetic', 'persuasive']),
   personaStyle: z.string().min(1),
   personaGreeting: z.string().min(1),
   personaPersonality: z.string().min(1),
   personaAdaptability: z.number().min(0).max(100),
+  verbosityLevel: z.number().min(0).max(100),
+  riskTolerance: z.enum(['low', 'medium', 'high']),
+  domainExpertiseLevel: z.enum(['beginner', 'intermediate', 'expert']),
+  empathyLevel: z.number().min(0).max(100),
+  brandVoiceProfile: z.string().min(1),
   systemPrompt: z.string().min(1, 'System prompt is required'),
   model: z.string().min(1),
   temperature: z.number().min(0).max(2),
@@ -84,11 +93,20 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
       description: '',
       type: 'agent',
       superAgentId: superAgents[0]?.id || '',
+      businessCapability: '',
+      priorityScore: 50,
+      allowedChannels: ['chat'] as ChannelType[],
+      escalationAllowed: true,
       personaTone: 'friendly',
       personaStyle: 'Professional',
       personaGreeting: 'Hello! How can I help you today?',
       personaPersonality: '',
       personaAdaptability: 70,
+      verbosityLevel: 50,
+      riskTolerance: 'medium' as const,
+      domainExpertiseLevel: 'intermediate' as const,
+      empathyLevel: 50,
+      brandVoiceProfile: '',
       systemPrompt: '',
       model: 'gpt-4',
       temperature: 0.7,
@@ -110,11 +128,20 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         description: agent.description,
         type: agent.type,
         superAgentId: agent.superAgentId || '',
+        businessCapability: agent.businessCapability || '',
+        priorityScore: agent.priorityScore || 50,
+        allowedChannels: agent.allowedChannels || ['chat'],
+        escalationAllowed: agent.escalationAllowed ?? true,
         personaTone: agent.persona.tone,
         personaStyle: agent.persona.style,
         personaGreeting: agent.persona.greeting,
         personaPersonality: agent.persona.personality,
         personaAdaptability: agent.persona.adaptability,
+        verbosityLevel: agent.persona.verbosityLevel ?? 50,
+        riskTolerance: agent.persona.riskTolerance || 'medium',
+        domainExpertiseLevel: agent.persona.domainExpertiseLevel || 'intermediate',
+        empathyLevel: agent.persona.empathyLevel ?? 50,
+        brandVoiceProfile: agent.persona.brandVoiceProfile || '',
         systemPrompt: agent.prompt.systemPrompt,
         model: agent.prompt.model,
         temperature: agent.prompt.temperature,
@@ -133,11 +160,20 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         description: '',
         type: 'agent',
         superAgentId: superAgents[0]?.id || '',
+        businessCapability: '',
+        priorityScore: 50,
+        allowedChannels: ['chat'] as ChannelType[],
+        escalationAllowed: true,
         personaTone: 'friendly',
         personaStyle: 'Professional',
         personaGreeting: 'Hello! How can I help you today?',
         personaPersonality: '',
         personaAdaptability: 70,
+        verbosityLevel: 50,
+        riskTolerance: 'medium' as const,
+        domainExpertiseLevel: 'intermediate' as const,
+        empathyLevel: 50,
+        brandVoiceProfile: '',
         systemPrompt: '',
         model: 'gpt-4',
         temperature: 0.7,
@@ -163,12 +199,21 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         type: values.type as AgentType,
         superAgentId: values.type === 'agent' ? values.superAgentId : undefined,
         status: agent?.status || 'draft',
+        businessCapability: values.businessCapability,
+        priorityScore: values.priorityScore,
+        allowedChannels: values.allowedChannels as ChannelType[],
+        escalationAllowed: values.escalationAllowed,
         persona: {
           tone: values.personaTone as ToneLevel,
           style: values.personaStyle,
           adaptability: values.personaAdaptability,
           greeting: values.personaGreeting,
           personality: values.personaPersonality,
+          verbosityLevel: values.verbosityLevel,
+          riskTolerance: values.riskTolerance,
+          domainExpertiseLevel: values.domainExpertiseLevel,
+          empathyLevel: values.empathyLevel,
+          brandVoiceProfile: values.brandVoiceProfile,
         },
         intents: agent?.intents || [],
         triggers: agent?.triggers || [],
@@ -251,6 +296,107 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                         <FormControl>
                           <Textarea placeholder="Describe what this agent does..." rows={3} {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="businessCapability"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Capability</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select capability" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Customer Service Orchestration">Customer Service Orchestration</SelectItem>
+                            <SelectItem value="Sales & Revenue Generation">Sales & Revenue Generation</SelectItem>
+                            <SelectItem value="Customer Support & Resolution">Customer Support & Resolution</SelectItem>
+                            <SelectItem value="Technical Consultation">Technical Consultation</SelectItem>
+                            <SelectItem value="Knowledge Retrieval & FAQ">Knowledge Retrieval & FAQ</SelectItem>
+                            <SelectItem value="Lead Qualification">Lead Qualification</SelectItem>
+                            <SelectItem value="Appointment Booking">Appointment Booking</SelectItem>
+                            <SelectItem value="Order Management">Order Management</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="priorityScore"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Priority Score ({field.value})</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={1}
+                              max={100}
+                              step={1}
+                              value={[field.value]}
+                              onValueChange={([v]) => field.onChange(v)}
+                            />
+                          </FormControl>
+                          <FormDescription>Higher score = higher priority</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="escalationAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                          <div>
+                            <FormLabel>Escalation Allowed</FormLabel>
+                            <FormDescription>Allow this agent to escalate to humans</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="allowedChannels"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>Allowed Channels</FormLabel>
+                        <div className="flex flex-wrap gap-2">
+                          {(Object.entries(CHANNEL_LABELS) as [ChannelType, string][]).map(([value, label]) => {
+                            const channels = form.watch('allowedChannels');
+                            const isSelected = channels.includes(value);
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => {
+                                  const current = form.getValues('allowedChannels');
+                                  if (isSelected) {
+                                    form.setValue('allowedChannels', current.filter(c => c !== value), { shouldValidate: true });
+                                  } else {
+                                    form.setValue('allowedChannels', [...current, value], { shouldValidate: true });
+                                  }
+                                }}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                                  isSelected
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -348,6 +494,108 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                           />
                         </FormControl>
                         <FormDescription>How much the agent adapts its tone based on conversation context</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="verbosityLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Verbosity Level ({field.value}%)</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={[field.value]}
+                              onValueChange={([v]) => field.onChange(v)}
+                            />
+                          </FormControl>
+                          <FormDescription>How detailed the responses should be</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="empathyLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Empathy Level ({field.value}%)</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={[field.value]}
+                              onValueChange={([v]) => field.onChange(v)}
+                            />
+                          </FormControl>
+                          <FormDescription>Emotional sensitivity in responses</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="riskTolerance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Risk Tolerance</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="domainExpertiseLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Domain Expertise</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="beginner">Beginner</SelectItem>
+                              <SelectItem value="intermediate">Intermediate</SelectItem>
+                              <SelectItem value="expert">Expert</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="brandVoiceProfile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Brand Voice Profile</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Approachable yet authoritative" {...field} />
+                        </FormControl>
+                        <FormDescription>Describe the brand voice this agent should adopt</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
