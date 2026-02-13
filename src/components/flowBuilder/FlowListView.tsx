@@ -114,13 +114,13 @@ export function FlowListView({
     setNewFlowDescription('');
     setNewFlowChannel('chat');
     setCreateModalOpen(false);
-    notify.created('Flow created');
+    notify.created('Workflow created');
   };
 
   const handleDeleteFlow = (flowId: string) => {
     onDeleteFlow(flowId);
     setDeleteConfirmId(null);
-    notify.deleted('Flow deleted');
+    notify.deleted('Workflow deleted');
   };
 
   const handleCreateFolder = () => {
@@ -153,7 +153,7 @@ export function FlowListView({
   const handleDeleteFolder = (name: string) => {
     onDeleteFolder(name);
     setDeleteFolderConfirm(null);
-    notify.deleted('Folder and its flows deleted');
+    notify.deleted('Folder and its workflows deleted');
   };
 
   const formatDate = (dateStr: string) => {
@@ -169,9 +169,9 @@ export function FlowListView({
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Flows</h1>
+          <h1 className="text-2xl font-bold text-foreground">Workflows</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your conversation flows and automations
+            Manage your automation workflows and business logic
           </p>
         </div>
 
@@ -179,7 +179,7 @@ export function FlowListView({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search flows..."
+              placeholder="Search workflows..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 w-[220px]"
@@ -191,14 +191,14 @@ export function FlowListView({
           </Button>
           <Button onClick={() => setCreateModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Create Flow
+            Create Workflow
           </Button>
         </div>
       </div>
 
       <div className="border rounded-xl overflow-hidden bg-card">
         <div className="grid grid-cols-[1fr_1fr_140px_100px_80px_48px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          <span>Flow Name</span>
+          <span>Workflow Name</span>
           <span>Description</span>
           <span>Last Edited</span>
           <span>Channel</span>
@@ -326,7 +326,7 @@ export function FlowListView({
 
               {isExpanded && categoryFlows.length === 0 && (
                 <div className="px-6 py-4 pl-14 border-b text-sm text-muted-foreground italic">
-                  No flows in this folder
+                  No workflows in this folder
                 </div>
               )}
             </div>
@@ -336,7 +336,7 @@ export function FlowListView({
         {filteredFlows.length === 0 && searchQuery && (
           <div className="px-6 py-12 text-center text-muted-foreground">
             <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No flows matching "{searchQuery}"</p>
+            <p className="text-sm">No workflows matching "{searchQuery}"</p>
           </div>
         )}
 
@@ -344,7 +344,7 @@ export function FlowListView({
           <div className="px-6 py-12 text-center text-muted-foreground">
             <FolderPlus className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm font-medium">No folders yet</p>
-            <p className="text-xs mt-1">Create a folder to organize your flows</p>
+            <p className="text-xs mt-1">Create a folder to organize your workflows</p>
           </div>
         )}
       </div>
@@ -352,11 +352,11 @@ export function FlowListView({
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Flow</DialogTitle>
+            <DialogTitle>Create New Workflow</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="flowName">Flow Name</Label>
+              <Label htmlFor="flowName">Workflow Name</Label>
               <Input
                 id="flowName"
                 placeholder="e.g., Customer Onboarding"
@@ -368,7 +368,7 @@ export function FlowListView({
               <Label htmlFor="flowDesc">Description</Label>
               <Input
                 id="flowDesc"
-                placeholder="Brief description of this flow"
+                placeholder="Brief description of this workflow"
                 value={newFlowDescription}
                 onChange={(e) => setNewFlowDescription(e.target.value)}
               />
@@ -419,7 +419,7 @@ export function FlowListView({
             <Button variant="outline" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
             <Button onClick={handleCreateFlow} disabled={!newFlowName.trim() || !newFlowCategory}>
               <Plus className="w-4 h-4 mr-2" />
-              Create Flow
+              Create Workflow
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -480,10 +480,10 @@ export function FlowListView({
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Flow</DialogTitle>
+            <DialogTitle>Delete Workflow</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-4">
-            Are you sure you want to delete this flow? This action cannot be undone.
+            Are you sure you want to delete this workflow? This action cannot be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
@@ -501,7 +501,7 @@ export function FlowListView({
             <DialogTitle>Delete Folder</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-4">
-            Are you sure you want to delete the folder "{deleteFolderConfirm}" and all flows inside it? This action cannot be undone.
+            Are you sure you want to delete the folder "{deleteFolderConfirm}" and all workflows inside it? This action cannot be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteFolderConfirm(null)}>Cancel</Button>

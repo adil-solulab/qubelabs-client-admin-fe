@@ -55,7 +55,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Routing Structure
 - Public routes: `/login`, `/forgot-password`
-- Protected routes: Dashboard (`/`), Users, AI Agents, Knowledge Base, Channels, Flow Builder, Live Ops, Callbacks, Surveys, Outbound Calls, Analytics, Billing, Integrations, Security, SDKs, Theme Settings, Roles, AI Engine, Profile
+- Protected routes: Dashboard (`/`), Users, AI Agents, Knowledge Base, Channels, Workflows (Flow Builder), Live Ops, Callbacks, Surveys, Outbound Calls, Analytics, Billing, Integrations, Security, SDKs, Theme Settings, Roles, AI Engine, Profile
 
 ### Notification System
 - Centralized notification using Sonner toast library
@@ -65,7 +65,7 @@ Preferred communication style: Simple, everyday language.
 ### Sidebar Navigation (Grouped)
 - Grouped navigation with collapsible section headers in `src/components/layout/Sidebar.tsx`
 - **Main**: Home, Dashboard (no header)
-- **AI Platform**: AI Agents, Knowledge Base, AI Engine, Flow Builder
+- **AI Platform**: AI Agents, Knowledge Base, AI Engine, Workflows
 - **Operations**: Live Ops, Callbacks, Outbound Calls, Channels
 - **Insights**: Analytics, Surveys
 - **Management**: Users, Roles, Security
@@ -125,13 +125,34 @@ Preferred communication style: Simple, everyday language.
 - Each source type has its own tab, card component, and training/sync/delete actions
 - Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddSourceModal`
 
-### Flow Builder (Multi-Flow Architecture)
-- **Two-View Layout**: Flow listing page + Flow editor view, toggled by selecting/deselecting a flow
-- **Flow Listing Page**: Collapsible folder groups, table with columns (Flow Name, Description, Last Edited, Channel, Status), search, Create Flow modal, kebab menu per flow (Open, Duplicate, Delete)
-- **Folder Management**: Create, rename, and delete folders to organize flows; folders act as category groups in the listing
-- **Channel Selection**: Each flow belongs to a channel (Voice, Chat, Email) chosen at creation time; displayed as colored badges in the listing and editor breadcrumb
-- **Flow Editor View**: Breadcrumb navigation (Flows / Flow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
-- **Multiple Flows**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), folder CRUD (createFolder, renameFolder, deleteFolder), and all node/edge mutations scoped to selected flow
+### AI Agents (Super Agent + Agent Architecture)
+- **Architecture**: Follows Yellow.ai / ElevenLabs pattern with Super Agent (orchestrator) + specialized Agents
+- **Super Agent**: Central orchestrator that routes customer queries to specialized agents based on intent and context. Handles welcome messages, small talk, fallback scenarios, and maintains context across agent transfers.
+- **Agents (Specialists)**: Domain-specific agents that handle individual use cases (Sales, Support, Technical, Knowledge Base). Each agent is linked to a parent Super Agent.
+- **Agent Configuration Sections** (9 sections per agent):
+  - **Persona**: Tone, style, adaptability, greeting, personality
+  - **Intent Understanding**: Named intents with descriptions and example phrases
+  - **Start Triggers**: Event, keyword, intent, schedule, or API triggers
+  - **Prompt Logic**: System prompt, few-shot examples, model selection, temperature, max tokens
+  - **Variables**: Data to collect (name, type, description, required flag, validation)
+  - **Routing Logic**: Auto/manual/round-robin routing with condition-based rules
+  - **Fallback Behavior**: Action (escalate/retry/transfer/end/custom), retries, timeout, custom message
+  - **Context Handling**: Memory window, session persistence, context sharing between agents
+  - **Guardrails**: Content filter, PII protection, topic restriction, response length, language filter
+- **Two-View UI**: Agent listing (cards with Super Agent section + Agents section, search, type filter) → Agent detail view (collapsible config sections)
+- **Types**: `AIAgent` (unified type for super_agent and agent), `AgentPersona`, `IntentConfig`, `TriggerConfig`, `PromptConfig`, `VariableConfig`, `RoutingConfig`, `FallbackConfig`, `ContextConfig`, `GuardrailConfig`
+- **Data Hook**: `useAIAgentsData` manages agents array with CRUD, toggle status, duplicate, filter by super agent
+- Components: `AgentCard`, `AgentDetailPanel`, `AgentModal`, `DeleteAgentModal`
+
+### Workflows (Execution Layer) - formerly Flow Builder
+- **Renamed**: "Flow Builder" renamed to "Workflows" across sidebar, page titles, breadcrumbs, and modals to reflect its role as the execution/automation layer
+- **Purpose**: API calls, database queries, CRM updates, sending emails, creating tickets, fetching backend data, business logic execution
+- **Two-View Layout**: Workflow listing page + Workflow editor view, toggled by selecting/deselecting a workflow
+- **Workflow Listing Page**: Collapsible folder groups, table with columns (Workflow Name, Description, Last Edited, Channel, Status), search, Create Workflow modal, kebab menu per workflow (Open, Duplicate, Delete)
+- **Folder Management**: Create, rename, and delete folders to organize workflows; folders act as category groups in the listing
+- **Channel Selection**: Each workflow belongs to a channel (Voice, Chat, Email) chosen at creation time; displayed as colored badges in the listing and editor breadcrumb
+- **Workflow Editor View**: Breadcrumb navigation (Workflows / Workflow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
+- **Multiple Workflows**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), folder CRUD (createFolder, renameFolder, deleteFolder), and all node/edge mutations scoped to selected flow
 - **Node Tools Sidebar**: Left panel listing 7 addable node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End) with icons, descriptions, and search; collapsible to icon-only mode
 - **Types**: `Flow` type includes `category` and `channel` fields; `FlowSummary` type for list view; `FlowChannel` type for voice/chat/email
 - Components: `FlowListView`, `NodeToolsSidebar`, plus existing `FlowCanvas`, `FlowNode`, `NodePropertiesPanel`, `LivePreviewPanel`, `PublishFlowModal`, `RollbackModal`, `UnsavedChangesModal`

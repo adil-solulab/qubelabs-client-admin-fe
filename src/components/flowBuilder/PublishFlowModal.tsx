@@ -50,7 +50,7 @@ export function PublishFlowModal({
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Rocket className="w-5 h-5 text-primary" />
             </div>
-            Publish Flow
+            Publish Workflow
           </DialogTitle>
           <DialogDescription>
             You are about to publish "{flow.name}" to production.

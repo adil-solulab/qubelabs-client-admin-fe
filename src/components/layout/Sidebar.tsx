@@ -61,7 +61,7 @@ const navGroups: NavGroup[] = [
       { icon: Bot, label: 'AI Agents', path: '/ai-agents', screenId: 'ai-agents', badge: '5' },
       { icon: BookOpen, label: 'Knowledge Base', path: '/knowledge-base', screenId: 'knowledge-base' },
       { icon: Zap, label: 'AI Engine', path: '/ai-engine', screenId: 'ai-engine' },
-      { icon: GitBranch, label: 'Flow Builder', path: '/flow-builder', screenId: 'flow-builder' },
+      { icon: GitBranch, label: 'Workflows', path: '/flow-builder', screenId: 'flow-builder' },
     ],
   },
   {

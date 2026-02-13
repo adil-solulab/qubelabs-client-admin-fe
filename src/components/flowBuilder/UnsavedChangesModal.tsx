@@ -29,7 +29,7 @@ export function UnsavedChangesModal({
         <AlertDialogHeader>
           <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
           <AlertDialogDescription>
-            You have unsaved changes to your flow. Would you like to save them before leaving?
+            You have unsaved changes to your workflow. Would you like to save them before leaving?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex gap-2">
