@@ -133,7 +133,7 @@ export default function FlowBuilderPage() {
   const handleSaveDraft = async () => {
     withPermission('edit', async () => {
       await saveDraft();
-      notify.saved('Workflow saved as draft');
+      notify.saved('Flow saved as draft');
     });
   };
 
@@ -191,7 +191,7 @@ export default function FlowBuilderPage() {
           onDeleteFlow={deleteFlow}
           onDuplicateFlow={(id) => {
             duplicateFlow(id);
-            notify.created('Workflow duplicated');
+            notify.created('Flow duplicated');
           }}
           onCreateFolder={createFolder}
           onRenameFolder={renameFolder}
@@ -219,7 +219,7 @@ export default function FlowBuilderPage() {
                 className="hover:text-primary transition-colors cursor-pointer"
                 onClick={handleBackToList}
               >
-                Workflows
+                Flows
               </button>
               <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-foreground font-semibold truncate">{flow.name}</span>

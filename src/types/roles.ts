@@ -7,7 +7,6 @@ export type ScreenId =
   | 'knowledge-base'
   | 'channels'
   | 'flow-builder'
-  | 'workflows'
   | 'live-ops'
   | 'outbound-calls'
   | 'analytics'
@@ -57,7 +56,6 @@ export const AVAILABLE_SCREENS: ScreenMeta[] = [
   { id: 'knowledge-base', label: 'Knowledge Base', path: '/knowledge-base', category: 'core' },
   { id: 'channels', label: 'Channels', path: '/channels', category: 'core' },
   { id: 'flow-builder', label: 'Flow Builder', path: '/flow-builder', category: 'core' },
-  { id: 'workflows', label: 'Workflows', path: '/workflows', category: 'core' },
   { id: 'live-ops', label: 'Live Operations', path: '/live-ops', category: 'operations' },
   { id: 'outbound-calls', label: 'Outbound Calls', path: '/outbound-calls', category: 'operations' },
   { id: 'analytics', label: 'Analytics', path: '/analytics', category: 'operations' },
@@ -107,7 +105,6 @@ export const SYSTEM_ROLES: Role[] = [
       { screenId: 'knowledge-base', actions: ['view', 'create', 'edit'] },
       { screenId: 'channels', actions: ['view'] },
       { screenId: 'flow-builder', actions: ['view'] },
-      { screenId: 'workflows', actions: ['view'] },
       { screenId: 'live-ops', actions: ['view', 'create', 'edit'] },
       { screenId: 'outbound-calls', actions: ['view', 'create', 'edit'] },
       { screenId: 'analytics', actions: ['view', 'export'] },

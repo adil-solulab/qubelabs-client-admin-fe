@@ -26,7 +26,6 @@ import SDKsPage from "./pages/SDKsPage";
 import ThemeSettingsPage from "./pages/ThemeSettingsPage";
 import RolesPage from "./pages/RolesPage";
 import AIEnginePage from "./pages/AIEnginePage";
-import WorkflowsPage from "./pages/WorkflowsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
@@ -84,11 +83,6 @@ const App = () => (
               <Route path="/flow-builder" element={
                 <ProtectedRoute screenId="flow-builder">
                   <FlowBuilderPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/workflows" element={
-                <ProtectedRoute screenId="workflows">
-                  <WorkflowsPage />
                 </ProtectedRoute>
               } />
               <Route path="/live-ops" element={
