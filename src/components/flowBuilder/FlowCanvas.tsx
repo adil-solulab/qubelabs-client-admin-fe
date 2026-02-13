@@ -53,6 +53,7 @@ export function FlowCanvas({
 }: FlowCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const connectStartedRef = useRef(false);
   
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -65,6 +66,15 @@ export function FlowCanvas({
   const [deleteNodeModalOpen, setDeleteNodeModalOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<FlowNodeType | null>(null);
   const [showGrid, setShowGrid] = useState(true);
+
+  useEffect(() => {
+    if (isConnecting) {
+      connectStartedRef.current = true;
+      requestAnimationFrame(() => {
+        connectStartedRef.current = false;
+      });
+    }
+  }, [isConnecting]);
 
   // Update canvas offset on resize
   useEffect(() => {
@@ -128,6 +138,7 @@ export function FlowCanvas({
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (isConnecting) {
+      if (connectStartedRef.current) return;
       onCancelConnect();
       return;
     }
