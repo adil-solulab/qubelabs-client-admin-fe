@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   User, AlertTriangle, Pencil, Bot, ChevronDown, ChevronRight,
   ArrowLeft, MousePointer, MessageCircle, BookOpen, HelpCircle,
@@ -129,6 +130,7 @@ function ExpandableSection({ title, subtitle, count, children, defaultOpen = fal
 }
 
 export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgentProfileProps) {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ProfileSection>('profile');
   const [fallbackMode, setFallbackMode] = useState<string>('instruct');
   const [retryCount, setRetryCount] = useState(agent.fallback.maxRetries);
@@ -150,7 +152,7 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
   };
 
   const handleViewFlow = () => {
-    window.open('/flow-builder', '_blank');
+    navigate('/flow-builder');
   };
 
   const sidebarSections: { id: ProfileSection; label: string; icon: React.ElementType; description: string; tag?: string }[] = [
