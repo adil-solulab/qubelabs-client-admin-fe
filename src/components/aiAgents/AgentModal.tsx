@@ -286,9 +286,22 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Communication Style</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Confident and engaging" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a style" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Professional">Professional</SelectItem>
+                            <SelectItem value="Casual">Casual</SelectItem>
+                            <SelectItem value="Friendly">Friendly</SelectItem>
+                            <SelectItem value="Formal">Formal</SelectItem>
+                            <SelectItem value="Empathetic">Empathetic</SelectItem>
+                            <SelectItem value="Confident">Confident</SelectItem>
+                            <SelectItem value="Concise">Concise</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
