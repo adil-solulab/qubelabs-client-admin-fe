@@ -53,7 +53,6 @@ export function FlowCanvas({
 }: FlowCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
-  const connectStartedRef = useRef(false);
   
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -66,15 +65,6 @@ export function FlowCanvas({
   const [deleteNodeModalOpen, setDeleteNodeModalOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<FlowNodeType | null>(null);
   const [showGrid, setShowGrid] = useState(true);
-
-  useEffect(() => {
-    if (isConnecting) {
-      connectStartedRef.current = true;
-      requestAnimationFrame(() => {
-        connectStartedRef.current = false;
-      });
-    }
-  }, [isConnecting]);
 
   // Update canvas offset on resize
   useEffect(() => {
@@ -137,18 +127,17 @@ export function FlowCanvas({
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    if (isConnecting) {
-      if (connectStartedRef.current) return;
-      onCancelConnect();
-      return;
-    }
     const target = e.target as HTMLElement;
-    if (target === innerRef.current || target.classList.contains('canvas-grid') || target === canvasRef.current || target.closest('[data-canvas-layer]')) {
-      onSelectNode(null);
-      setSelectedEdge(null);
-      const x = (e.clientX - canvasOffset.x - panOffset.x) / zoom;
-      const y = (e.clientY - canvasOffset.y - panOffset.y) / zoom;
-      onCanvasClick({ x, y });
+    if (target === innerRef.current || target.classList.contains('canvas-grid')) {
+      if (isConnecting) {
+        onCancelConnect();
+      } else {
+        onSelectNode(null);
+        setSelectedEdge(null);
+        const x = (e.clientX - canvasOffset.x - panOffset.x) / zoom;
+        const y = (e.clientY - canvasOffset.y - panOffset.y) / zoom;
+        onCanvasClick({ x, y });
+      }
     }
   };
 
@@ -446,7 +435,6 @@ export function FlowCanvas({
           {/* Nodes */}
           <div 
             className="absolute"
-            data-canvas-layer="nodes"
             style={{
               width: 5000,
               height: 5000,
