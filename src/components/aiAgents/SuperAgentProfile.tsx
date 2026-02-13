@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import type { AIAgent } from '@/types/aiAgents';
 import { TONE_LABELS } from '@/types/aiAgents';
+import { WelcomeModal } from '@/components/aiAgents/WelcomeModal';
 import { cn } from '@/lib/utils';
 
 type ProfileSection = 'profile' | 'safety' | 'fallback';
@@ -134,6 +135,9 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
   const [activeSection, setActiveSection] = useState<ProfileSection>('profile');
   const [fallbackMode, setFallbackMode] = useState<string>('instruct');
   const [retryCount, setRetryCount] = useState(agent.fallback.maxRetries);
+  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
+  const [welcomeMode, setWelcomeMode] = useState<string>('send_message');
+  const [welcomeGreeting, setWelcomeGreeting] = useState(agent.persona.greeting);
 
   const [customerQueryFilters, setCustomerQueryFilters] = useState<SafetyCheck[]>([
     { id: 'banned', name: 'Banned Topics', description: 'Restricts conversations on improper topics like violence etc.', enabled: false },
@@ -260,9 +264,9 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                 <TimelineCard
                   icon={MessageCircle}
                   title="Choose how to welcome"
-                  subtitle="Instruct super agent"
+                  subtitle={welcomeMode === 'send_message' ? 'Send message' : welcomeMode === 'trigger_flow' ? 'Trigger welcome flow' : 'Instruct super agent'}
                   actionLabel="Edit"
-                  onAction={canEdit ? () => onEdit(agent) : undefined}
+                  onAction={canEdit ? () => setWelcomeModalOpen(true) : undefined}
                   actionVariant="edit"
                 />
                 <TimelineConnector />
@@ -448,6 +452,16 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
           )}
         </div>
       </div>
+
+      <WelcomeModal
+        open={welcomeModalOpen}
+        onOpenChange={setWelcomeModalOpen}
+        greeting={welcomeGreeting}
+        onSave={(mode, greeting) => {
+          setWelcomeMode(mode);
+          setWelcomeGreeting(greeting);
+        }}
+      />
     </div>
   );
 }
