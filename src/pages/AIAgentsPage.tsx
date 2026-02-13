@@ -18,6 +18,7 @@ import { notify } from '@/hooks/useNotification';
 import { PermissionButton } from '@/components/auth/PermissionButton';
 import { AgentCard } from '@/components/aiAgents/AgentCard';
 import { AgentDetailPanel } from '@/components/aiAgents/AgentDetailPanel';
+import { SuperAgentProfile } from '@/components/aiAgents/SuperAgentProfile';
 import { AgentModal } from '@/components/aiAgents/AgentModal';
 import { DeleteAgentModal } from '@/components/aiAgents/DeleteAgentModal';
 import type { AIAgent } from '@/types/aiAgents';
@@ -147,6 +148,29 @@ export default function AIAgentsPage() {
   if (viewingAgent) {
     const freshAgent = agents.find(a => a.id === viewingAgent.id) || viewingAgent;
     const children = freshAgent.type === 'super_agent' ? getAgentsBySuper(freshAgent.id) : undefined;
+
+    if (freshAgent.type === 'super_agent') {
+      return (
+        <AppLayout>
+          <SuperAgentProfile
+            agent={freshAgent}
+            onBack={() => setViewingAgent(null)}
+            onEdit={handleEditAgent}
+            canEdit={canEdit}
+          />
+
+          <AgentModal
+            agent={agentToEdit}
+            isEdit={isEditMode}
+            open={agentModalOpen}
+            onOpenChange={setAgentModalOpen}
+            onSave={handleSaveAgent}
+            superAgents={superAgents}
+            hasSuperAgent={hasSuperAgent}
+          />
+        </AppLayout>
+      );
+    }
 
     return (
       <AppLayout>
