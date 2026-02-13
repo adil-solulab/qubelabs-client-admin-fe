@@ -18,10 +18,6 @@ import {
   GitBranch,
   Zap,
   Layers,
-  Settings2,
-  Globe,
-  FlaskConical,
-  Server,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,13 +70,6 @@ const CHANNEL_CONFIG: Record<FlowChannel, { label: string; icon: React.ReactNode
 };
 
 type FlowType = 'flow' | 'workflow';
-type Environment = 'staging' | 'sandbox' | 'production';
-
-const ENV_CONFIG: Record<Environment, { label: string; icon: React.ReactNode; color: string }> = {
-  staging: { label: 'Staging', icon: <FlaskConical className="w-3.5 h-3.5" />, color: 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-500/20 dark:border-amber-500/30' },
-  sandbox: { label: 'Sandbox', icon: <Settings2 className="w-3.5 h-3.5" />, color: 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/20 dark:border-blue-500/30' },
-  production: { label: 'Production', icon: <Globe className="w-3.5 h-3.5" />, color: 'text-green-600 bg-green-50 border-green-200 dark:bg-green-500/20 dark:border-green-500/30' },
-};
 
 export function FlowListView({
   flowSummaries,
@@ -98,7 +87,6 @@ export function FlowListView({
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [environment, setEnvironment] = useState<Environment>('production');
 
   const [createTypeModalOpen, setCreateTypeModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -218,26 +206,6 @@ export function FlowListView({
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-foreground">Flows</h1>
-            <div className="flex items-center gap-1.5">
-              {(['staging', 'sandbox', 'production'] as Environment[]).map(env => {
-                const cfg = ENV_CONFIG[env];
-                return (
-                  <button
-                    key={env}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all',
-                      environment === env
-                        ? cfg.color
-                        : 'text-muted-foreground bg-transparent border-transparent hover:bg-muted/50'
-                    )}
-                    onClick={() => setEnvironment(env)}
-                  >
-                    {cfg.icon}
-                    {cfg.label}
-                  </button>
-                );
-              })}
-            </div>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
             Build and manage your automation flows
