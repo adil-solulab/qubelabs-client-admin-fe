@@ -127,17 +127,17 @@ export function FlowCanvas({
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
+    if (isConnecting) {
+      onCancelConnect();
+      return;
+    }
     const target = e.target as HTMLElement;
-    if (target === innerRef.current || target.classList.contains('canvas-grid')) {
-      if (isConnecting) {
-        onCancelConnect();
-      } else {
-        onSelectNode(null);
-        setSelectedEdge(null);
-        const x = (e.clientX - canvasOffset.x - panOffset.x) / zoom;
-        const y = (e.clientY - canvasOffset.y - panOffset.y) / zoom;
-        onCanvasClick({ x, y });
-      }
+    if (target === innerRef.current || target.classList.contains('canvas-grid') || target === canvasRef.current || target.closest('[data-canvas-layer]')) {
+      onSelectNode(null);
+      setSelectedEdge(null);
+      const x = (e.clientX - canvasOffset.x - panOffset.x) / zoom;
+      const y = (e.clientY - canvasOffset.y - panOffset.y) / zoom;
+      onCanvasClick({ x, y });
     }
   };
 
@@ -435,6 +435,7 @@ export function FlowCanvas({
           {/* Nodes */}
           <div 
             className="absolute"
+            data-canvas-layer="nodes"
             style={{
               width: 5000,
               height: 5000,
