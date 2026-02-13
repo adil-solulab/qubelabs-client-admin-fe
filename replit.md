@@ -2,20 +2,9 @@
 
 ## Overview
 
-QubeLabs is an enterprise AI platform built as a single-page application (SPA) for managing conversational AI operations. The platform provides comprehensive tools for managing AI agents, knowledge bases, live operations monitoring, outbound calling campaigns, analytics, and team management. It features a role-based access control system with three user types: Client Admin, Supervisor, and Agent. Tagline: "responsible intelligence".
+QubeLabs is an enterprise AI platform designed as a single-page application (SPA) for managing conversational AI operations. It offers comprehensive tools for AI agent management, knowledge base creation, live operations monitoring, outbound calling campaigns, analytics, and team management. The platform features a robust role-based access control system for Client Admins, Supervisors, and Agents. The core vision is to provide "responsible intelligence" through an interactive prototype that maintains state without a backend.
 
-The application is a frontend-only implementation using in-memory state management, designed as an interactive prototype that maintains state across navigation without requiring a backend.
-
-### Brand Identity
-- **Name**: QubeLabs
-- **Tagline**: responsible intelligence
-- **Primary Blue**: #0094FF (HSL 215 100% 50%)
-- **Primary Green**: #00FF7A (HSL 149 100% 50%)
-- **Dark Navy**: #011B40
-- **Dark**: #000A17
-- **White**: #FFFFFF
-- **Font**: DM Sans (Bold for headings, Regular for body/UI)
-- **Logo**: 3D cube icon in blue and green (stored as conx-logomark.png in public/)
+The application serves as a frontend-only prototype, utilizing in-memory state management to demonstrate functionality and user experience.
 
 ## User Preferences
 
@@ -23,175 +12,90 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Framework
-- **React 18** with TypeScript for the UI layer
-- **Vite** as the build tool and development server (runs on port 5000)
-- **React Router** for client-side routing with protected routes
+The application is built with React 18 and TypeScript, using Vite as the build tool. React Router handles client-side navigation with protected routes.
 
-### UI Component Architecture
-- **shadcn/ui** component library built on Radix UI primitives
-- **Tailwind CSS** for styling with CSS variables for theming
-- Components follow atomic design principles with reusable UI primitives in `src/components/ui/`
-- Feature-specific components organized by domain (e.g., `aiAgents/`, `dashboard/`, `liveOps/`)
+### UI/UX Decisions
+- **Brand Identity**: QubeLabs, tagline "responsible intelligence". Uses primary blue (#0094FF), primary green (#00FF7A), dark navy (#011B40), and dark (#000A17). Font is DM Sans.
+- **Component Library**: `shadcn/ui` based on Radix UI primitives, styled with Tailwind CSS and CSS variables for theming. Components follow atomic design principles.
+- **Theming**: Supports light/dark/system modes with customizable colors, fonts, spacing, and border radius, managed by `ThemeProvider`.
+- **Sidebar Navigation**: Grouped, collapsible navigation with role-based filtering, highlighting active group headers.
 
-### State Management
-- **In-memory state** using React hooks (`useState`, `useCallback`) in custom hooks
-- Each feature has a dedicated data hook (e.g., `useAIAgentsData`, `useDashboardData`, `useBillingData`)
-- **React Query** (`@tanstack/react-query`) is available for async state management
-- State persists across navigation but resets on page refresh
+### Technical Implementations
+- **State Management**: Primarily in-memory state using React hooks. Feature-specific data hooks (e.g., `useAIAgentsData`, `useDashboardData`) manage data. `@tanstack/react-query` is available for async state.
+- **Authentication & Authorization**: Custom `AuthContext` provides authentication. Role-based access control includes Client Admin, Supervisor, and Agent roles, with `ProtectedRoute` for route guarding and `usePermission` for action-level checks.
+- **Notification System**: Centralized notifications using Sonner, with a `useNotification` hook for various alert types.
+- **Form Handling**: React Hook Form with Zod for schema validation.
 
-### Authentication & Authorization
-- Custom `AuthContext` in `useAuth.tsx` provides authentication state
-- Role-based access control with three system roles: Client Admin, Supervisor, Agent
-- `ProtectedRoute` component guards authenticated routes
-- `usePermission` hook for action-level permission checks
-- Permission-gated UI components (`PermissionButton`)
+### Feature Specifications
 
-### Theming System
-- `ThemeProvider` in `useTheme.tsx` manages theme configuration
-- Supports light/dark/system modes
-- Customizable colors, fonts, spacing, and border radius
-- Theme settings persist in memory
+#### Knowledge Base Multi-Source Architecture
+- Supports file uploads (PDF, DOCX, TXT, MD, CSV, XLSX), URL scraping (single/bulk), sitemap discovery, and integration imports (Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, Database).
+- Features auto-sync capabilities with configurable frequencies.
+- A unified `AddSourceModal` provides a single interface for adding various source types.
 
-### Routing Structure
-- Public routes: `/login`, `/forgot-password`
-- Protected routes: Dashboard (`/`), Users, AI Agents, Knowledge Base, Channels, Workflows (Flow Builder), Live Ops, Callbacks, Surveys, Outbound Calls, Analytics, Billing, Integrations, Security, SDKs, Theme Settings, Roles, AI Engine, Profile
+#### AI Agents (Super Agent + Agent Architecture)
+- Employs a Super Agent (orchestrator) and specialized Agents (specialists) model.
+- **Super Agent**: Routes queries, handles welcome messages, small talk, fallback, and maintains context. Only one Super Agent is allowed.
+- **Agents**: Domain-specific agents for sales, support, technical, and knowledge base functions, linked to a parent Super Agent.
+- **Configuration Sections (per agent)**: Persona, Intent Understanding, Start Triggers, Prompt Logic, Variables, Routing Logic, Fallback Behavior, Context Handling, and Guardrails.
+- UI features an agent listing view and a detailed configuration view with collapsible sections.
 
-### Notification System
-- Centralized notification using Sonner toast library
-- `useNotification` hook provides standardized success, error, warning, info, and promise-based notifications
-- `notify` export for direct access outside React components
+#### Flow Builder (Flows) - Main USP
+- Visual drag-and-drop canvas for designing conversational flows and background workflows.
+- Features an environment selector (Staging, Sandbox, Production) and a category sidebar for flow organization.
+- Supports two creation modes: "Start from scratch" (conversational) and "Create Workflow" (background).
+- Flow Editor includes a Node Tools sidebar with 7 node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End), a canvas for design, and right panels for Node Properties and Test Panel.
+- The Test Panel supports Chat and Voice modes, simulating various node functionalities and providing test statistics.
 
-### Sidebar Navigation (Grouped)
-- Grouped navigation with collapsible section headers in `src/components/layout/Sidebar.tsx`
-- **Main**: Home, Dashboard (no header)
-- **AI Platform**: AI Agents, Knowledge Base, AI Engine, Workflows
-- **Operations**: Live Ops, Callbacks, Outbound Calls, Channels
-- **Insights**: Analytics, Surveys
-- **Management**: Users, Roles, Security
-- **Configure**: Integrations, Billing, SDKs, Theme, Profile
-- Section headers are clickable to collapse/expand groups
-- Collapsed sidebar shows divider lines between groups
-- Active group headers highlighted in primary color
-- Role-based filtering preserved across all groups
+#### Integrations
+- Redesigned interface with a category sidebar and grouped card grid.
+- Covers 19 integrations across CRM, Voice, Communications, LiveChat, and Payments categories.
+- Each integration includes configuration fields, setup instructions, and connection management.
 
-### Key Design Patterns
-- Feature modules are self-contained with types, hooks, and components
-- Type definitions in `src/types/` define domain models
-- Modal-based CRUD operations with confirmation dialogs
-- Real-time simulation for live operations features
+#### Analytics Module
+- Features 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns.
+- Tracks Outcome KPIs like Time Saved, Effort Saved, Conversion Rate, Engagement Rate, and CSAT Score with sparkline charts.
+- Provides detailed analytics for campaigns, channels, LLM usage, transcription accuracy, and compliance.
+- Includes a `KPICard` component for reusable KPI visualization.
+
+#### Security & Compliance Module
+- Organized into 5 tabs: Compliance, SSO, RBAC, Moderation, Audit Logs.
+- **Compliance**: PII Protection, Zero Retention Policy, Consent Management, GDPR Controls, Data Masking, Data Retention.
+- **SSO**: Supports SAML, OIDC, Azure AD, Okta, Google.
+- **RBAC**: Multi-Factor Authentication, password policies, session policies, IP restrictions.
+- **Moderation**: Content rules for profanity, spam, hate speech.
+- **Audit Logs**: Searchable and filterable log table.
 
 ## External Dependencies
 
 ### UI Libraries
-- **Radix UI** - Accessible, unstyled component primitives (accordion, dialog, dropdown, tabs, etc.)
-- **Lucide React** - Icon library
-- **Recharts** - Charting library for analytics visualizations
-- **Embla Carousel** - Carousel component
-- **cmdk** - Command palette component
-- **react-day-picker** - Date picker component
-- **date-fns** - Date utility library
+- **Radix UI**: Accessible, unstyled component primitives.
+- **Lucide React**: Icon library.
+- **Recharts**: Charting library.
+- **Embla Carousel**: Carousel component.
+- **cmdk**: Command palette.
+- **react-day-picker**: Date picker.
+- **date-fns**: Date utility library.
 
 ### Form & Validation
-- **React Hook Form** with `@hookform/resolvers` for form handling
-- **Zod** (implied by resolvers) for schema validation
+- **React Hook Form**: Form handling.
+- **Zod**: Schema validation.
 
 ### Styling
-- **Tailwind CSS** with custom configuration
-- **class-variance-authority** - For creating variant-based component styles
-- **clsx** and **tailwind-merge** - Class name utilities
+- **Tailwind CSS**: Utility-first CSS framework.
+- **class-variance-authority**: For variant-based component styles.
+- **clsx**, **tailwind-merge**: Class name utilities.
 
 ### State & Data
-- **@tanstack/react-query** - Async state management (available but not extensively used yet)
-- **next-themes** - Theme persistence utilities
+- **@tanstack/react-query**: Async state management (available).
+- **next-themes**: Theme persistence utilities.
 
 ### Testing
-- **Vitest** - Test runner configured with jsdom environment
-- **@testing-library/jest-dom** - DOM testing utilities
+- **Vitest**: Test runner.
+- **@testing-library/jest-dom**: DOM testing utilities.
 
 ### Build & Development
-- **Vite** - Build tool with React SWC plugin
-- **TypeScript** - Type checking with relaxed settings (no strict mode)
-- **ESLint** - Linting with React hooks and refresh plugins
-- **PostCSS** with Autoprefixer - CSS processing
-
-### Knowledge Base Multi-Source Architecture
-- **File Uploads**: Traditional document upload (PDF, DOCX, TXT, MD, CSV, XLSX) with drag & drop
-- **URL Scraping**: Single or bulk URL crawling with content extraction and cleaning
-- **Sitemap Discovery**: XML sitemap parsing to auto-discover and crawl all website pages
-- **Integration Import**: Import from third-party services (Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, Database)
-- **Auto-Sync**: Configurable sync frequency (manual, hourly, daily, weekly) for URLs, sitemaps, and integrations
-- **Unified Add Source Modal**: Single modal (`AddSourceModal`) with type selector that dynamically shows relevant fields based on selected source type (File, URL, Sitemap, Integration). Replaces the previous 4 separate modals.
-- Each source type has its own tab, card component, and training/sync/delete actions
-- Components: `URLSourceCard`, `SitemapSourceCard`, `IntegrationSourceCard`, `AddSourceModal`
-
-### AI Agents (Super Agent + Agent Architecture)
-- **Architecture**: Follows Yellow.ai / ElevenLabs pattern with Super Agent (orchestrator) + specialized Agents
-- **Super Agent**: Central orchestrator that routes customer queries to specialized agents based on intent and context. Handles welcome messages, small talk, fallback scenarios, and maintains context across agent transfers.
-- **Agents (Specialists)**: Domain-specific agents that handle individual use cases (Sales, Support, Technical, Knowledge Base). Each agent is linked to a parent Super Agent.
-- **Agent Configuration Sections** (9 sections per agent):
-  - **Persona**: Tone, style, adaptability, greeting, personality
-  - **Intent Understanding**: Named intents with descriptions and example phrases
-  - **Start Triggers**: Event, keyword, intent, schedule, or API triggers
-  - **Prompt Logic**: System prompt, few-shot examples, model selection, temperature, max tokens
-  - **Variables**: Data to collect (name, type, description, required flag, validation)
-  - **Routing Logic**: Auto/manual/round-robin routing with condition-based rules
-  - **Fallback Behavior**: Action (escalate/retry/transfer/end/custom), retries, timeout, custom message
-  - **Context Handling**: Memory window, session persistence, context sharing between agents
-  - **Guardrails**: Content filter, PII protection, topic restriction, response length, language filter
-- **Two-View UI**: Agent listing (cards with Super Agent section + Agents section, search, type filter) → Agent detail view (collapsible config sections)
-- **Types**: `AIAgent` (unified type for super_agent and agent), `AgentPersona`, `IntentConfig`, `TriggerConfig`, `PromptConfig`, `VariableConfig`, `RoutingConfig`, `FallbackConfig`, `ContextConfig`, `GuardrailConfig`
-- **Data Hook**: `useAIAgentsData` manages agents array with CRUD, toggle status, duplicate, filter by super agent
-- **Single Super Agent Restriction**: Only one Super Agent allowed; create/delete/duplicate actions are blocked for the default Super Agent
-- Components: `AgentCard`, `AgentDetailPanel`, `AgentModal`, `DeleteAgentModal`
-
-### Flow Builder (Flows) - Main USP
-- **UI Design**: Follows Yellow AI design patterns with "Flows" terminology throughout
-- **Environment Selector**: Staging, Sandbox, Production toggle in the page header
-- **Category Sidebar**: Left panel with "All Flows" + category navigation showing per-category flow counts and summary stats (Total flows, Published, Draft)
-- **Category Management**: Create, rename, and delete categories to organize flows (replaces folder terminology)
-- **Two Creation Modes**: "Start from scratch" (conversational flow) and "Create Workflow" (background workflow) via type selector dialog
-- **Purpose**: Visual drag-and-drop canvas for designing conversational flows and background workflows (API calls, CRM updates, emails, etc.)
-- **Two-View Layout**: Flow listing page + Flow editor view, toggled by selecting/deselecting a flow
-- **Flow Listing Page**: Category-grouped table with columns (Flow Name, Description, Last Edited, Channel, Status), search, kebab menu per flow (Open, Duplicate, Delete)
-- **Channel Selection**: Each flow belongs to a channel (Voice, Chat, Email) chosen at creation time; displayed as colored badges
-- **Flow Editor View**: Breadcrumb navigation (Flows / Flow Name) to return to listing, left Node Tools sidebar with searchable/collapsible node type palette, canvas with drag/pan/zoom, right panels (Node Properties, Live Preview)
-- **Data Hook**: `useFlowBuilderData` hook manages array of flows with `selectedFlowId`, flow CRUD (create, delete, duplicate, updateMeta), category CRUD (createFolder, renameFolder, deleteFolder), and all node/edge mutations scoped to selected flow
-- **Node Tools Sidebar**: Left panel listing 7 addable node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End) with icons, descriptions, and search; collapsible to icon-only mode
-- **Types**: `Flow` type includes `category` and `channel` fields; `FlowSummary` type for list view; `FlowChannel` type for voice/chat/email
-- Components: `FlowListView`, `NodeToolsSidebar`, plus existing `FlowCanvas`, `FlowNode`, `NodePropertiesPanel`, `LivePreviewPanel`, `PublishFlowModal`, `RollbackModal`, `UnsavedChangesModal`
-
-### Integrations Page
-- Redesigned with category sidebar, grouped card grid, and integration detail view
-- 19 integrations across 5 categories: CRM (Salesforce, HubSpot, Zoho, Dynamics 365), Voice (Twilio, Vonage, Genesys Cloud, Five9), Communications (WhatsApp, Gmail, Slack, Microsoft Teams), LiveChat (Intercom, Zendesk Chat, LiveChat, Freshchat), Payments (Stripe, Razorpay, PayPal)
-- Each integration has configuration fields, setup instructions, and connection management
-- API Keys and Webhooks remain in separate tabs
-
-### Analytics Module (Enhanced)
-- **Subtab Navigation**: 7 tabs - Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns
-- **Outcome KPIs**: Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score with sparkline charts and trend indicators
-- **KPICard Component**: Reusable card with icon mapping, sparkline (recharts LineChart), trend direction, and color variants
-- **Campaign Analytics**: Email open rate, CTR, bounce rate, conversion funnel visualization, campaign performance table
-- **Channel Analytics**: Per-channel metrics (chat/voice/email) with volume sparklines and comparison charts
-- **LLM Analytics**: Model usage breakdown, token usage over time, accuracy tracking, prompt categories
-- **Transcription Analytics**: Accuracy tracking, language breakdown, keyword extraction with sentiment, error categorization
-- **Compliance Monitoring**: Risk distribution, flagged interactions, violation categories with severity, recent violations table
-- **Sentiment & Speech**: Intent detection, emotion analysis, sentiment breakdown pie chart, speech-to-text accuracy
-- **Dashboard Integration**: Dive Deep buttons on KPI cards link to specific analytics tabs via URL query params (?tab=xxx)
-- **Widget Registry**: Extended with outcome KPIs (time-saved, effort-saved, conversion-rate, engagement-rate)
-- Components in `src/components/analytics/`: KPICard, OverviewTab, ChannelsTab, SentimentSpeechTab, LLMAnalyticsTab, TranscriptionTab, ComplianceTab, CampaignAnalytics
-
-### Security & Compliance Module (Enhanced)
-- **5-Tab Structure**: Compliance, SSO, RBAC, Moderation, Audit Logs
-- **Compliance Tab**: PII Protection (8 detection types, 4 action modes), Zero Retention Policy (scope/mode controls), Consent Management, GDPR Controls, Data Masking, Data Retention
-- **SSO Tab**: 5 identity providers (SAML, OIDC, Azure AD, Okta, Google), domain allowlist, session timeout, auto-provision, enforce/fallback controls
-- **RBAC Tab**: MFA (TOTP/SMS/Email), password policy (length/complexity/expiry/reuse), session policy (concurrent/idle/absolute timeouts), IP restrictions with allowlist
-- **Moderation Tab**: Content rules (profanity, spam, hate speech, custom patterns) with action/severity controls
-- **Audit Logs Tab**: Searchable/filterable log table with export
-- PII Protection moved from Moderation to Compliance for clearer grouping
-- Types in `src/types/security.ts`, data hook in `src/hooks/useSecurityData.ts`
-
-### No Backend Currently
-- Application runs entirely in the browser
-- All data is mocked and stored in React state
-- Ready for backend integration (API structures implied by data hooks)
+- **Vite**: Build tool.
+- **TypeScript**: Type checking.
+- **ESLint**: Linting.
+- **PostCSS**: CSS processing.

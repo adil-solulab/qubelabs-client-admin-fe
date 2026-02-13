@@ -25,7 +25,7 @@ import { FlowCanvas } from '@/components/flowBuilder/FlowCanvas';
 import { NodePropertiesPanel } from '@/components/flowBuilder/NodePropertiesPanel';
 import { PublishFlowModal } from '@/components/flowBuilder/PublishFlowModal';
 import { RollbackModal } from '@/components/flowBuilder/RollbackModal';
-import { LivePreviewPanel } from '@/components/flowBuilder/LivePreviewPanel';
+import { TestPanel } from '@/components/flowBuilder/TestPanel';
 import { UnsavedChangesModal } from '@/components/flowBuilder/UnsavedChangesModal';
 import { FlowListView } from '@/components/flowBuilder/FlowListView';
 import { NodeToolsSidebar } from '@/components/flowBuilder/NodeToolsSidebar';
@@ -271,7 +271,7 @@ export default function FlowBuilderPage() {
               onClick={() => setShowPreview(!showPreview)}
             >
               {showPreview ? <EyeOff className="w-4 h-4 mr-1.5" /> : <Eye className="w-4 h-4 mr-1.5" />}
-              Preview
+              Test
             </Button>
 
             <Button variant="ghost" size="sm" onClick={() => setRollbackModalOpen(true)}>
@@ -361,7 +361,7 @@ export default function FlowBuilderPage() {
           )}
 
           {showPreview && (
-            <LivePreviewPanel flow={flow} />
+            <TestPanel flow={flow} />
           )}
         </div>
       </div>
