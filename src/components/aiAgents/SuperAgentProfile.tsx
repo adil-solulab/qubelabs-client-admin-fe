@@ -19,6 +19,7 @@ import {
 import type { AIAgent } from '@/types/aiAgents';
 import { TONE_LABELS } from '@/types/aiAgents';
 import { WelcomeModal } from '@/components/aiAgents/WelcomeModal';
+import { RulesModal } from '@/components/aiAgents/RulesModal';
 import { cn } from '@/lib/utils';
 
 type ProfileSection = 'profile' | 'safety' | 'fallback';
@@ -138,6 +139,8 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
   const [welcomeMode, setWelcomeMode] = useState<string>('send_message');
   const [welcomeGreeting, setWelcomeGreeting] = useState(agent.persona.greeting);
+  const [rulesModalOpen, setRulesModalOpen] = useState(false);
+  const [rules, setRules] = useState<string[]>([]);
 
   const [customerQueryFilters, setCustomerQueryFilters] = useState<SafetyCheck[]>([
     { id: 'banned', name: 'Banned Topics', description: 'Restricts conversations on improper topics like violence etc.', enabled: false },
@@ -274,9 +277,9 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
                 <TimelineCard
                   icon={BookOpen}
                   title="Rules to follow"
-                  subtitle={`${agent.guardrails.filter(g => g.isActive).length} rules added`}
+                  subtitle={`${rules.length} rules added`}
                   actionLabel="Add"
-                  onAction={canEdit ? () => onEdit(agent) : undefined}
+                  onAction={canEdit ? () => setRulesModalOpen(true) : undefined}
                   actionVariant="add"
                 />
                 <TimelineConnector />
@@ -461,6 +464,13 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
           setWelcomeMode(mode);
           setWelcomeGreeting(greeting);
         }}
+      />
+
+      <RulesModal
+        open={rulesModalOpen}
+        onOpenChange={setRulesModalOpen}
+        rules={rules}
+        onSave={setRules}
       />
     </div>
   );
