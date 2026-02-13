@@ -152,7 +152,7 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
   };
 
   const handleViewFlow = () => {
-    navigate('/flow-builder');
+    navigate('/flow-builder?openFlow=Live Agent');
   };
 
   const sidebarSections: { id: ProfileSection; label: string; icon: React.ElementType; description: string; tag?: string }[] = [

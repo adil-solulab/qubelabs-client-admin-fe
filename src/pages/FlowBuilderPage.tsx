@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -67,12 +68,14 @@ export default function FlowBuilderPage() {
   } = useFlowBuilderData();
 
   const { canEdit, canPublish, withPermission } = usePermission('flow-builder');
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [showPreview, setShowPreview] = useState(false);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [rollbackModalOpen, setRollbackModalOpen] = useState(false);
   const [unsavedChangesModalOpen, setUnsavedChangesModalOpen] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  const hasHandledOpenFlow = useRef(false);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -84,6 +87,22 @@ export default function FlowBuilderPage() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    const openFlow = searchParams.get('openFlow');
+    if (openFlow && !hasHandledOpenFlow.current) {
+      hasHandledOpenFlow.current = true;
+      const summaries = getFlowSummaries();
+      const existing = summaries.find(f => f.name === openFlow);
+      if (existing) {
+        selectFlow(existing.id);
+      } else {
+        const newFlow = createFlow(openFlow, `${openFlow} flow`, 'Base', 'chat');
+        selectFlow(newFlow.id);
+      }
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, getFlowSummaries, selectFlow, createFlow, setSearchParams]);
 
   const handleAddNode = (type: NodeType) => {
     withPermission('edit', () => {
