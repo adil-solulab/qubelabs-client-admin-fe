@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useOutboundCallingData } from '@/hooks/useOutboundCallingData';
-import { useAuth } from '@/hooks/useAuth';
 import { notify } from '@/hooks/useNotification';
 import { CampaignListView } from '@/components/outboundCalling/CampaignListView';
 import { CreateCampaignWizard } from '@/components/outboundCalling/CreateCampaignWizard';
