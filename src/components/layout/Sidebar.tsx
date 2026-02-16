@@ -202,12 +202,10 @@ export function Sidebar() {
         'h-16 flex items-center border-b border-sidebar-border px-4',
         collapsed ? 'justify-center' : 'gap-3'
       )}>
-        <img src="/conx-logomark.png" alt="ConX" className="w-9 h-9 rounded-lg object-contain" />
-        {!collapsed && (
-          <div className="flex flex-col">
-            <span className="text-sidebar-foreground font-semibold text-sm">ConX</span>
-            <span className="text-sidebar-foreground/50 text-xs">responsible intelligence</span>
-          </div>
+        {collapsed ? (
+          <img src="/conx-logomark.png" alt="ConX" className="w-9 h-9 rounded-lg object-contain" />
+        ) : (
+          <img src="/conx-logo.jpg" alt="ConX" className="h-10 object-contain" />
         )}
       </div>
 
