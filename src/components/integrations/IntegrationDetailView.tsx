@@ -15,6 +15,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { Integration } from '@/types/integrations';
 import { INTEGRATION_ICONS, STATUS_CONFIG } from '@/types/integrations';
 import { cn } from '@/lib/utils';
@@ -129,6 +136,7 @@ export function IntegrationDetailView({
                   const isPassword = field.type === 'password';
                   const isVisible = visibleFields.has(field.key);
                   const isAccountName = field.key === 'account_name';
+                  const isSelect = field.type === 'select';
 
                   return (
                     <div key={field.key} className="space-y-1.5">
@@ -141,25 +149,44 @@ export function IntegrationDetailView({
                           Your account name should be unique, and it can't be edited once created.
                         </p>
                       )}
-                      <div className="relative">
-                        <Input
-                          type={isPassword && !isVisible ? 'password' : 'text'}
-                          placeholder={field.placeholder}
+                      {field.helpText && !isAccountName && (
+                        <p className="text-xs text-muted-foreground">{field.helpText}</p>
+                      )}
+                      {isSelect && field.options ? (
+                        <Select
                           value={formValues[field.key] || ''}
-                          onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                          disabled={isConnected && field.key === 'account_name'}
-                          className={cn(isPassword && 'pr-10')}
-                        />
-                        {isPassword && (
-                          <button
-                            type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            onClick={() => toggleFieldVisibility(field.key)}
-                          >
-                            {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        )}
-                      </div>
+                          onValueChange={(val) => handleFieldChange(field.key, val)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="relative">
+                          <Input
+                            type={isPassword && !isVisible ? 'password' : field.type === 'number' ? 'number' : 'text'}
+                            placeholder={field.placeholder}
+                            value={formValues[field.key] || ''}
+                            onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                            disabled={isConnected && field.key === 'account_name'}
+                            className={cn(isPassword && 'pr-10')}
+                          />
+                          {isPassword && (
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                              onClick={() => toggleFieldVisibility(field.key)}
+                            >
+                              {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          )}
+                        </div>
+                      )}
                       {isAccountName && (
                         <p className="text-xs text-right text-muted-foreground">{charCount}/20</p>
                       )}

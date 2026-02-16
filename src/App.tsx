@@ -12,7 +12,6 @@ import UserProfilePage from "./pages/UserProfilePage";
 import UsersPage from "./pages/UsersPage";
 import AIAgentsPage from "./pages/AIAgentsPage";
 import KnowledgeBasePage from "./pages/KnowledgeBasePage";
-import ChannelsPage from "./pages/ChannelsPage";
 import FlowBuilderPage from "./pages/FlowBuilderPage";
 import LiveOpsPage from "./pages/LiveOpsPage";
 import CallbacksPage from "./pages/CallbacksPage";
@@ -74,11 +73,6 @@ const App = () => (
               <Route path="/knowledge-base" element={
                 <ProtectedRoute screenId="knowledge-base">
                   <KnowledgeBasePage />
-                </ProtectedRoute>
-              } />
-              <Route path="/channels" element={
-                <ProtectedRoute screenId="channels">
-                  <ChannelsPage />
                 </ProtectedRoute>
               } />
               <Route path="/flow-builder" element={

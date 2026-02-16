@@ -10,6 +10,16 @@ import {
   Trash2,
   MoreVertical,
   CheckCircle,
+  MessageSquare,
+  Phone,
+  MessageCircle,
+  Mail,
+  CreditCard,
+  Headphones,
+  BarChart3,
+  Wifi,
+  ChevronRight,
+  Settings2,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -32,27 +42,40 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
 import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
 import { PermissionButton } from '@/components/auth/PermissionButton';
 import { IntegrationDetailView } from '@/components/integrations/IntegrationDetailView';
+import { ChatWidgetConfigPanel } from '@/components/channels/ChatWidgetConfigPanel';
 import { CreateAPIKeyModal } from '@/components/integrations/CreateAPIKeyModal';
 import { AddWebhookModal } from '@/components/integrations/AddWebhookModal';
 import type { Integration, IntegrationCategory } from '@/types/integrations';
 import { CATEGORY_CONFIG, INTEGRATION_ICONS } from '@/types/integrations';
 import { cn } from '@/lib/utils';
 
-type ViewMode = 'listing' | 'detail';
+type ViewMode = 'listing' | 'detail' | 'chat-widget';
+
+const CATEGORY_LUCIDE_ICONS: Record<IntegrationCategory, React.ElementType> = {
+  crm: BarChart3,
+  voice: Phone,
+  messaging: MessageCircle,
+  email: Mail,
+  chat_widget: MessageSquare,
+  live_chat: Headphones,
+  payment: CreditCard,
+};
 
 export default function IntegrationsPage() {
   const {
     integrations,
     apiKeys,
     webhooks,
+    chatWidgetConfig,
+    isSavingWidget,
     connectIntegration,
     disconnectIntegration,
+    updateChatWidgetConfig,
     createAPIKey,
     revokeAPIKey,
     toggleAPIKey,
@@ -69,7 +92,7 @@ export default function IntegrationsPage() {
   const [addWebhookModalOpen, setAddWebhookModalOpen] = useState(false);
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
 
-  const categoryOrder: IntegrationCategory[] = ['crm', 'voice', 'communication', 'live_chat', 'payment'];
+  const categoryOrder: IntegrationCategory[] = ['crm', 'voice', 'messaging', 'email', 'chat_widget', 'live_chat', 'payment'];
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -81,15 +104,30 @@ export default function IntegrationsPage() {
         counts[int.category] = (counts[int.category] || 0) + 1;
       }
     });
+    counts['chat_widget'] = 1;
     return counts;
   }, [integrations, searchQuery]);
+
+  const connectedCount = useMemo(() => {
+    return integrations.filter(i => i.status === 'connected').length;
+  }, [integrations]);
+
+  const categoryConnectedCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    integrations.forEach(int => {
+      if (int.status === 'connected') {
+        counts[int.category] = (counts[int.category] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [integrations]);
 
   const filteredIntegrations = useMemo(() => {
     return integrations.filter(int => {
       const matchesSearch = !searchQuery ||
         int.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         int.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === 'all' || int.category === activeCategory;
+      const matchesCategory = activeCategory === 'all' || activeCategory === 'chat_widget' || int.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
   }, [integrations, searchQuery, activeCategory]);
@@ -190,17 +228,36 @@ export default function IntegrationsPage() {
     );
   }
 
-  const totalCount = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  if (viewMode === 'chat-widget') {
+    return (
+      <AppLayout>
+        <ChatWidgetConfigPanel
+          config={chatWidgetConfig}
+          isSaving={isSavingWidget}
+          onUpdate={updateChatWidgetConfig}
+          onBack={handleBackToListing}
+        />
+      </AppLayout>
+    );
+  }
+
+  const totalCount = integrations.length + 1;
 
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Integrations</h1>
+            <h1 className="text-2xl font-bold text-foreground">Integrations & Channels</h1>
             <p className="text-sm text-muted-foreground">
-              Connect third-party services to enhance your conversational AI workflows
+              Connect third-party services and communication channels to your AI platform
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="px-3 py-1.5 text-xs gap-1.5">
+              <Wifi className="w-3 h-3 text-success" />
+              {connectedCount} connected
+            </Badge>
           </div>
         </div>
 
@@ -223,19 +280,19 @@ export default function IntegrationsPage() {
           </div>
 
           <TabsContent value="integrations" className="mt-0">
-            <div className="grid lg:grid-cols-[220px,1fr] gap-6">
+            <div className="grid lg:grid-cols-[240px,1fr] gap-6">
               <div className="space-y-1">
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search Integrations"
+                    placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 h-9 text-sm"
                   />
                 </div>
 
-                <ScrollArea className="max-h-[calc(100vh-280px)]">
+                <nav className="space-y-0.5">
                   <button
                     onClick={() => setActiveCategory('all')}
                     className={cn(
@@ -245,18 +302,23 @@ export default function IntegrationsPage() {
                         : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     )}
                   >
-                    <span>All Integrations</span>
+                    <div className="flex items-center gap-2.5">
+                      <Plug className="w-4 h-4" />
+                      <span>All</span>
+                    </div>
                     <span className={cn(
                       'text-xs font-medium',
                       activeCategory === 'all' ? 'text-primary-foreground/80' : 'text-muted-foreground'
                     )}>
-                      ({totalCount})
+                      {totalCount}
                     </span>
                   </button>
 
                   {categoryOrder.map(cat => {
                     const config = CATEGORY_CONFIG[cat];
+                    const CatIcon = CATEGORY_LUCIDE_ICONS[cat];
                     const count = categoryCounts[cat] || 0;
+                    const activeCount = categoryConnectedCounts[cat] || 0;
                     if (count === 0 && searchQuery) return null;
 
                     return (
@@ -270,22 +332,73 @@ export default function IntegrationsPage() {
                             : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                         )}
                       >
-                        <span>{config.label}</span>
-                        <span className={cn(
-                          'text-xs font-medium',
-                          activeCategory === cat ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                        )}>
-                          ({count})
-                        </span>
+                        <div className="flex items-center gap-2.5">
+                          <CatIcon className="w-4 h-4" />
+                          <span>{config.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {activeCount > 0 && activeCategory !== cat && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                          )}
+                          <span className={cn(
+                            'text-xs font-medium',
+                            activeCategory === cat ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                          )}>
+                            {count}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}
-                </ScrollArea>
+                </nav>
               </div>
 
               <div className="space-y-8">
+                {(activeCategory === 'all' || activeCategory === 'chat_widget') && (
+                  <div>
+                    {activeCategory === 'all' && (
+                      <h2 className="text-base font-semibold text-foreground mb-4">Chat Widget (1)</h2>
+                    )}
+                    <Card
+                      className="gradient-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 group max-w-md border-purple-200 dark:border-purple-800/40"
+                      onClick={() => setViewMode('chat-widget')}
+                    >
+                      <CardContent className="pt-5 pb-5">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center text-2xl flex-shrink-0 border border-purple-200 dark:border-purple-800/40 group-hover:border-primary/30 transition-colors">
+                            <MessageSquare className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
+                                Chat Widget
+                              </h3>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-success/10 text-success border-success/30">
+                                <Wifi className="w-2.5 h-2.5 mr-0.5" />
+                                Active
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                              Embeddable web chat widget with full customization - appearance, bot icon, settings, navigation, and deploy script.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Settings2 className="w-4 h-4 text-muted-foreground" />
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Appearance', 'Bot Icon', 'Settings', 'Navigation', 'Deploy'].map(f => (
+                            <Badge key={f} variant="secondary" className="text-[10px]">{f}</Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
                 {activeCategory === 'all' ? (
-                  categoryOrder.map(cat => {
+                  categoryOrder.filter(c => c !== 'chat_widget').map(cat => {
                     const items = groupedIntegrations[cat];
                     if (!items || items.length === 0) return null;
                     const config = CATEGORY_CONFIG[cat];
@@ -307,7 +420,7 @@ export default function IntegrationsPage() {
                       </div>
                     );
                   })
-                ) : (
+                ) : activeCategory !== 'chat_widget' ? (
                   <div>
                     <h2 className="text-base font-semibold text-foreground mb-4">
                       {CATEGORY_CONFIG[activeCategory]?.label} ({filteredIntegrations.length})
@@ -322,9 +435,9 @@ export default function IntegrationsPage() {
                       ))}
                     </div>
                   </div>
-                )}
+                ) : null}
 
-                {filteredIntegrations.length === 0 && (
+                {filteredIntegrations.length === 0 && activeCategory !== 'chat_widget' && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <Plug className="w-12 h-12 text-muted-foreground mb-4" />
                     <h3 className="font-semibold mb-1">No integrations found</h3>
