@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useOutboundCallingData } from '@/hooks/useOutboundCallingData';
+import { useFlowBuilderData } from '@/hooks/useFlowBuilderData';
 import { notify } from '@/hooks/useNotification';
 import { CampaignListView } from '@/components/outboundCalling/CampaignListView';
 import { CreateCampaignWizard } from '@/components/outboundCalling/CreateCampaignWizard';
@@ -31,6 +32,9 @@ export default function OutboundCallsPage() {
     clearUploadProgress,
   } = useOutboundCallingData();
 
+  const { getFlowSummaries } = useFlowBuilderData();
+  const flowSummaries = getFlowSummaries();
+
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const handleCreateCampaign = () => {
@@ -49,7 +53,7 @@ export default function OutboundCallsPage() {
 
   const handleSubmitCampaign = async (data: CreateCampaignData) => {
     const campaign = await createCampaign(data);
-    notify.success('Campaign launched', `"${campaign.name}" has been created and ${data.schedule.type === 'now' ? 'started' : 'scheduled'}.`);
+    notify.success('Campaign launched', `"${campaign.name}" has been created successfully.`);
     setViewMode('list');
   };
 
@@ -106,6 +110,7 @@ export default function OutboundCallsPage() {
         <CreateCampaignWizard
           templates={templates}
           segments={segments}
+          flows={flowSummaries}
           onSubmit={handleSubmitCampaign}
           onSaveDraft={handleSaveDraft}
           onCancel={handleBackToList}

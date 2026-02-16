@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -7,18 +7,13 @@ import {
   MessageCircle,
   MessageSquare,
   Mail,
-  Users,
-  Calendar,
-  Target,
   Rocket,
   Save,
   Loader2,
-  Clock,
-  Repeat,
-  Send,
-  ChevronRight,
   FileText,
-  Radio,
+  GitBranch,
+  Zap,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,8 +21,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -35,34 +28,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import type {
   CampaignChannel,
   CampaignTemplate,
   CampaignSegment,
   CreateCampaignData,
-  ScheduleType,
-  GoalType,
 } from '@/types/outboundCalling';
 import { CHANNEL_CONFIG } from '@/types/outboundCalling';
+import type { FlowSummary } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 
 interface CreateCampaignWizardProps {
   templates: CampaignTemplate[];
   segments: CampaignSegment[];
+  flows?: FlowSummary[];
   onSubmit: (data: CreateCampaignData) => Promise<void>;
   onSaveDraft: (data: Partial<CreateCampaignData>) => Promise<void>;
   onCancel: () => void;
 }
-
-const STEPS = [
-  { id: 1, label: 'Basic Info', icon: FileText },
-  { id: 2, label: 'Template', icon: Radio },
-  { id: 3, label: 'Audience', icon: Users },
-  { id: 4, label: 'Schedule', icon: Calendar },
-  { id: 5, label: 'Goal', icon: Target },
-  { id: 6, label: 'Review', icon: Rocket },
-];
 
 const ChannelCard = ({
   channel,
@@ -103,6 +86,7 @@ const ChannelCard = ({
 export function CreateCampaignWizard({
   templates,
   segments,
+  flows = [],
   onSubmit,
   onSaveDraft,
   onCancel,
@@ -114,34 +98,41 @@ export function CreateCampaignWizard({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [channel, setChannel] = useState<CampaignChannel>('voice');
-  const [templateId, setTemplateId] = useState('');
-  const [segmentId, setSegmentId] = useState('');
-  const [scheduleType, setScheduleType] = useState<ScheduleType>('now');
-  const [scheduleDate, setScheduleDate] = useState('');
-  const [scheduleTime, setScheduleTime] = useState('');
-  const [goalType, setGoalType] = useState<GoalType>('delivery');
-  const [goalTarget, setGoalTarget] = useState([80]);
-  const [goalDuration, setGoalDuration] = useState('24');
-  const [goalUnit, setGoalUnit] = useState<'hours' | 'days'>('hours');
+  const [flowId, setFlowId] = useState('');
+  const [workflowId, setWorkflowId] = useState('');
+  const [flowSearch, setFlowSearch] = useState('');
+  const [workflowSearch, setWorkflowSearch] = useState('');
 
-  const filteredTemplates = templates.filter(t => t.channel === channel && t.status === 'approved');
-  const selectedTemplate = templates.find(t => t.id === templateId);
-  const selectedSegment = segments.find(s => s.id === segmentId);
+  const conversationalFlows = flows.filter(f => f.flowType === 'flow');
+  const automationWorkflows = flows.filter(f => f.flowType === 'workflow');
+
+  const filteredFlows = conversationalFlows.filter(f =>
+    f.name.toLowerCase().includes(flowSearch.toLowerCase())
+  );
+  const filteredWorkflows = automationWorkflows.filter(f =>
+    f.name.toLowerCase().includes(workflowSearch.toLowerCase())
+  );
+
+  const selectedFlow = conversationalFlows.find(f => f.id === flowId);
+  const selectedWorkflow = automationWorkflows.find(f => f.id === workflowId);
+
+  const STEPS = [
+    { id: 1, label: 'Basic Info' },
+    { id: 2, label: 'Flow & Workflow' },
+    { id: 3, label: 'Review' },
+  ];
 
   const canProceed = () => {
     switch (currentStep) {
       case 1: return name.trim().length > 0;
-      case 2: return templateId.length > 0;
-      case 3: return segmentId.length > 0;
-      case 4: return scheduleType === 'now' || (scheduleDate && scheduleTime);
-      case 5: return true;
-      case 6: return true;
+      case 2: return true;
+      case 3: return true;
       default: return false;
     }
   };
 
   const handleNext = () => {
-    if (currentStep < 6) setCurrentStep(currentStep + 1);
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
   const handleBack = () => {
@@ -154,20 +145,10 @@ export function CreateCampaignWizard({
       name,
       description,
       channel,
-      templateId,
-      segmentId,
-      schedule: {
-        type: scheduleType,
-        date: scheduleDate,
-        time: scheduleTime,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      },
-      goal: {
-        type: goalType,
-        targetPercentage: goalTarget[0],
-        trackDuration: parseInt(goalDuration),
-        trackUnit: goalUnit,
-      },
+      flowId: flowId || undefined,
+      flowName: selectedFlow?.name || undefined,
+      workflowId: workflowId || undefined,
+      workflowName: selectedWorkflow?.name || undefined,
     });
     setIsSubmitting(false);
   };
@@ -178,8 +159,8 @@ export function CreateCampaignWizard({
       name: name || undefined,
       description: description || undefined,
       channel,
-      templateId: templateId || undefined,
-      segmentId: segmentId || undefined,
+      flowId: flowId || undefined,
+      workflowId: workflowId || undefined,
     });
     setIsSavingDraft(false);
   };
@@ -191,16 +172,15 @@ export function CreateCampaignWizard({
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Create Campaign</h1>
+          <h1 className="text-xl font-bold text-foreground">Create Campaign</h1>
           <p className="text-sm text-muted-foreground">
-            Set up your outbound campaign in a few simple steps
+            Set up your outbound campaign
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-2">
+      <div className="flex items-center gap-1 mb-6">
         {STEPS.map((step, index) => {
-          const StepIcon = step.icon;
           const isActive = currentStep === step.id;
           const isCompleted = currentStep > step.id;
 
@@ -209,24 +189,27 @@ export function CreateCampaignWizard({
               <button
                 onClick={() => isCompleted && setCurrentStep(step.id)}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg transition-all whitespace-nowrap',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm',
                   isActive && 'bg-primary text-primary-foreground',
                   isCompleted && 'bg-primary/10 text-primary cursor-pointer hover:bg-primary/20',
                   !isActive && !isCompleted && 'text-muted-foreground'
                 )}
               >
                 <div className={cn(
-                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium',
+                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
                   isActive && 'bg-primary-foreground/20',
                   isCompleted && 'bg-primary/20',
                   !isActive && !isCompleted && 'bg-muted'
                 )}>
-                  {isCompleted ? <Check className="w-3.5 h-3.5" /> : <StepIcon className="w-3.5 h-3.5" />}
+                  {isCompleted ? <Check className="w-3 h-3" /> : step.id}
                 </div>
-                <span className="text-sm font-medium hidden sm:inline">{step.label}</span>
+                <span className="font-medium">{step.label}</span>
               </button>
               {index < STEPS.length - 1 && (
-                <ChevronRight className="w-4 h-4 text-muted-foreground mx-1 flex-shrink-0" />
+                <div className={cn(
+                  'w-8 h-px mx-1',
+                  currentStep > step.id ? 'bg-primary' : 'bg-border'
+                )} />
               )}
             </div>
           );
@@ -236,9 +219,9 @@ export function CreateCampaignWizard({
       <div className="flex-1 mb-6">
         {currentStep === 1 && (
           <Card className="gradient-card">
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6 space-y-5">
               <div>
-                <h2 className="text-lg font-semibold mb-1">Basic Information</h2>
+                <h2 className="text-base font-semibold mb-0.5">Basic Information</h2>
                 <p className="text-sm text-muted-foreground">
                   Name your campaign and select the communication channel
                 </p>
@@ -274,7 +257,7 @@ export function CreateCampaignWizard({
                         key={ch}
                         channel={ch}
                         selected={channel === ch}
-                        onClick={() => { setChannel(ch); setTemplateId(''); }}
+                        onClick={() => setChannel(ch)}
                       />
                     ))}
                   </div>
@@ -285,402 +268,207 @@ export function CreateCampaignWizard({
         )}
 
         {currentStep === 2 && (
-          <Card className="gradient-card">
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-1">Message Template</h2>
-                <p className="text-sm text-muted-foreground">
-                  Select an approved template for your {CHANNEL_CONFIG[channel].label} campaign
-                </p>
-              </div>
-
-              {filteredTemplates.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="font-medium">No approved templates</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    No approved templates found for {CHANNEL_CONFIG[channel].label} channel
-                  </p>
+          <div className="space-y-4">
+            <Card className="gradient-card">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
+                    <GitBranch className="w-4.5 h-4.5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold">Conversational Flow</h2>
+                    <p className="text-xs text-muted-foreground">
+                      Select a flow to handle the conversation logic for this campaign
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredTemplates.map((template) => (
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search flows..."
+                    value={flowSearch}
+                    onChange={(e) => setFlowSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+
+                {conversationalFlows.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <GitBranch className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No conversational flows available</p>
+                    <p className="text-xs">Create flows in the Flow Builder first</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
                     <button
-                      key={template.id}
-                      onClick={() => setTemplateId(template.id)}
+                      onClick={() => setFlowId('')}
                       className={cn(
-                        'w-full text-left p-4 rounded-xl border-2 transition-all',
-                        templateId === template.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/30'
+                        'w-full text-left px-3 py-2.5 rounded-lg border transition-all text-sm',
+                        !flowId ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-muted/50'
                       )}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium">{template.name}</p>
-                            <Badge variant="outline" className="text-xs">
-                              {template.category}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {template.content}
-                          </p>
-                          {template.variables.length > 0 && (
-                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                              {template.variables.map((v) => (
-                                <Badge key={v} variant="secondary" className="text-xs">
-                                  {`{{${v}}}`}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className={cn(
-                          'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
-                          templateId === template.id
-                            ? 'border-primary bg-primary'
-                            : 'border-muted-foreground/30'
-                        )}>
-                          {templateId === template.id && (
-                            <Check className="w-3 h-3 text-primary-foreground" />
-                          )}
-                        </div>
-                      </div>
+                      <span className="text-muted-foreground italic">None (no flow)</span>
                     </button>
-                  ))}
-                </div>
-              )}
+                    {filteredFlows.map((flow) => (
+                      <button
+                        key={flow.id}
+                        onClick={() => setFlowId(flow.id)}
+                        className={cn(
+                          'w-full text-left px-3 py-2.5 rounded-lg border transition-all flex items-center gap-3',
+                          flowId === flow.id ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-muted/50'
+                        )}
+                      >
+                        <GitBranch className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{flow.name}</p>
+                          {flow.description && (
+                            <p className="text-xs text-muted-foreground truncate">{flow.description}</p>
+                          )}
+                        </div>
+                        <Badge variant="outline" className="text-[10px] flex-shrink-0">
+                          {flow.status}
+                        </Badge>
+                        {flowId === flow.id && (
+                          <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-              {selectedTemplate && (
-                <div className="p-4 rounded-xl bg-muted/50 border">
-                  <h4 className="text-sm font-medium mb-2">Template Preview</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {selectedTemplate.content}
-                  </p>
+            <Card className="gradient-card">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center">
+                    <Zap className="w-4.5 h-4.5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold">Automation Workflow</h2>
+                    <p className="text-xs text-muted-foreground">
+                      Select a workflow for backend automation and post-call processing
+                    </p>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search workflows..."
+                    value={workflowSearch}
+                    onChange={(e) => setWorkflowSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+
+                {automationWorkflows.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Zap className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No automation workflows available</p>
+                    <p className="text-xs">Create workflows in the Flow Builder first</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+                    <button
+                      onClick={() => setWorkflowId('')}
+                      className={cn(
+                        'w-full text-left px-3 py-2.5 rounded-lg border transition-all text-sm',
+                        !workflowId ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-muted/50'
+                      )}
+                    >
+                      <span className="text-muted-foreground italic">None (no workflow)</span>
+                    </button>
+                    {filteredWorkflows.map((wf) => (
+                      <button
+                        key={wf.id}
+                        onClick={() => setWorkflowId(wf.id)}
+                        className={cn(
+                          'w-full text-left px-3 py-2.5 rounded-lg border transition-all flex items-center gap-3',
+                          workflowId === wf.id ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-muted/50'
+                        )}
+                      >
+                        <Zap className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{wf.name}</p>
+                          {wf.description && (
+                            <p className="text-xs text-muted-foreground truncate">{wf.description}</p>
+                          )}
+                        </div>
+                        <Badge variant="outline" className="text-[10px] flex-shrink-0">
+                          {wf.status}
+                        </Badge>
+                        {workflowId === wf.id && (
+                          <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {currentStep === 3 && (
           <Card className="gradient-card">
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6 space-y-5">
               <div>
-                <h2 className="text-lg font-semibold mb-1">Target Audience</h2>
+                <h2 className="text-base font-semibold mb-0.5">Review & Launch</h2>
                 <p className="text-sm text-muted-foreground">
-                  Select a segment from your user base or create a new one
+                  Confirm your campaign details before launching
                 </p>
               </div>
 
-              <div className="space-y-3">
-                {segments.map((segment) => (
-                  <button
-                    key={segment.id}
-                    onClick={() => setSegmentId(segment.id)}
-                    className={cn(
-                      'w-full text-left p-4 rounded-xl border-2 transition-all',
-                      segmentId === segment.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/30'
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{segment.name}</p>
-                          <Badge variant="outline" className="text-xs">
-                            <Users className="w-3 h-3 mr-1" />
-                            {segment.userCount.toLocaleString()} users
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{segment.description}</p>
-                        {segment.filters && segment.filters.length > 0 && (
-                          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                            {segment.filters.map((f, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {f}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className={cn(
-                        'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-                        segmentId === segment.id
-                          ? 'border-primary bg-primary'
-                          : 'border-muted-foreground/30'
-                      )}>
-                        {segmentId === segment.id && (
-                          <Check className="w-3 h-3 text-primary-foreground" />
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === 4 && (
-          <Card className="gradient-card">
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-1">Schedule Campaign</h2>
-                <p className="text-sm text-muted-foreground">
-                  Choose when to send your campaign
-                </p>
-              </div>
-
-              <RadioGroup value={scheduleType} onValueChange={(v) => setScheduleType(v as ScheduleType)} className="space-y-3">
-                <label
-                  className={cn(
-                    'flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all',
-                    scheduleType === 'now' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'
-                  )}
-                >
-                  <RadioGroupItem value="now" className="mt-1" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Send className="w-4 h-4 text-primary" />
-                      <span className="font-medium">Send Now</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Campaign will start within 10 minutes after launch
-                    </p>
-                  </div>
-                </label>
-
-                <label
-                  className={cn(
-                    'flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all',
-                    scheduleType === 'later' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'
-                  )}
-                >
-                  <RadioGroupItem value="later" className="mt-1" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span className="font-medium">Schedule for Later</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Set a specific date and time to send
-                    </p>
-                    {scheduleType === 'later' && (
-                      <div className="grid grid-cols-2 gap-3 mt-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Date</Label>
-                          <Input
-                            type="date"
-                            value={scheduleDate}
-                            onChange={(e) => setScheduleDate(e.target.value)}
-                            min={new Date().toISOString().split('T')[0]}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Time</Label>
-                          <Input
-                            type="time"
-                            value={scheduleTime}
-                            onChange={(e) => setScheduleTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </label>
-
-                <label
-                  className={cn(
-                    'flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all',
-                    scheduleType === 'recurring' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'
-                  )}
-                >
-                  <RadioGroupItem value="recurring" className="mt-1" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Repeat className="w-4 h-4 text-purple-500" />
-                      <span className="font-medium">Run Multiple Times</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Configure a recurring campaign schedule
-                    </p>
-                    {scheduleType === 'recurring' && (
-                      <div className="grid grid-cols-2 gap-3 mt-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Start Date</Label>
-                          <Input
-                            type="date"
-                            value={scheduleDate}
-                            onChange={(e) => setScheduleDate(e.target.value)}
-                            min={new Date().toISOString().split('T')[0]}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Time</Label>
-                          <Input
-                            type="time"
-                            value={scheduleTime}
-                            onChange={(e) => setScheduleTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </label>
-              </RadioGroup>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === 5 && (
-          <Card className="gradient-card">
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-1">Campaign Goal</h2>
-                <p className="text-sm text-muted-foreground">
-                  Set the objective you want to track for this campaign
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label>Goal Type</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {[
-                      { type: 'delivery' as GoalType, label: 'Delivery', desc: 'Track successful message delivery', icon: Send },
-                      { type: 'conversion' as GoalType, label: 'Conversion', desc: 'Track user conversions after campaign', icon: Target },
-                      { type: 'response' as GoalType, label: 'Response', desc: 'Track user response rate', icon: MessageCircle },
-                    ].map((goal) => {
-                      const GoalIcon = goal.icon;
-                      return (
-                        <button
-                          key={goal.type}
-                          onClick={() => setGoalType(goal.type)}
-                          className={cn(
-                            'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center',
-                            goalType === goal.type
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border hover:border-primary/30'
-                          )}
-                        >
-                          <GoalIcon className={cn('w-6 h-6', goalType === goal.type ? 'text-primary' : 'text-muted-foreground')} />
-                          <span className="font-medium text-sm">{goal.label}</span>
-                          <span className="text-xs text-muted-foreground">{goal.desc}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+              <div className="p-4 rounded-xl border bg-muted/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Campaign Name</span>
+                  <span className="font-medium text-sm">{name}</span>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Target Percentage</Label>
-                    <span className="text-sm font-medium text-primary">{goalTarget[0]}%</span>
-                  </div>
-                  <Slider
-                    value={goalTarget}
-                    onValueChange={setGoalTarget}
-                    min={10}
-                    max={100}
-                    step={5}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Track Goal For</Label>
-                  <div className="flex gap-3">
-                    <Input
-                      type="number"
-                      value={goalDuration}
-                      onChange={(e) => setGoalDuration(e.target.value)}
-                      className="w-24"
-                      min="1"
-                    />
-                    <Select value={goalUnit} onValueChange={(v) => setGoalUnit(v as 'hours' | 'days')}>
-                      <SelectTrigger className="w-28">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hours">Hours</SelectItem>
-                        <SelectItem value="days">Days</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === 6 && (
-          <Card className="gradient-card">
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-1">Review & Launch</h2>
-                <p className="text-sm text-muted-foreground">
-                  Review all campaign details before launching
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl border bg-muted/30 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Campaign Name</span>
-                    <span className="font-medium">{name}</span>
-                  </div>
-                  {description && (
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm text-muted-foreground flex-shrink-0">Description</span>
-                      <span className="text-sm text-right">{description}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Channel</span>
-                    <Badge className={cn(CHANNEL_CONFIG[channel].bgColor, CHANNEL_CONFIG[channel].color)}>
-                      {CHANNEL_CONFIG[channel].label}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Template</span>
-                    <span className="font-medium">{selectedTemplate?.name || '-'}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Audience</span>
-                    <span className="font-medium">
-                      {selectedSegment?.name || '-'}
-                      {selectedSegment && (
-                        <span className="text-muted-foreground ml-1">
-                          ({selectedSegment.userCount.toLocaleString()} users)
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Schedule</span>
-                    <span className="font-medium capitalize">
-                      {scheduleType === 'now' ? 'Send Now' : scheduleType === 'later' ? `${scheduleDate} at ${scheduleTime}` : 'Recurring'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Goal</span>
-                    <span className="font-medium capitalize">
-                      {goalType} - {goalTarget[0]}% in {goalDuration} {goalUnit}
-                    </span>
-                  </div>
-                </div>
-
-                {selectedTemplate && (
-                  <div className="p-4 rounded-xl border bg-muted/30">
-                    <h4 className="text-sm font-medium mb-2">Message Preview</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {selectedTemplate.content}
-                    </p>
+                {description && (
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="text-sm text-muted-foreground flex-shrink-0">Description</span>
+                    <span className="text-sm text-right">{description}</span>
                   </div>
                 )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Channel</span>
+                  <Badge className={cn(CHANNEL_CONFIG[channel].bgColor, CHANNEL_CONFIG[channel].color, 'border-0')}>
+                    {CHANNEL_CONFIG[channel].label}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Conversational Flow</span>
+                  {selectedFlow ? (
+                    <div className="flex items-center gap-1.5">
+                      <GitBranch className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="font-medium text-sm">{selectedFlow.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">Not assigned</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Automation Workflow</span>
+                  {selectedWorkflow ? (
+                    <div className="flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-purple-500" />
+                      <span className="font-medium text-sm">{selectedWorkflow.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">Not assigned</span>
+                  )}
+                </div>
               </div>
+
+              {!selectedFlow && !selectedWorkflow && (
+                <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
+                  <p className="text-xs text-warning">
+                    No flow or workflow is assigned. You can add them later from the campaign detail view.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -689,37 +477,37 @@ export function CreateCampaignWizard({
       <div className="flex items-center justify-between border-t pt-4">
         <div className="flex gap-2">
           {currentStep > 1 && (
-            <Button variant="outline" onClick={handleBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+            <Button variant="outline" onClick={handleBack} size="sm">
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
               Back
             </Button>
           )}
-          <Button variant="ghost" onClick={onCancel}>
+          <Button variant="ghost" onClick={onCancel} size="sm">
             Cancel
           </Button>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleSaveDraft} disabled={isSavingDraft}>
+          <Button variant="outline" onClick={handleSaveDraft} disabled={isSavingDraft} size="sm">
             {isSavingDraft ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
             ) : (
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4 mr-1.5" />
             )}
             Save as Draft
           </Button>
 
-          {currentStep < 6 ? (
-            <Button onClick={handleNext} disabled={!canProceed()}>
+          {currentStep < 3 ? (
+            <Button onClick={handleNext} disabled={!canProceed()} size="sm">
               Next
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={isSubmitting || !canProceed()}>
+            <Button onClick={handleSubmit} disabled={isSubmitting || !canProceed()} size="sm">
               {isSubmitting ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
               ) : (
-                <Rocket className="w-4 h-4 mr-2" />
+                <Rocket className="w-4 h-4 mr-1.5" />
               )}
               Launch Campaign
             </Button>

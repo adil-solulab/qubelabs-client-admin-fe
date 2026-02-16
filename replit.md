@@ -60,7 +60,7 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 #### Outbound Campaigns (Yellow.ai-style Campaign Management)
 - **Campaign List View**: Dashboard with stats cards (total, running, scheduled, completed), filterable/searchable campaign table with status badges, channel icons, audience counts, and progress bars
 - **Campaign Channels**: Supports Voice, WhatsApp, SMS, and Email outbound campaigns
-- **Create Campaign Wizard**: 6-step wizard: Basic Info (name, description, channel) → Template Selection (channel-filtered approved templates with variable highlighting) → Audience Segmentation (segment selection with user counts and filter tags) → Schedule (Send Now / Schedule for Later / Recurring) → Goal Setting (Delivery/Conversion/Response with target percentage slider and tracking duration) → Review & Launch
+- **Create Campaign Wizard**: Simplified 3-step wizard: Basic Info (name, description, channel) → Flow & Workflow Selection (searchable dropdowns for conversational flows and automation workflows from Flow Builder) → Review & Launch
 - **Campaign Detail View**: Campaign header with status controls (pause/resume/launch), progress stats bar, tabbed content (Leads tab with filtering/search, Analytics tab with sentiment analysis, call outcomes, and campaign performance metrics)
 - **Lead Management**: Lead cards with status, sentiment, call attempts, duration, escalation; Lead upload modal with drag-and-drop file upload; Escalate to human agent modal
 - **Types**: `Campaign`, `CampaignTemplate`, `CampaignSegment`, `CampaignSchedule`, `CampaignGoal`, `CreateCampaignData` in `src/types/outboundCalling.ts`

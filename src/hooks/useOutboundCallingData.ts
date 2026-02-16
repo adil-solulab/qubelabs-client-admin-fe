@@ -226,14 +226,14 @@ export function useOutboundCallingData() {
   const createCampaign = useCallback(async (data: CreateCampaignData) => {
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const template = generateMockTemplates().find(t => t.id === data.templateId);
-    const segment = generateMockSegments().find(s => s.id === data.segmentId);
+    const template = data.templateId ? generateMockTemplates().find(t => t.id === data.templateId) : undefined;
+    const segment = data.segmentId ? generateMockSegments().find(s => s.id === data.segmentId) : undefined;
 
     const newCampaign: Campaign = {
       id: `campaign-${Date.now()}`,
       name: data.name,
       description: data.description,
-      status: data.schedule.type === 'now' ? 'running' : 'scheduled',
+      status: data.schedule?.type === 'now' ? 'running' : data.schedule ? 'scheduled' : 'draft',
       channel: data.channel,
       templateId: data.templateId,
       templateName: template?.name,
@@ -241,9 +241,13 @@ export function useOutboundCallingData() {
       segmentName: segment?.name,
       schedule: data.schedule,
       goal: data.goal,
+      flowId: data.flowId,
+      flowName: data.flowName,
+      workflowId: data.workflowId,
+      workflowName: data.workflowName,
       createdAt: new Date().toISOString(),
-      startedAt: data.schedule.type === 'now' ? new Date().toISOString() : undefined,
-      scheduledAt: data.schedule.type === 'later' ? `${data.schedule.date}T${data.schedule.time}` : undefined,
+      startedAt: data.schedule?.type === 'now' ? new Date().toISOString() : undefined,
+      scheduledAt: data.schedule?.type === 'later' ? `${data.schedule.date}T${data.schedule.time}` : undefined,
       totalLeads: segment?.userCount || 0,
       calledLeads: 0,
       successfulCalls: 0,

@@ -84,6 +84,10 @@ export interface Campaign {
   responseRate?: number;
   script?: string;
   aiPersonaId?: string;
+  flowId?: string;
+  flowName?: string;
+  workflowId?: string;
+  workflowName?: string;
 }
 
 export interface CallOutcomeStats {
@@ -115,10 +119,14 @@ export interface CreateCampaignData {
   name: string;
   description: string;
   channel: CampaignChannel;
-  templateId: string;
-  segmentId: string;
-  schedule: CampaignSchedule;
-  goal: CampaignGoal;
+  flowId?: string;
+  flowName?: string;
+  workflowId?: string;
+  workflowName?: string;
+  templateId?: string;
+  segmentId?: string;
+  schedule?: CampaignSchedule;
+  goal?: CampaignGoal;
 }
 
 export const CHANNEL_CONFIG: Record<CampaignChannel, {
