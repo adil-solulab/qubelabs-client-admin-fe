@@ -1,191 +1,370 @@
 import { useState, useCallback } from 'react';
-import type { VoiceConfig, ChatConfig, EmailConfig, DTMFOption, RoutingRule } from '@/types/channels';
+import type { Connector, ConnectorStatus, ChatWidgetConfig, ChannelCategory } from '@/types/channels';
 
-const defaultVoiceConfig: VoiceConfig = {
-  enabled: true,
-  inboundEnabled: true,
-  outboundEnabled: false,
-  webRtcEnabled: true,
-  phoneNumber: '+1 (555) 123-4567',
-  welcomeMessage: 'Welcome to our support line. How can I help you today?',
-  holdMusic: 'default',
-  maxQueueTime: 300,
-  dtmf: {
-    enabled: true,
-    options: [
-      { key: '1', action: 'Route to', destination: 'Sales' },
-      { key: '2', action: 'Route to', destination: 'Support' },
-      { key: '3', action: 'Route to', destination: 'Billing' },
-      { key: '0', action: 'Route to', destination: 'Operator' },
+const generateConnectors = (): Connector[] => [
+  {
+    id: 'twilio',
+    name: 'Twilio',
+    category: 'voice',
+    description: 'Cloud communications platform for voice calls, SIP trunking, and phone number management',
+    icon: 'twilio',
+    status: 'connected',
+    connectedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    config: { accountSid: 'AC***************3f8a', authToken: '••••••••••••••••', phoneNumber: '+1 (555) 123-4567', region: 'us1' },
+    configFields: [
+      { key: 'accountSid', label: 'Account SID', type: 'text', placeholder: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', required: true },
+      { key: 'authToken', label: 'Auth Token', type: 'password', placeholder: 'Enter your auth token', required: true },
+      { key: 'phoneNumber', label: 'Phone Number', type: 'text', placeholder: '+1 (555) 000-0000', required: true, helpText: 'Your Twilio phone number for inbound/outbound calls' },
+      { key: 'region', label: 'Region', type: 'select', options: [{ value: 'us1', label: 'US (Virginia)' }, { value: 'ie1', label: 'EU (Ireland)' }, { value: 'au1', label: 'AU (Sydney)' }] },
     ],
   },
-  voiceProvider: 'elevenlabs',
-  voiceId: 'rachel',
-};
-
-const defaultChatConfig: ChatConfig = {
-  enabled: true,
-  theme: {
-    primaryColor: '#7C3AED',
-    backgroundColor: '#FFFFFF',
-    headerColor: '#7C3AED',
-    textColor: '#1F2937',
-    borderRadius: 'large',
+  {
+    id: 'vonage',
+    name: 'Vonage',
+    category: 'voice',
+    description: 'Communications APIs for voice, video, and messaging',
+    icon: 'vonage',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'apiKey', label: 'API Key', type: 'text', placeholder: 'Enter API key', required: true },
+      { key: 'apiSecret', label: 'API Secret', type: 'password', placeholder: 'Enter API secret', required: true },
+      { key: 'applicationId', label: 'Application ID', type: 'text', placeholder: 'Enter application ID' },
+    ],
   },
-  typography: {
-    fontFamily: 'inter',
+  {
+    id: 'genesys',
+    name: 'Genesys Cloud',
+    category: 'voice',
+    description: 'Enterprise contact center platform with AI-powered voice routing',
+    icon: 'genesys',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'clientId', label: 'Client ID', type: 'text', required: true },
+      { key: 'clientSecret', label: 'Client Secret', type: 'password', required: true },
+      { key: 'region', label: 'Region', type: 'select', options: [{ value: 'mypurecloud.com', label: 'Americas' }, { value: 'mypurecloud.ie', label: 'EMEA' }, { value: 'mypurecloud.com.au', label: 'APAC' }] },
+    ],
+  },
+  {
+    id: 'asterisk',
+    name: 'Asterisk / FreePBX',
+    category: 'voice',
+    description: 'Open-source PBX system for on-premise voice infrastructure',
+    icon: 'asterisk',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'serverUrl', label: 'Server URL', type: 'url', placeholder: 'https://pbx.example.com', required: true },
+      { key: 'amiUser', label: 'AMI Username', type: 'text', required: true },
+      { key: 'amiPassword', label: 'AMI Password', type: 'password', required: true },
+      { key: 'amiPort', label: 'AMI Port', type: 'number', placeholder: '5038' },
+    ],
+  },
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Business',
+    category: 'messaging',
+    description: 'Official WhatsApp Business API for customer conversations',
+    icon: 'whatsapp',
+    status: 'connected',
+    connectedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    config: { phoneNumberId: '1234567890', businessAccountId: 'BA***************', accessToken: '••••••••••••••••' },
+    configFields: [
+      { key: 'phoneNumberId', label: 'Phone Number ID', type: 'text', required: true },
+      { key: 'businessAccountId', label: 'Business Account ID', type: 'text', required: true },
+      { key: 'accessToken', label: 'Access Token', type: 'password', required: true, helpText: 'Permanent token from Meta Business Suite' },
+      { key: 'webhookVerifyToken', label: 'Webhook Verify Token', type: 'text', helpText: 'Token for webhook verification' },
+    ],
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    category: 'messaging',
+    description: 'Workspace messaging platform for team collaboration and customer support',
+    icon: 'slack',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'botToken', label: 'Bot Token', type: 'password', placeholder: 'xoxb-...', required: true },
+      { key: 'signingSecret', label: 'Signing Secret', type: 'password', required: true },
+      { key: 'appId', label: 'App ID', type: 'text' },
+    ],
+  },
+  {
+    id: 'telegram',
+    name: 'Telegram',
+    category: 'messaging',
+    description: 'Cloud-based messaging app with bot API support',
+    icon: 'telegram',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'botToken', label: 'Bot Token', type: 'password', placeholder: 'Enter BotFather token', required: true, helpText: 'Get this from @BotFather on Telegram' },
+      { key: 'webhookUrl', label: 'Webhook URL', type: 'url', helpText: 'Auto-generated after connection' },
+    ],
+  },
+  {
+    id: 'msteams',
+    name: 'Microsoft Teams',
+    category: 'messaging',
+    description: 'Enterprise messaging and collaboration platform',
+    icon: 'teams',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'appId', label: 'App ID', type: 'text', required: true },
+      { key: 'appPassword', label: 'App Password', type: 'password', required: true },
+      { key: 'tenantId', label: 'Tenant ID', type: 'text', helpText: 'Azure AD tenant ID' },
+    ],
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook Messenger',
+    category: 'messaging',
+    description: 'Meta Messenger platform for customer engagement',
+    icon: 'facebook',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'pageAccessToken', label: 'Page Access Token', type: 'password', required: true },
+      { key: 'pageId', label: 'Page ID', type: 'text', required: true },
+      { key: 'appSecret', label: 'App Secret', type: 'password', required: true },
+    ],
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram Direct',
+    category: 'messaging',
+    description: 'Instagram messaging for business communications',
+    icon: 'instagram',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'accessToken', label: 'Access Token', type: 'password', required: true },
+      { key: 'igAccountId', label: 'Instagram Account ID', type: 'text', required: true },
+    ],
+  },
+  {
+    id: 'sendgrid',
+    name: 'SendGrid',
+    category: 'email',
+    description: 'Twilio SendGrid email delivery and marketing platform',
+    icon: 'sendgrid',
+    status: 'connected',
+    connectedAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+    config: { apiKey: '••••••••••••••••', fromEmail: 'support@company.com', fromName: 'ConX Support' },
+    configFields: [
+      { key: 'apiKey', label: 'API Key', type: 'password', required: true },
+      { key: 'fromEmail', label: 'From Email', type: 'text', placeholder: 'noreply@company.com', required: true },
+      { key: 'fromName', label: 'From Name', type: 'text', placeholder: 'Company Support' },
+    ],
+  },
+  {
+    id: 'ses',
+    name: 'Amazon SES',
+    category: 'email',
+    description: 'Amazon Simple Email Service for high-volume email sending',
+    icon: 'aws',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'accessKeyId', label: 'Access Key ID', type: 'text', required: true },
+      { key: 'secretAccessKey', label: 'Secret Access Key', type: 'password', required: true },
+      { key: 'region', label: 'AWS Region', type: 'select', options: [{ value: 'us-east-1', label: 'US East (N. Virginia)' }, { value: 'us-west-2', label: 'US West (Oregon)' }, { value: 'eu-west-1', label: 'EU (Ireland)' }] },
+      { key: 'fromEmail', label: 'Verified From Email', type: 'text', required: true },
+    ],
+  },
+  {
+    id: 'mailgun',
+    name: 'Mailgun',
+    category: 'email',
+    description: 'Email API service for transactional and bulk email',
+    icon: 'mailgun',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'apiKey', label: 'API Key', type: 'password', required: true },
+      { key: 'domain', label: 'Domain', type: 'text', placeholder: 'mg.example.com', required: true },
+      { key: 'fromEmail', label: 'From Email', type: 'text', required: true },
+    ],
+  },
+  {
+    id: 'smtp',
+    name: 'Custom SMTP',
+    category: 'email',
+    description: 'Connect any SMTP-compatible email server',
+    icon: 'smtp',
+    status: 'disconnected',
+    config: {},
+    configFields: [
+      { key: 'host', label: 'SMTP Host', type: 'text', placeholder: 'smtp.example.com', required: true },
+      { key: 'port', label: 'Port', type: 'number', placeholder: '587', required: true },
+      { key: 'username', label: 'Username', type: 'text', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+      { key: 'encryption', label: 'Encryption', type: 'select', options: [{ value: 'tls', label: 'TLS' }, { value: 'ssl', label: 'SSL' }, { value: 'none', label: 'None' }] },
+    ],
+  },
+];
+
+const defaultChatWidgetConfig: ChatWidgetConfig = {
+  appearance: {
+    botLogo: '',
+    botDisplayName: 'ConX Assistant',
+    botDescription: 'AI-powered support assistant',
+    theme: 'light',
+    brandColor1: '#0094FF',
+    brandColor2: '#00FF7A',
+    colorMode: 'solid',
+    complementaryColor: '#0094FF',
+    accentColor: '#0094FF',
+    fontStyle: 'default',
     fontSize: 'medium',
-    headerSize: 'medium',
+    widgetSize: 'medium',
+    position: 'bottom-right',
+    initialStateDesktop: 'minimized',
+    initialStateMobile: 'minimized',
   },
-  botIcon: '🤖',
-  botName: 'AI Assistant',
-  position: 'bottom-right',
-  initialMessage: 'Hello! How can I help you today?',
-  inputPlaceholder: 'Type your message...',
-  showTypingIndicator: true,
-  showTimestamps: true,
-  enableFileUpload: true,
-  enableEmoji: true,
-};
-
-const defaultEmailConfig: EmailConfig = {
-  enabled: true,
-  aiReplies: {
-    enabled: true,
-    autoReply: false,
-    replyDelay: 5,
-    tone: 'friendly',
-    signatureEnabled: true,
-    signature: 'Best regards,\nAI Support Team',
+  botIcon: {
+    shape: 'circle',
+    mobileShape: 'circle',
+    source: 'avatar',
+    animation: 'none',
   },
-  summaries: {
-    enabled: true,
-    frequency: 'daily',
-    recipients: ['admin@company.com'],
-    includeMetrics: true,
+  settings: {
+    autoComplete: true,
+    messageFeedback: true,
+    attachment: true,
+    slowMessages: true,
+    multilineInput: false,
+    languageSwitcher: false,
+    rtlSupport: false,
+    scrollBehavior: 'bottom',
+    chatHistory: true,
+    freshSessionPerTab: false,
+    downloadTranscript: true,
+    unreadBadge: true,
+    browserTabNotification: true,
+    messageSound: true,
+    speechToText: false,
+    textToSpeech: false,
+    autoSendSpeech: false,
   },
-  routing: {
-    enabled: true,
-    rules: [
-      { id: '1', name: 'Sales Inquiries', condition: 'subject_contains', value: 'pricing', action: 'assign_to', target: 'Sales Team', enabled: true },
-      { id: '2', name: 'Urgent Issues', condition: 'priority', value: 'high', action: 'set_priority', target: 'urgent', enabled: true },
-      { id: '3', name: 'Support Requests', condition: 'subject_contains', value: 'help', action: 'assign_to', target: 'Support Team', enabled: true },
-    ],
-    defaultAssignee: 'General Queue',
+  navigation: {
+    homeEnabled: true,
+    menuEnabled: false,
+    menuItems: [],
   },
-  allowedDomains: [],
-  blockedDomains: ['spam.com', 'junk.net'],
+  deployScript: `<script type="text/javascript">
+  window.ymConfig = {
+    bot: 'x1234567890',
+    host: 'https://cloud.yellow.ai'
+  };
+  (function() {
+    var w = window, ic = w.YellowMessenger;
+    if ("function" === typeof ic) ic("reattach_activator"),
+    ic("update", w.ymConfig);
+    else {
+      var d = document, i = function() {
+        i.c(arguments)
+      };
+      i.q = []; i.c = function(args) { i.q.push(args) };
+      w.YellowMessenger = i;
+      var l = function() {
+        var s = d.createElement("script");
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://cdn.yellowmessenger.com/plugin/widget-v2/latest/dist/main.min.js";
+        var x = d.getElementsByTagName("script")[0];
+        x.parentNode.insertBefore(s, x);
+      };
+      w.attachEvent ? w.attachEvent("onload", l) : w.addEventListener("load", l, false);
+    }
+  })();
+</script>`,
 };
 
 export function useChannelsData() {
-  const [voiceConfig, setVoiceConfig] = useState<VoiceConfig>(defaultVoiceConfig);
-  const [chatConfig, setChatConfig] = useState<ChatConfig>(defaultChatConfig);
-  const [emailConfig, setEmailConfig] = useState<EmailConfig>(defaultEmailConfig);
+  const [connectors, setConnectors] = useState<Connector[]>(generateConnectors());
+  const [chatWidgetConfig, setChatWidgetConfig] = useState<ChatWidgetConfig>(defaultChatWidgetConfig);
   const [isSaving, setIsSaving] = useState(false);
 
-  const updateVoiceConfig = useCallback(async (updates: Partial<VoiceConfig>) => {
+  const getConnectorsByCategory = useCallback((category: ChannelCategory) => {
+    return connectors.filter(c => c.category === category);
+  }, [connectors]);
+
+  const getConnector = useCallback((id: string) => {
+    return connectors.find(c => c.id === id) || null;
+  }, [connectors]);
+
+  const connectConnector = useCallback(async (id: string, config: Record<string, string>) => {
+    setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setConnectors(prev => prev.map(c =>
+      c.id === id ? { ...c, status: 'connected' as ConnectorStatus, config, connectedAt: new Date().toISOString() } : c
+    ));
+    setIsSaving(false);
+    return { success: true };
+  }, []);
+
+  const disconnectConnector = useCallback(async (id: string) => {
+    setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setConnectors(prev => prev.map(c =>
+      c.id === id ? { ...c, status: 'disconnected' as ConnectorStatus, config: {}, connectedAt: undefined } : c
+    ));
+    setIsSaving(false);
+    return { success: true };
+  }, []);
+
+  const updateConnectorConfig = useCallback(async (id: string, config: Record<string, string>) => {
+    setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setConnectors(prev => prev.map(c =>
+      c.id === id ? { ...c, config } : c
+    ));
+    setIsSaving(false);
+    return { success: true };
+  }, []);
+
+  const updateChatWidgetConfig = useCallback(async (updates: Partial<ChatWidgetConfig>) => {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    setVoiceConfig(prev => ({ ...prev, ...updates }));
+    setChatWidgetConfig(prev => {
+      const merged = { ...prev };
+      if (updates.appearance) merged.appearance = { ...prev.appearance, ...updates.appearance };
+      if (updates.botIcon) merged.botIcon = { ...prev.botIcon, ...updates.botIcon };
+      if (updates.settings) merged.settings = { ...prev.settings, ...updates.settings };
+      if (updates.navigation) merged.navigation = { ...prev.navigation, ...updates.navigation };
+      return merged;
+    });
     setIsSaving(false);
   }, []);
 
-  const updateChatConfig = useCallback(async (updates: Partial<ChatConfig>) => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setChatConfig(prev => ({ ...prev, ...updates }));
-    setIsSaving(false);
-  }, []);
-
-  const updateEmailConfig = useCallback(async (updates: Partial<EmailConfig>) => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setEmailConfig(prev => ({ ...prev, ...updates }));
-    setIsSaving(false);
-  }, []);
-
-  const toggleChannel = useCallback(async (channel: 'voice' | 'chat' | 'email', enabled: boolean) => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    switch (channel) {
-      case 'voice':
-        setVoiceConfig(prev => ({ ...prev, enabled }));
-        break;
-      case 'chat':
-        setChatConfig(prev => ({ ...prev, enabled }));
-        break;
-      case 'email':
-        setEmailConfig(prev => ({ ...prev, enabled }));
-        break;
-    }
-    
-    setIsSaving(false);
-  }, []);
-
-  const addDTMFOption = useCallback((option: DTMFOption) => {
-    setVoiceConfig(prev => ({
-      ...prev,
-      dtmf: {
-        ...prev.dtmf,
-        options: [...prev.dtmf.options, option],
-      },
-    }));
-  }, []);
-
-  const removeDTMFOption = useCallback((key: string) => {
-    setVoiceConfig(prev => ({
-      ...prev,
-      dtmf: {
-        ...prev.dtmf,
-        options: prev.dtmf.options.filter(o => o.key !== key),
-      },
-    }));
-  }, []);
-
-  const addRoutingRule = useCallback((rule: RoutingRule) => {
-    setEmailConfig(prev => ({
-      ...prev,
-      routing: {
-        ...prev.routing,
-        rules: [...prev.routing.rules, rule],
-      },
-    }));
-  }, []);
-
-  const updateRoutingRule = useCallback((ruleId: string, updates: Partial<RoutingRule>) => {
-    setEmailConfig(prev => ({
-      ...prev,
-      routing: {
-        ...prev.routing,
-        rules: prev.routing.rules.map(r => r.id === ruleId ? { ...r, ...updates } : r),
-      },
-    }));
-  }, []);
-
-  const removeRoutingRule = useCallback((ruleId: string) => {
-    setEmailConfig(prev => ({
-      ...prev,
-      routing: {
-        ...prev.routing,
-        rules: prev.routing.rules.filter(r => r.id !== ruleId),
-      },
-    }));
-  }, []);
+  const getCategoryStats = useCallback(() => {
+    const categories: ChannelCategory[] = ['voice', 'messaging', 'chat-widget', 'email'];
+    return categories.map(cat => {
+      const catConnectors = cat === 'chat-widget' ? [] : connectors.filter(c => c.category === cat);
+      return {
+        id: cat,
+        name: cat === 'voice' ? 'Voice' : cat === 'messaging' ? 'Messaging' : cat === 'chat-widget' ? 'Chat Widget' : 'Email',
+        description: cat === 'voice' ? 'Voice calling & telephony providers' : cat === 'messaging' ? 'Messaging platforms & social channels' : cat === 'chat-widget' ? 'Embeddable web chat widget' : 'Email service providers',
+        connectorCount: cat === 'chat-widget' ? 1 : catConnectors.length,
+        activeCount: cat === 'chat-widget' ? 1 : catConnectors.filter(c => c.status === 'connected').length,
+      };
+    });
+  }, [connectors]);
 
   return {
-    voiceConfig,
-    chatConfig,
-    emailConfig,
+    connectors,
+    chatWidgetConfig,
     isSaving,
-    updateVoiceConfig,
-    updateChatConfig,
-    updateEmailConfig,
-    toggleChannel,
-    addDTMFOption,
-    removeDTMFOption,
-    addRoutingRule,
-    updateRoutingRule,
-    removeRoutingRule,
+    getConnectorsByCategory,
+    getConnector,
+    connectConnector,
+    disconnectConnector,
+    updateConnectorConfig,
+    updateChatWidgetConfig,
+    getCategoryStats,
   };
 }

@@ -73,6 +73,21 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - Provides detailed analytics for campaigns, channels, LLM usage, transcription accuracy, and compliance.
 - Includes a `KPICard` component for reusable KPI visualization.
 
+#### Channels (Connector-Based Architecture)
+- Redesigned with 4 main category cards: Voice, Messaging, Chat Widget, Email
+- **Voice Connectors**: Twilio (connected), Vonage, Genesys Cloud, Asterisk/FreePBX
+- **Messaging Connectors**: WhatsApp Business (connected), Slack, Telegram, Microsoft Teams, Facebook Messenger, Instagram Direct
+- **Email Connectors**: SendGrid (connected), Amazon SES, Mailgun, Custom SMTP
+- **Chat Widget**: Yellow.ai-inspired configuration with 5 tabs:
+  - Appearance: Bot display name/description, light/dark theme, solid/gradient brand colors, font style (default/custom), font size, widget size, position, initial states (desktop: half-opened/minimized/conversational-layover/chat-bubble; mobile: minimized/chat-bubble)
+  - Bot Icon: Shape (circle/square/bar for desktop, circle/square for mobile), source (avatar/custom), animation (none/bounce/pulse/shake)
+  - Settings: General (auto-complete, message feedback, attachments, slow messages, multiline input, language switcher, RTL support, scroll behavior), Chat History (show history, fresh session per tab, download transcript), Notifications (unread badge, browser tab notification, message sound), Speech & Dictation (speech-to-text, auto-send, text-to-speech)
+  - Navigation: Home button, Menu (up to 10 items)
+  - Deploy: Embeddable script with copy functionality
+- **ConnectorConfigPanel**: Reusable config panel with connection status, form fields, connect/disconnect/save actions, confirmation dialogs
+- **Types**: `Connector`, `ConnectorField`, `ChatWidgetConfig`, `ChannelCategoryInfo` in `src/types/channels.ts`
+- **Data Hook**: `useChannelsData` manages connectors array and chat widget config with connect/disconnect/update operations
+
 #### Security & Compliance Module
 - Organized into 5 tabs: Compliance, SSO, RBAC, Moderation, Audit Logs.
 - **Compliance**: PII Protection, Zero Retention Policy, Consent Management, GDPR Controls, Data Masking, Data Retention.

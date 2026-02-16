@@ -1,97 +1,86 @@
-export type ChannelType = 'voice' | 'chat' | 'email';
+export type ChannelCategory = 'voice' | 'messaging' | 'chat-widget' | 'email';
+export type ConnectorStatus = 'connected' | 'disconnected' | 'error' | 'pending';
 
-export interface VoiceConfig {
-  enabled: boolean;
-  inboundEnabled: boolean;
-  outboundEnabled: boolean;
-  webRtcEnabled: boolean;
-  phoneNumber: string;
-  welcomeMessage: string;
-  holdMusic: 'default' | 'classical' | 'jazz' | 'none';
-  maxQueueTime: number;
-  dtmf: {
-    enabled: boolean;
-    options: DTMFOption[];
-  };
-  voiceProvider: 'elevenlabs' | 'google' | 'amazon';
-  voiceId: string;
-}
-
-export interface DTMFOption {
-  key: string;
-  action: string;
-  destination: string;
-}
-
-export interface ChatConfig {
-  enabled: boolean;
-  theme: {
-    primaryColor: string;
-    backgroundColor: string;
-    headerColor: string;
-    textColor: string;
-    borderRadius: 'none' | 'small' | 'medium' | 'large';
-  };
-  typography: {
-    fontFamily: 'inter' | 'roboto' | 'opensans' | 'lato';
-    fontSize: 'small' | 'medium' | 'large';
-    headerSize: 'small' | 'medium' | 'large';
-  };
-  botIcon: string;
-  botName: string;
-  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-  initialMessage: string;
-  inputPlaceholder: string;
-  showTypingIndicator: boolean;
-  showTimestamps: boolean;
-  enableFileUpload: boolean;
-  enableEmoji: boolean;
-}
-
-export interface EmailConfig {
-  enabled: boolean;
-  aiReplies: {
-    enabled: boolean;
-    autoReply: boolean;
-    replyDelay: number;
-    tone: 'formal' | 'friendly' | 'neutral';
-    signatureEnabled: boolean;
-    signature: string;
-  };
-  summaries: {
-    enabled: boolean;
-    frequency: 'daily' | 'weekly' | 'monthly';
-    recipients: string[];
-    includeMetrics: boolean;
-  };
-  routing: {
-    enabled: boolean;
-    rules: RoutingRule[];
-    defaultAssignee: string;
-  };
-  allowedDomains: string[];
-  blockedDomains: string[];
-}
-
-export interface RoutingRule {
+export interface Connector {
   id: string;
   name: string;
-  condition: 'subject_contains' | 'from_domain' | 'priority' | 'sentiment';
-  value: string;
-  action: 'assign_to' | 'add_tag' | 'set_priority' | 'auto_reply';
-  target: string;
-  enabled: boolean;
+  category: ChannelCategory;
+  description: string;
+  icon: string;
+  status: ConnectorStatus;
+  connectedAt?: string;
+  config: Record<string, string>;
+  configFields: ConnectorField[];
 }
 
-export const FONT_FAMILIES = {
-  inter: 'Inter',
-  roboto: 'Roboto',
-  opensans: 'Open Sans',
-  lato: 'Lato',
-};
+export interface ConnectorField {
+  key: string;
+  label: string;
+  type: 'text' | 'password' | 'select' | 'toggle' | 'number' | 'url';
+  placeholder?: string;
+  required?: boolean;
+  options?: { value: string; label: string }[];
+  helpText?: string;
+}
 
-export const VOICE_PROVIDERS = {
-  elevenlabs: 'ElevenLabs',
-  google: 'Google TTS',
-  amazon: 'Amazon Polly',
-};
+export interface ChatWidgetConfig {
+  appearance: {
+    botLogo: string;
+    botDisplayName: string;
+    botDescription: string;
+    theme: 'light' | 'dark';
+    brandColor1: string;
+    brandColor2: string;
+    colorMode: 'solid' | 'gradient';
+    complementaryColor: string;
+    accentColor: string;
+    fontStyle: 'default' | 'inter' | 'roboto' | 'opensans' | 'custom';
+    customFontFamily?: string;
+    customFontUrl?: string;
+    fontSize: 'small' | 'medium' | 'large';
+    widgetSize: 'small' | 'medium' | 'large';
+    position: 'bottom-right' | 'bottom-left';
+    initialStateDesktop: 'half-opened' | 'minimized' | 'conversational-layover' | 'chat-bubble';
+    initialStateMobile: 'minimized' | 'chat-bubble';
+  };
+  botIcon: {
+    shape: 'circle' | 'square' | 'bar';
+    mobileShape: 'circle' | 'square';
+    source: 'avatar' | 'custom';
+    customIconUrl?: string;
+    animation: 'none' | 'bounce' | 'pulse' | 'shake';
+  };
+  settings: {
+    autoComplete: boolean;
+    messageFeedback: boolean;
+    attachment: boolean;
+    slowMessages: boolean;
+    multilineInput: boolean;
+    languageSwitcher: boolean;
+    rtlSupport: boolean;
+    scrollBehavior: 'bottom' | 'top' | 'off';
+    chatHistory: boolean;
+    freshSessionPerTab: boolean;
+    downloadTranscript: boolean;
+    unreadBadge: boolean;
+    browserTabNotification: boolean;
+    messageSound: boolean;
+    speechToText: boolean;
+    textToSpeech: boolean;
+    autoSendSpeech: boolean;
+  };
+  navigation: {
+    homeEnabled: boolean;
+    menuEnabled: boolean;
+    menuItems: { label: string; action: string }[];
+  };
+  deployScript: string;
+}
+
+export interface ChannelCategoryInfo {
+  id: ChannelCategory;
+  name: string;
+  description: string;
+  connectorCount: number;
+  activeCount: number;
+}
