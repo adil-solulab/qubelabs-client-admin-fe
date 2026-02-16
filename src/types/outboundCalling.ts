@@ -2,6 +2,9 @@ export type LeadStatus = 'pending' | 'calling' | 'completed' | 'failed' | 'no_an
 export type CallOutcome = 'answered' | 'voicemail' | 'no_answer' | 'busy' | 'failed' | 'escalated';
 export type CampaignStatus = 'draft' | 'scheduled' | 'running' | 'paused' | 'completed';
 export type SentimentType = 'positive' | 'neutral' | 'negative' | 'escalated';
+export type CampaignChannel = 'voice' | 'whatsapp' | 'sms' | 'email';
+export type ScheduleType = 'now' | 'later' | 'recurring';
+export type GoalType = 'delivery' | 'conversion' | 'response';
 
 export interface Lead {
   id: string;
@@ -19,20 +22,66 @@ export interface Lead {
   escalatedTo?: string;
 }
 
+export interface CampaignTemplate {
+  id: string;
+  name: string;
+  channel: CampaignChannel;
+  content: string;
+  variables: string[];
+  category: string;
+  status: 'approved' | 'pending' | 'rejected';
+  createdAt: string;
+}
+
+export interface CampaignSegment {
+  id: string;
+  name: string;
+  description: string;
+  userCount: number;
+  createdAt: string;
+  filters?: string[];
+}
+
+export interface CampaignSchedule {
+  type: ScheduleType;
+  date?: string;
+  time?: string;
+  timezone: string;
+  recurringDays?: string[];
+  recurringEndDate?: string;
+}
+
+export interface CampaignGoal {
+  type: GoalType;
+  targetPercentage: number;
+  trackDuration: number;
+  trackUnit: 'hours' | 'days';
+}
+
 export interface Campaign {
   id: string;
   name: string;
   description?: string;
   status: CampaignStatus;
+  channel: CampaignChannel;
+  templateId?: string;
+  templateName?: string;
+  segmentId?: string;
+  segmentName?: string;
+  schedule?: CampaignSchedule;
+  goal?: CampaignGoal;
   createdAt: string;
   startedAt?: string;
   completedAt?: string;
+  scheduledAt?: string;
   totalLeads: number;
   calledLeads: number;
   successfulCalls: number;
   failedCalls: number;
   escalatedCalls: number;
   averageDuration: number;
+  deliveryRate?: number;
+  responseRate?: number;
   script?: string;
   aiPersonaId?: string;
 }
@@ -61,6 +110,28 @@ export interface UploadProgress {
   validLeads?: number;
   errors?: string[];
 }
+
+export interface CreateCampaignData {
+  name: string;
+  description: string;
+  channel: CampaignChannel;
+  templateId: string;
+  segmentId: string;
+  schedule: CampaignSchedule;
+  goal: CampaignGoal;
+}
+
+export const CHANNEL_CONFIG: Record<CampaignChannel, {
+  label: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+}> = {
+  voice: { label: 'Voice', icon: 'phone', color: 'text-blue-600', bgColor: 'bg-blue-50' },
+  whatsapp: { label: 'WhatsApp', icon: 'message-circle', color: 'text-green-600', bgColor: 'bg-green-50' },
+  sms: { label: 'SMS', icon: 'message-square', color: 'text-purple-600', bgColor: 'bg-purple-50' },
+  email: { label: 'Email', icon: 'mail', color: 'text-orange-600', bgColor: 'bg-orange-50' },
+};
 
 export const LEAD_STATUS_CONFIG: Record<LeadStatus, {
   label: string;
