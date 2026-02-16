@@ -316,7 +316,7 @@ export function useTranscriptsData() {
     chat: transcripts.filter(t => t.channel === 'chat').length,
     email: transcripts.filter(t => t.channel === 'email').length,
     withRecording: transcripts.filter(t => t.hasRecording).length,
-    avgDuration: Math.round(transcripts.reduce((sum, t) => sum + t.duration, 0) / transcripts.length),
+    avgDuration: transcripts.length > 0 ? Math.round(transcripts.reduce((sum, t) => sum + t.duration, 0) / transcripts.length) : 0,
   }), [transcripts]);
 
   return {

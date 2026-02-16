@@ -149,10 +149,10 @@ export default function TranscriptsPage() {
     if (Array.isArray(deleteTarget)) {
       deleteMultiple(deleteTarget);
       setSelectedIds(new Set());
-      notify.deleted(`${deleteTarget.length} transcript(s) deleted`);
+      notify.deleted(`${deleteTarget.length} transcript(s)`);
     } else {
       deleteTranscript(deleteTarget);
-      notify.deleted('Transcript deleted');
+      notify.deleted('Transcript');
     }
     setDeleteDialogOpen(false);
     setDeleteTarget(null);
