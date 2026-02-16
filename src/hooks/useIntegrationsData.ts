@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { Integration, APIKey, WebhookEndpoint, IntegrationStatus } from '@/types/integrations';
+import type { ChatWidgetConfig } from '@/types/channels';
 
 const mockIntegrations: Integration[] = [
   {
@@ -104,9 +105,10 @@ const mockIntegrations: Integration[] = [
     lastSync: '2025-02-02T08:30:00Z',
     features: ['Inbound calls', 'Outbound calls', 'IVR', 'Call recording', 'Transcription'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'account_sid', label: 'Account SID', type: 'text', placeholder: 'ACxxxxxxxx', required: true },
       { key: 'auth_token', label: 'Auth Token', type: 'password', placeholder: 'Auth Token', required: true },
+      { key: 'phone_number', label: 'Phone Number', type: 'text', placeholder: '+1 (555) 000-0000', helpText: 'Your Twilio phone number for inbound/outbound calls' },
+      { key: 'region', label: 'Region', type: 'select', options: [{ value: 'us1', label: 'US (Virginia)' }, { value: 'ie1', label: 'EU (Ireland)' }, { value: 'au1', label: 'AU (Sydney)' }] },
     ],
     instructions: [
       { step: 1, text: 'Log in to Twilio Console at console.twilio.com.' },
@@ -125,7 +127,6 @@ const mockIntegrations: Integration[] = [
     authType: 'api_key',
     features: ['SIP Trunking', 'Voice API', 'Call control', 'WebSocket streaming'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'api_key', label: 'API Key', type: 'text', placeholder: 'Vonage API Key', required: true },
       { key: 'api_secret', label: 'API Secret', type: 'password', placeholder: 'Vonage API Secret', required: true },
       { key: 'application_id', label: 'Application ID', type: 'text', placeholder: 'Application ID', required: true },
@@ -148,10 +149,9 @@ const mockIntegrations: Integration[] = [
     authType: 'oauth',
     features: ['ACD routing', 'Agent desktop', 'Workforce management', 'Quality management'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'OAuth Client ID', required: true },
       { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'OAuth Client Secret', required: true },
-      { key: 'region', label: 'Region', type: 'text', placeholder: 'e.g. mypurecloud.com', required: true },
+      { key: 'region', label: 'Region', type: 'select', options: [{ value: 'mypurecloud.com', label: 'Americas' }, { value: 'mypurecloud.ie', label: 'EMEA' }, { value: 'mypurecloud.com.au', label: 'APAC' }] },
     ],
     instructions: [
       { step: 1, text: 'Log in to Genesys Cloud and go to Admin > Integrations > OAuth.' },
@@ -171,7 +171,6 @@ const mockIntegrations: Integration[] = [
     authType: 'api_key',
     features: ['Predictive dialing', 'IVR', 'Call recording', 'Agent scripting'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'username', label: 'API Username', type: 'text', placeholder: 'API username', required: true },
       { key: 'password', label: 'API Password', type: 'password', placeholder: 'API password', required: true },
     ],
@@ -183,10 +182,32 @@ const mockIntegrations: Integration[] = [
     docsUrl: 'https://developer.five9.com/',
   },
   {
+    id: 'asterisk',
+    name: 'Asterisk / FreePBX',
+    description: 'Open-source PBX system for on-premise voice infrastructure and SIP-based communications.',
+    category: 'voice',
+    icon: 'asterisk',
+    status: 'disconnected',
+    authType: 'api_key',
+    features: ['On-premise PBX', 'SIP trunking', 'Call routing', 'AMI control'],
+    fields: [
+      { key: 'server_url', label: 'Server URL', type: 'url', placeholder: 'https://pbx.example.com', required: true },
+      { key: 'ami_user', label: 'AMI Username', type: 'text', placeholder: 'AMI username', required: true },
+      { key: 'ami_password', label: 'AMI Password', type: 'password', placeholder: 'AMI password', required: true },
+      { key: 'ami_port', label: 'AMI Port', type: 'number', placeholder: '5038' },
+    ],
+    instructions: [
+      { step: 1, text: 'Access your Asterisk/FreePBX server administration panel.' },
+      { step: 2, text: 'Enable the Asterisk Manager Interface (AMI) in manager.conf.' },
+      { step: 3, text: 'Create an AMI user with appropriate permissions.' },
+      { step: 4, text: 'Enter the server URL, AMI credentials, and port, then click Connect.' },
+    ],
+  },
+  {
     id: 'whatsapp',
     name: 'WhatsApp Business',
-    description: 'Official WhatsApp Business API for messaging, templates, and media sharing.',
-    category: 'communication',
+    description: 'Official WhatsApp Business API for customer messaging, templates, and media sharing.',
+    category: 'messaging',
     icon: 'whatsapp',
     status: 'connected',
     authType: 'oauth',
@@ -194,9 +215,9 @@ const mockIntegrations: Integration[] = [
     lastSync: '2025-02-02T09:15:00Z',
     features: ['Messaging', 'Templates', 'Media sharing', 'Business profile'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'phone_number_id', label: 'Phone Number ID', type: 'text', placeholder: 'Phone Number ID', required: true },
-      { key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'Permanent Access Token', required: true },
+      { key: 'business_account_id', label: 'Business Account ID', type: 'text', placeholder: 'Business Account ID', required: true },
+      { key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'Permanent Access Token', required: true, helpText: 'Permanent token from Meta Business Suite' },
     ],
     instructions: [
       { step: 1, text: 'Go to Meta for Developers and select your WhatsApp Business app.' },
@@ -205,30 +226,10 @@ const mockIntegrations: Integration[] = [
     ],
   },
   {
-    id: 'gmail',
-    name: 'Gmail',
-    description: 'Google email service for sending and receiving emails through your conversational AI.',
-    category: 'communication',
-    icon: 'gmail',
-    status: 'disconnected',
-    authType: 'oauth',
-    features: ['Send emails', 'Read emails', 'Labels', 'Attachments'],
-    fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
-      { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Google OAuth Client ID', required: true },
-      { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'Client Secret', required: true },
-    ],
-    instructions: [
-      { step: 1, text: 'Go to Google Cloud Console and create OAuth credentials.' },
-      { step: 2, text: 'Enable the Gmail API for your project.' },
-      { step: 3, text: 'Copy the Client ID and Secret, then click Connect.' },
-    ],
-  },
-  {
     id: 'slack',
     name: 'Slack',
-    description: 'Integrate Slack for internal notifications, team communication, and workflow automation.',
-    category: 'communication',
+    description: 'Workspace messaging platform for team collaboration, notifications, and workflow automation.',
+    category: 'messaging',
     icon: 'slack',
     status: 'connected',
     authType: 'oauth',
@@ -236,9 +237,9 @@ const mockIntegrations: Integration[] = [
     lastSync: '2025-02-02T10:00:00Z',
     features: ['Messages', 'Channels', 'Notifications', 'File sharing'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'bot_token', label: 'Bot Token', type: 'password', placeholder: 'xoxb-...', required: true },
       { key: 'signing_secret', label: 'Signing Secret', type: 'password', placeholder: 'Signing Secret', required: true },
+      { key: 'app_id', label: 'App ID', type: 'text', placeholder: 'App ID' },
     ],
     instructions: [
       { step: 1, text: 'Go to api.slack.com/apps and create a new app.' },
@@ -248,25 +249,175 @@ const mockIntegrations: Integration[] = [
     ],
   },
   {
+    id: 'telegram',
+    name: 'Telegram',
+    description: 'Cloud-based messaging app with bot API support for automated conversations.',
+    category: 'messaging',
+    icon: 'telegram',
+    status: 'disconnected',
+    authType: 'api_key',
+    features: ['Bot messaging', 'Inline queries', 'Groups', 'Channels'],
+    fields: [
+      { key: 'bot_token', label: 'Bot Token', type: 'password', placeholder: 'Enter BotFather token', required: true, helpText: 'Get this from @BotFather on Telegram' },
+      { key: 'webhook_url', label: 'Webhook URL', type: 'url', placeholder: 'Auto-generated after connection', helpText: 'Auto-generated after connection' },
+    ],
+    instructions: [
+      { step: 1, text: 'Open Telegram and message @BotFather to create a new bot.' },
+      { step: 2, text: 'Follow the prompts to set your bot name and username.' },
+      { step: 3, text: 'Copy the Bot Token provided by BotFather.' },
+      { step: 4, text: 'Enter the Bot Token and click Connect.' },
+    ],
+  },
+  {
     id: 'microsoft_teams',
     name: 'Microsoft Teams',
-    description: 'Connect Microsoft Teams for enterprise messaging, video calls, and collaboration.',
-    category: 'communication',
+    description: 'Enterprise messaging and collaboration platform for team communication and video calls.',
+    category: 'messaging',
     icon: 'microsoft_teams',
     status: 'disconnected',
     authType: 'oauth',
     features: ['Messages', 'Channels', 'Video calls', 'File sharing'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
-      { key: 'tenant_id', label: 'Tenant ID', type: 'text', placeholder: 'Azure AD Tenant ID', required: true },
-      { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Application Client ID', required: true },
-      { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'Client Secret', required: true },
+      { key: 'app_id', label: 'App ID', type: 'text', placeholder: 'Application Client ID', required: true },
+      { key: 'app_password', label: 'App Password', type: 'password', placeholder: 'App Password', required: true },
+      { key: 'tenant_id', label: 'Tenant ID', type: 'text', placeholder: 'Azure AD Tenant ID', helpText: 'Azure AD tenant ID' },
     ],
     instructions: [
       { step: 1, text: 'Register an app in Azure AD with Microsoft Graph permissions.' },
       { step: 2, text: 'Configure Teams-specific API permissions (Channel.ReadBasic.All, Chat.ReadWrite).' },
       { step: 3, text: 'Generate a Client Secret and copy the Tenant ID and Client ID.' },
       { step: 4, text: 'Enter credentials and click Connect.' },
+    ],
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook Messenger',
+    description: 'Meta Messenger platform for customer engagement and automated conversations.',
+    category: 'messaging',
+    icon: 'facebook',
+    status: 'disconnected',
+    authType: 'oauth',
+    features: ['Messaging', 'Quick replies', 'Templates', 'Media'],
+    fields: [
+      { key: 'page_access_token', label: 'Page Access Token', type: 'password', placeholder: 'Page Access Token', required: true },
+      { key: 'page_id', label: 'Page ID', type: 'text', placeholder: 'Facebook Page ID', required: true },
+      { key: 'app_secret', label: 'App Secret', type: 'password', placeholder: 'App Secret', required: true },
+    ],
+    instructions: [
+      { step: 1, text: 'Go to Meta for Developers and create or select your app.' },
+      { step: 2, text: 'Add the Messenger product and link your Facebook Page.' },
+      { step: 3, text: 'Generate a Page Access Token and copy the App Secret.' },
+      { step: 4, text: 'Enter the credentials and click Connect.' },
+    ],
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram Direct',
+    description: 'Instagram messaging for business communications and customer support.',
+    category: 'messaging',
+    icon: 'instagram',
+    status: 'disconnected',
+    authType: 'oauth',
+    features: ['Direct messages', 'Story replies', 'Quick replies', 'Media sharing'],
+    fields: [
+      { key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'Instagram Access Token', required: true },
+      { key: 'ig_account_id', label: 'Instagram Account ID', type: 'text', placeholder: 'Instagram Account ID', required: true },
+    ],
+    instructions: [
+      { step: 1, text: 'Go to Meta for Developers and connect your Instagram Professional account.' },
+      { step: 2, text: 'Enable the Instagram Messaging API for your app.' },
+      { step: 3, text: 'Generate an access token and copy your Instagram Account ID.' },
+      { step: 4, text: 'Enter the credentials and click Connect.' },
+    ],
+  },
+  {
+    id: 'sendgrid',
+    name: 'SendGrid',
+    description: 'Twilio SendGrid email delivery and marketing platform for transactional and promotional emails.',
+    category: 'email',
+    icon: 'sendgrid',
+    status: 'connected',
+    authType: 'api_key',
+    connectedAt: '2025-01-18T10:00:00Z',
+    lastSync: '2025-02-02T09:00:00Z',
+    features: ['Transactional email', 'Marketing campaigns', 'Templates', 'Analytics'],
+    fields: [
+      { key: 'api_key', label: 'API Key', type: 'password', placeholder: 'SG.xxxxxxxxxx', required: true },
+      { key: 'from_email', label: 'From Email', type: 'text', placeholder: 'noreply@company.com', required: true },
+      { key: 'from_name', label: 'From Name', type: 'text', placeholder: 'Company Support' },
+    ],
+    instructions: [
+      { step: 1, text: 'Log in to SendGrid and go to Settings > API Keys.' },
+      { step: 2, text: 'Create a new API key with the required permissions.' },
+      { step: 3, text: 'Enter the API key and sender details, then click Connect.' },
+    ],
+    docsUrl: 'https://docs.sendgrid.com/',
+  },
+  {
+    id: 'ses',
+    name: 'Amazon SES',
+    description: 'Amazon Simple Email Service for high-volume, cost-effective email sending.',
+    category: 'email',
+    icon: 'ses',
+    status: 'disconnected',
+    authType: 'api_key',
+    features: ['Bulk email', 'Transactional email', 'Templates', 'Deliverability'],
+    fields: [
+      { key: 'access_key_id', label: 'Access Key ID', type: 'text', placeholder: 'AWS Access Key ID', required: true },
+      { key: 'secret_access_key', label: 'Secret Access Key', type: 'password', placeholder: 'AWS Secret Access Key', required: true },
+      { key: 'region', label: 'AWS Region', type: 'select', options: [{ value: 'us-east-1', label: 'US East (N. Virginia)' }, { value: 'us-west-2', label: 'US West (Oregon)' }, { value: 'eu-west-1', label: 'EU (Ireland)' }] },
+      { key: 'from_email', label: 'Verified From Email', type: 'text', placeholder: 'noreply@company.com', required: true },
+    ],
+    instructions: [
+      { step: 1, text: 'Log in to AWS Console and navigate to SES.' },
+      { step: 2, text: 'Verify your sending domain or email address.' },
+      { step: 3, text: 'Create an IAM user with SES permissions and copy the credentials.' },
+      { step: 4, text: 'Enter the credentials and click Connect.' },
+    ],
+    docsUrl: 'https://docs.aws.amazon.com/ses/',
+  },
+  {
+    id: 'mailgun',
+    name: 'Mailgun',
+    description: 'Email API service for transactional and bulk email with powerful deliverability tools.',
+    category: 'email',
+    icon: 'mailgun',
+    status: 'disconnected',
+    authType: 'api_key',
+    features: ['Email API', 'SMTP relay', 'Email validation', 'Analytics'],
+    fields: [
+      { key: 'api_key', label: 'API Key', type: 'password', placeholder: 'Mailgun API Key', required: true },
+      { key: 'domain', label: 'Domain', type: 'text', placeholder: 'mg.example.com', required: true },
+      { key: 'from_email', label: 'From Email', type: 'text', placeholder: 'noreply@example.com', required: true },
+    ],
+    instructions: [
+      { step: 1, text: 'Log in to Mailgun and go to Settings > API Keys.' },
+      { step: 2, text: 'Copy your Private API key.' },
+      { step: 3, text: 'Add and verify your sending domain.' },
+      { step: 4, text: 'Enter the API key, domain, and sender, then click Connect.' },
+    ],
+    docsUrl: 'https://documentation.mailgun.com/',
+  },
+  {
+    id: 'smtp',
+    name: 'Custom SMTP',
+    description: 'Connect any SMTP-compatible email server for full control over email delivery.',
+    category: 'email',
+    icon: 'smtp',
+    status: 'disconnected',
+    authType: 'api_key',
+    features: ['SMTP relay', 'Custom server', 'TLS/SSL', 'Authentication'],
+    fields: [
+      { key: 'host', label: 'SMTP Host', type: 'text', placeholder: 'smtp.example.com', required: true },
+      { key: 'port', label: 'Port', type: 'number', placeholder: '587', required: true },
+      { key: 'username', label: 'Username', type: 'text', placeholder: 'SMTP username', required: true },
+      { key: 'password', label: 'Password', type: 'password', placeholder: 'SMTP password', required: true },
+      { key: 'encryption', label: 'Encryption', type: 'select', options: [{ value: 'tls', label: 'TLS' }, { value: 'ssl', label: 'SSL' }, { value: 'none', label: 'None' }] },
+    ],
+    instructions: [
+      { step: 1, text: 'Gather your SMTP server details from your email provider.' },
+      { step: 2, text: 'Enter the host, port, username, and password.' },
+      { step: 3, text: 'Select the appropriate encryption method and click Connect.' },
     ],
   },
   {
@@ -281,7 +432,6 @@ const mockIntegrations: Integration[] = [
     lastSync: '2025-02-02T08:45:00Z',
     features: ['Conversations', 'Contacts', 'Articles', 'Product Tours'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'Intercom Access Token', required: true },
     ],
     instructions: [
@@ -300,7 +450,6 @@ const mockIntegrations: Integration[] = [
     authType: 'oauth',
     features: ['Live chat', 'Chat routing', 'Triggers', 'Analytics'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'subdomain', label: 'Subdomain', type: 'text', placeholder: 'your-company', required: true },
       { key: 'api_token', label: 'API Token', type: 'password', placeholder: 'Zendesk API Token', required: true },
     ],
@@ -320,7 +469,6 @@ const mockIntegrations: Integration[] = [
     authType: 'api_key',
     features: ['Live chat', 'Ticketing', 'Canned responses', 'Chat surveys'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'license_id', label: 'License ID', type: 'text', placeholder: 'License ID', required: true },
       { key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'Personal Access Token', required: true },
     ],
@@ -341,7 +489,6 @@ const mockIntegrations: Integration[] = [
     authType: 'api_key',
     features: ['Messaging', 'Chatbots', 'Campaigns', 'IntelliAssign'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'domain', label: 'Domain', type: 'url', placeholder: 'https://your-company.freshchat.com', required: true },
       { key: 'api_token', label: 'API Token', type: 'password', placeholder: 'Freshchat API Token', required: true },
     ],
@@ -363,7 +510,6 @@ const mockIntegrations: Integration[] = [
     lastSync: '2025-02-02T09:30:00Z',
     features: ['Payments', 'Subscriptions', 'Invoices', 'Refunds'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'publishable_key', label: 'Publishable Key', type: 'text', placeholder: 'pk_live_...', required: true },
       { key: 'secret_key', label: 'Secret Key', type: 'password', placeholder: 'sk_live_...', required: true },
     ],
@@ -384,7 +530,6 @@ const mockIntegrations: Integration[] = [
     authType: 'api_key',
     features: ['Payments', 'Subscriptions', 'Payouts', 'Smart Collect'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'key_id', label: 'Key ID', type: 'text', placeholder: 'rzp_live_...', required: true },
       { key: 'key_secret', label: 'Key Secret', type: 'password', placeholder: 'Key Secret', required: true },
     ],
@@ -404,7 +549,6 @@ const mockIntegrations: Integration[] = [
     authType: 'oauth',
     features: ['Payments', 'Payouts', 'Subscriptions', 'Disputes'],
     fields: [
-      { key: 'account_name', label: 'Account Name', type: 'text', placeholder: 'Account name', required: true },
       { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'PayPal Client ID', required: true },
       { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'PayPal Secret', required: true },
     ],
@@ -466,14 +610,93 @@ const mockWebhooks: WebhookEndpoint[] = [
   },
 ];
 
+const defaultChatWidgetConfig: ChatWidgetConfig = {
+  appearance: {
+    botLogo: '',
+    botDisplayName: 'ConX Assistant',
+    botDescription: 'AI-powered support assistant',
+    theme: 'light',
+    brandColor1: '#0094FF',
+    brandColor2: '#00FF7A',
+    colorMode: 'solid',
+    complementaryColor: '#0094FF',
+    accentColor: '#0094FF',
+    fontStyle: 'default',
+    fontSize: 'medium',
+    widgetSize: 'medium',
+    position: 'bottom-right',
+    initialStateDesktop: 'minimized',
+    initialStateMobile: 'minimized',
+  },
+  botIcon: {
+    shape: 'circle',
+    mobileShape: 'circle',
+    source: 'avatar',
+    animation: 'none',
+  },
+  settings: {
+    autoComplete: true,
+    messageFeedback: true,
+    attachment: true,
+    slowMessages: true,
+    multilineInput: false,
+    languageSwitcher: false,
+    rtlSupport: false,
+    scrollBehavior: 'bottom',
+    chatHistory: true,
+    freshSessionPerTab: false,
+    downloadTranscript: true,
+    unreadBadge: true,
+    browserTabNotification: true,
+    messageSound: true,
+    speechToText: false,
+    textToSpeech: false,
+    autoSendSpeech: false,
+  },
+  navigation: {
+    homeEnabled: true,
+    menuEnabled: false,
+    menuItems: [],
+  },
+  deployScript: `<script type="text/javascript">
+  window.ymConfig = {
+    bot: 'x1234567890',
+    host: 'https://cloud.yellow.ai'
+  };
+  (function() {
+    var w = window, ic = w.YellowMessenger;
+    if ("function" === typeof ic) ic("reattach_activator"),
+    ic("update", w.ymConfig);
+    else {
+      var d = document, i = function() {
+        i.c(arguments)
+      };
+      i.q = []; i.c = function(args) { i.q.push(args) };
+      w.YellowMessenger = i;
+      var l = function() {
+        var s = d.createElement("script");
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://cdn.yellowmessenger.com/plugin/widget-v2/latest/dist/main.min.js";
+        var x = d.getElementsByTagName("script")[0];
+        x.parentNode.insertBefore(s, x);
+      };
+      w.attachEvent ? w.attachEvent("onload", l) : w.addEventListener("load", l, false);
+    }
+  })();
+</script>`,
+};
+
 export function useIntegrationsData() {
   const [integrations, setIntegrations] = useState<Integration[]>(mockIntegrations);
   const [apiKeys, setApiKeys] = useState<APIKey[]>(mockAPIKeys);
   const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>(mockWebhooks);
+  const [chatWidgetConfig, setChatWidgetConfig] = useState<ChatWidgetConfig>(defaultChatWidgetConfig);
+  const [isSavingWidget, setIsSavingWidget] = useState(false);
 
   const connectIntegration = useCallback(async (integrationId: string, credentials?: Record<string, string>): Promise<{ success: boolean; error?: string }> => {
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     if (Math.random() > 0.9) {
       return { success: false, error: 'Failed to authenticate. Please check your credentials.' };
     }
@@ -502,12 +725,26 @@ export function useIntegrationsData() {
     return { success: true };
   }, []);
 
+  const updateChatWidgetConfig = useCallback(async (updates: Partial<ChatWidgetConfig>) => {
+    setIsSavingWidget(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setChatWidgetConfig(prev => {
+      const merged = { ...prev };
+      if (updates.appearance) merged.appearance = { ...prev.appearance, ...updates.appearance };
+      if (updates.botIcon) merged.botIcon = { ...prev.botIcon, ...updates.botIcon };
+      if (updates.settings) merged.settings = { ...prev.settings, ...updates.settings };
+      if (updates.navigation) merged.navigation = { ...prev.navigation, ...updates.navigation };
+      return merged;
+    });
+    setIsSavingWidget(false);
+  }, []);
+
   const createAPIKey = useCallback(async (name: string, permissions: string[]): Promise<{ success: boolean; key?: APIKey }> => {
     await new Promise(resolve => setTimeout(resolve, 800));
     const newKey: APIKey = {
       id: `key-${Date.now()}`,
       name,
-      key: `sk_${Math.random().toString(36).substring(2, 30)}`,
+      key: `sk_${name.toLowerCase().replace(/\s+/g, '_')}_${Math.random().toString(36).substring(2, 22)}`,
       createdAt: new Date().toISOString(),
       permissions,
       isActive: true,
@@ -516,12 +753,12 @@ export function useIntegrationsData() {
     return { success: true, key: newKey };
   }, []);
 
-  const revokeAPIKey = useCallback(async (keyId: string): Promise<void> => {
+  const revokeAPIKey = useCallback(async (keyId: string) => {
     await new Promise(resolve => setTimeout(resolve, 500));
     setApiKeys(prev => prev.filter(k => k.id !== keyId));
   }, []);
 
-  const toggleAPIKey = useCallback(async (keyId: string): Promise<void> => {
+  const toggleAPIKey = useCallback(async (keyId: string) => {
     setApiKeys(prev => prev.map(k =>
       k.id === keyId ? { ...k, isActive: !k.isActive } : k
     ));
@@ -545,8 +782,11 @@ export function useIntegrationsData() {
     integrations,
     apiKeys,
     webhooks,
+    chatWidgetConfig,
+    isSavingWidget,
     connectIntegration,
     disconnectIntegration,
+    updateChatWidgetConfig,
     createAPIKey,
     revokeAPIKey,
     toggleAPIKey,

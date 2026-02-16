@@ -1,13 +1,15 @@
-export type IntegrationCategory = 'crm' | 'voice' | 'communication' | 'live_chat' | 'payment';
+export type IntegrationCategory = 'crm' | 'voice' | 'messaging' | 'email' | 'chat_widget' | 'live_chat' | 'payment';
 export type IntegrationStatus = 'connected' | 'disconnected' | 'error' | 'pending';
 export type AuthType = 'oauth' | 'api_key' | 'webhook';
 
 export interface IntegrationField {
   key: string;
   label: string;
-  type: 'text' | 'password' | 'url';
-  placeholder: string;
-  required: boolean;
+  type: 'text' | 'password' | 'url' | 'select' | 'number';
+  placeholder?: string;
+  required?: boolean;
+  options?: { value: string; label: string }[];
+  helpText?: string;
 }
 
 export interface IntegrationInstruction {
@@ -57,12 +59,15 @@ export const CATEGORY_CONFIG: Record<IntegrationCategory, {
   label: string;
   color: string;
   bgColor: string;
+  icon: string;
 }> = {
-  crm: { label: 'CRM', color: 'text-blue-600', bgColor: 'bg-blue-500/10' },
-  voice: { label: 'Voice', color: 'text-violet-600', bgColor: 'bg-violet-500/10' },
-  communication: { label: 'Communications', color: 'text-indigo-600', bgColor: 'bg-indigo-500/10' },
-  live_chat: { label: 'LiveChat', color: 'text-cyan-600', bgColor: 'bg-cyan-500/10' },
-  payment: { label: 'Payments', color: 'text-emerald-600', bgColor: 'bg-emerald-500/10' },
+  crm: { label: 'CRM', color: 'text-blue-600', bgColor: 'bg-blue-500/10', icon: 'crm' },
+  voice: { label: 'Voice', color: 'text-violet-600', bgColor: 'bg-violet-500/10', icon: 'voice' },
+  messaging: { label: 'Messaging', color: 'text-green-600', bgColor: 'bg-green-500/10', icon: 'messaging' },
+  email: { label: 'Email', color: 'text-orange-600', bgColor: 'bg-orange-500/10', icon: 'email' },
+  chat_widget: { label: 'Chat Widget', color: 'text-purple-600', bgColor: 'bg-purple-500/10', icon: 'chat_widget' },
+  live_chat: { label: 'LiveChat', color: 'text-cyan-600', bgColor: 'bg-cyan-500/10', icon: 'live_chat' },
+  payment: { label: 'Payments', color: 'text-emerald-600', bgColor: 'bg-emerald-500/10', icon: 'payment' },
 };
 
 export const STATUS_CONFIG: Record<IntegrationStatus, {
@@ -85,10 +90,18 @@ export const INTEGRATION_ICONS: Record<string, string> = {
   vonage: '📱',
   genesys: '🎧',
   five9: '5️⃣',
+  asterisk: '🖥️',
   whatsapp: '💬',
-  gmail: '📧',
   slack: '💬',
   microsoft_teams: '👥',
+  telegram: '✈️',
+  facebook: '📘',
+  instagram: '📷',
+  gmail: '📧',
+  sendgrid: '📨',
+  ses: '☁️',
+  mailgun: '✉️',
+  smtp: '🖥️',
   intercom: '💭',
   zendesk_chat: '🗨️',
   livechat: '🟢',
@@ -96,4 +109,5 @@ export const INTEGRATION_ICONS: Record<string, string> = {
   stripe: '💳',
   razorpay: '💰',
   paypal: '🅿️',
+  chat_widget: '💬',
 };
