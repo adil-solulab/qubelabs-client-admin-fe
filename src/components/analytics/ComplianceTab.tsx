@@ -63,7 +63,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                   <TooltipTrigger asChild>
                     <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     Percentage of AI interactions that fully adhere to regulatory guidelines, company policies, and data privacy standards
                   </TooltipContent>
                 </UITooltip>
@@ -82,7 +82,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                   <TooltipTrigger asChild>
                     <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     Number of conversations flagged by the system for potential compliance violations requiring human review
                   </TooltipContent>
                 </UITooltip>
@@ -109,7 +109,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                   <TooltipTrigger asChild>
                     <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     Total confirmed breaches of company policies including data privacy, regulatory rules, and content guidelines
                   </TooltipContent>
                 </UITooltip>
@@ -136,7 +136,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                   <TooltipTrigger asChild>
                     <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     Composite score (0-100) assessing overall compliance risk. Lower scores indicate better compliance health
                   </TooltipContent>
                 </UITooltip>
@@ -156,7 +156,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                   <TooltipTrigger asChild>
                     <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     Breakdown of compliance risk levels (High, Medium, Low) across all monitored interactions
                   </TooltipContent>
                 </UITooltip>
@@ -198,7 +198,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                   <TooltipTrigger asChild>
                     <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     Trend of newly flagged compliance issues versus issues that have been reviewed and resolved
                   </TooltipContent>
                 </UITooltip>
@@ -230,7 +230,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                 <TooltipTrigger asChild>
                   <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                   Classification of policy violations by type with severity assessment
                 </TooltipContent>
               </UITooltip>
@@ -272,7 +272,7 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
                 <TooltipTrigger asChild>
                   <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                   Latest compliance violations with details on type, severity, assigned agent, and resolution status
                 </TooltipContent>
               </UITooltip>

@@ -111,7 +111,7 @@ export function TotalConversationsKPI({ data }: { data: ConversationMetrics }) {
               <TooltipTrigger asChild>
                 <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] text-xs">
+              <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                 Total conversations handled across all channels during the selected period
               </TooltipContent>
             </UITooltip>
@@ -138,7 +138,7 @@ export function ResolutionRateKPI({ data }: { data: ConversationMetrics }) {
               <TooltipTrigger asChild>
                 <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] text-xs">
+              <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                 Percentage of conversations resolved without human agent escalation
               </TooltipContent>
             </UITooltip>
@@ -169,7 +169,7 @@ export function AvgDurationKPI({ data }: { data: ConversationMetrics }) {
               <TooltipTrigger asChild>
                 <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] text-xs">
+              <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                 Average time from conversation start to resolution
               </TooltipContent>
             </UITooltip>
@@ -210,7 +210,7 @@ export function CSATScoreKPI({ data }: { data: CSATNPSData }) {
               <TooltipTrigger asChild>
                 <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] text-xs">
+              <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                 Customer Satisfaction Score from post-interaction surveys (target: &gt;85%)
               </TooltipContent>
             </UITooltip>
@@ -251,7 +251,7 @@ export function NPSScoreKPI({ data }: { data: CSATNPSData }) {
               <TooltipTrigger asChild>
                 <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] text-xs">
+              <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                 Net Promoter Score measuring customer loyalty (-100 to +100, target: &gt;50)
               </TooltipContent>
             </UITooltip>
@@ -278,7 +278,7 @@ export function HandoffRateKPI({ data }: { data: ConversationMetrics }) {
               <TooltipTrigger asChild>
                 <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] text-xs">
+              <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                 Percentage of AI conversations requiring transfer to a human agent
               </TooltipContent>
             </UITooltip>
@@ -739,7 +739,7 @@ export function OutcomeKPIWidget({ kpi }: { kpi: OutcomeKPI }) {
                 <TooltipTrigger asChild>
                   <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                   {kpi.definition}
                 </TooltipContent>
               </UITooltip>

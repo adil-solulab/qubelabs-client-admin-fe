@@ -172,7 +172,7 @@ export function OverviewTab({
                     <TooltipTrigger asChild>
                       <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                       Total number of conversations handled across all channels during the selected period
                     </TooltipContent>
                   </UITooltip>
@@ -192,7 +192,7 @@ export function OverviewTab({
                     <TooltipTrigger asChild>
                       <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                       Average length of time from conversation start to resolution across all channels
                     </TooltipContent>
                   </UITooltip>
@@ -212,7 +212,7 @@ export function OverviewTab({
                     <TooltipTrigger asChild>
                       <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                       Percentage of conversations successfully resolved without escalation to a human agent
                     </TooltipContent>
                   </UITooltip>
@@ -240,7 +240,7 @@ export function OverviewTab({
                     <TooltipTrigger asChild>
                       <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                       Customer Satisfaction Score from post-interaction surveys. Higher is better (target: &gt;85%)
                     </TooltipContent>
                   </UITooltip>
@@ -268,7 +268,7 @@ export function OverviewTab({
                     <TooltipTrigger asChild>
                       <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                       Net Promoter Score measuring customer loyalty. Ranges from -100 to +100 (target: &gt;50)
                     </TooltipContent>
                   </UITooltip>
@@ -288,7 +288,7 @@ export function OverviewTab({
                     <TooltipTrigger asChild>
                       <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                       Percentage of AI conversations that required transfer to a human agent
                     </TooltipContent>
                   </UITooltip>

@@ -30,7 +30,7 @@ export function DashboardWidget({
   return (
     <Card
       className={cn(
-        'gradient-card border border-border/50 overflow-hidden',
+        'gradient-card border border-border/50',
         onClick && 'widget-hover',
         className
       )}
@@ -53,7 +53,7 @@ export function DashboardWidget({
                   <TooltipTrigger asChild>
                     <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  <TooltipContent side="bottom" sideOffset={8} className="max-w-[250px] text-xs z-50">
                     {definition}
                   </TooltipContent>
                 </Tooltip>
