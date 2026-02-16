@@ -47,7 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { FlowSummary, FlowChannel } from '@/types/flowBuilder';
+import type { FlowSummary, FlowChannel, FlowType } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 import { notify } from '@/hooks/useNotification';
 
@@ -55,7 +55,7 @@ interface FlowListViewProps {
   flowSummaries: FlowSummary[];
   categories: string[];
   onSelectFlow: (flowId: string) => void;
-  onCreateFlow: (name: string, description: string, category: string, channel: FlowChannel) => void;
+  onCreateFlow: (name: string, description: string, category: string, channel: FlowChannel, flowType: FlowType) => void;
   onDeleteFlow: (flowId: string) => void;
   onDuplicateFlow: (flowId: string) => void;
   onCreateFolder: (name: string) => boolean;
@@ -69,7 +69,7 @@ const CHANNEL_CONFIG: Record<FlowChannel, { label: string; icon: React.ReactNode
   email: { label: 'Email', icon: <Mail className="w-3.5 h-3.5" />, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-500/20' },
 };
 
-type FlowType = 'flow' | 'workflow';
+type TypeFilter = 'all' | 'flow' | 'workflow';
 
 export function FlowListView({
   flowSummaries,
@@ -87,6 +87,7 @@ export function FlowListView({
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
   const [createTypeModalOpen, setCreateTypeModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -114,7 +115,8 @@ export function FlowListView({
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || f.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesType = typeFilter === 'all' || f.flowType === typeFilter;
+    return matchesSearch && matchesCategory && matchesType;
   });
 
   const flowsByCategory = categories.reduce<Record<string, FlowSummary[]>>((acc, cat) => {
@@ -139,7 +141,7 @@ export function FlowListView({
       setExpandedCategories(prev => ({ ...prev, [newCategoryName.trim()]: true }));
     }
 
-    onCreateFlow(newFlowName.trim(), newFlowDescription.trim(), category, newFlowChannel);
+    onCreateFlow(newFlowName.trim(), newFlowDescription.trim(), category, newFlowChannel, flowType);
     setNewFlowName('');
     setNewFlowDescription('');
     setNewFlowChannel('chat');
@@ -205,10 +207,10 @@ export function FlowListView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-foreground">Flows</h1>
+            <h1 className="text-2xl font-bold text-foreground">Flows & Workflows</h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Build and manage your automation flows
+            Build conversational flows and backend automations
           </p>
         </div>
 
@@ -282,8 +284,8 @@ export function FlowListView({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="mb-4">
-            <div className="relative">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search flows..."
@@ -292,14 +294,36 @@ export function FlowListView({
                 className="pl-9"
               />
             </div>
+            <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
+              {([
+                { key: 'all' as TypeFilter, label: 'All' },
+                { key: 'flow' as TypeFilter, label: 'Flows', icon: <GitBranch className="w-3.5 h-3.5" /> },
+                { key: 'workflow' as TypeFilter, label: 'Workflows', icon: <Zap className="w-3.5 h-3.5" /> },
+              ]).map(tab => (
+                <button
+                  key={tab.key}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                    typeFilter === tab.key
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => setTypeFilter(tab.key)}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="border rounded-xl overflow-hidden bg-card">
-            <div className="grid grid-cols-[1fr_1fr_130px_90px_80px_44px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="grid grid-cols-[1fr_1fr_130px_90px_80px_80px_44px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <span>Flow Name</span>
               <span>Description</span>
               <span>Last Edited</span>
               <span>Channel</span>
+              <span>Type</span>
               <span>Status</span>
               <span></span>
             </div>
@@ -360,7 +384,7 @@ export function FlowListView({
                     return (
                       <div
                         key={flow.id}
-                        className="grid grid-cols-[1fr_1fr_130px_90px_80px_44px] gap-4 px-6 py-3 border-b hover:bg-primary/5 transition-colors group cursor-pointer"
+                        className="grid grid-cols-[1fr_1fr_130px_90px_80px_80px_44px] gap-4 px-6 py-3 border-b hover:bg-primary/5 transition-colors group cursor-pointer"
                         onClick={() => onSelectFlow(flow.id)}
                       >
                         <div className="flex items-center gap-3 pl-8">
@@ -382,6 +406,16 @@ export function FlowListView({
                             {channelCfg.icon}
                             {channelCfg.label}
                           </span>
+                        </div>
+                        <div className="self-center">
+                          <Badge variant="outline" className="text-[10px] gap-1">
+                            {flow.flowType === 'workflow' ? (
+                              <Zap className="w-3 h-3" />
+                            ) : (
+                              <GitBranch className="w-3 h-3" />
+                            )}
+                            {flow.flowType === 'workflow' ? 'Workflow' : 'Flow'}
+                          </Badge>
                         </div>
                         <div className="self-center">
                           <Badge
@@ -467,8 +501,8 @@ export function FlowListView({
                 <GitBranch className="w-7 h-7 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-semibold text-foreground">Start from scratch</p>
-                <p className="text-xs text-muted-foreground mt-1">Build a conversational flow using nodes</p>
+                <p className="text-sm font-semibold text-foreground">Flow</p>
+                <p className="text-xs text-muted-foreground mt-1">Build a conversational flow for rule-based agents with prompts, messages, and logic</p>
               </div>
             </button>
 
@@ -480,8 +514,8 @@ export function FlowListView({
                 <Zap className="w-7 h-7 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-semibold text-foreground">Create Workflow</p>
-                <p className="text-xs text-muted-foreground mt-1">Background workflow with actions & logic</p>
+                <p className="text-sm font-semibold text-foreground">Workflow</p>
+                <p className="text-xs text-muted-foreground mt-1">Automate backend processes like API calls, database operations, and integrations</p>
               </div>
             </button>
           </div>

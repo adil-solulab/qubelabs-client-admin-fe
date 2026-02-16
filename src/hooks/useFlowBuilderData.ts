@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary, FlowChannel } from '@/types/flowBuilder';
+import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary, FlowChannel, FlowType } from '@/types/flowBuilder';
 import { NODE_TYPE_CONFIG } from '@/types/flowBuilder';
 
 const CHANNEL_TYPES: NodeType[] = ['whatsapp', 'slack', 'telegram', 'teams'];
@@ -34,6 +34,98 @@ function getDefaultNodeData(type: NodeType): NodeData {
       personaName: 'Select Assistant',
       handoffCondition: 'escalation_requested',
     };
+  } else if (type === 'text_input') {
+    base.textInputConfig = {
+      placeholder: 'Type your response...',
+      validationType: 'none',
+      required: true,
+    };
+  } else if (type === 'quick_reply') {
+    base.quickReplyConfig = {
+      options: [
+        { label: 'Option 1', value: 'option_1' },
+        { label: 'Option 2', value: 'option_2' },
+      ],
+      allowMultiple: false,
+    };
+  } else if (type === 'carousel') {
+    base.carouselConfig = {
+      cards: [
+        { title: 'Card 1', description: 'Description for card 1', buttons: [{ label: 'Select', value: 'card_1' }] },
+      ],
+    };
+  } else if (type === 'name_input') {
+    base.textInputConfig = {
+      placeholder: 'Enter your full name',
+      validationType: 'none',
+      required: true,
+    };
+  } else if (type === 'email_input') {
+    base.textInputConfig = {
+      placeholder: 'Enter your email address',
+      validationType: 'email',
+      required: true,
+    };
+  } else if (type === 'phone_input') {
+    base.textInputConfig = {
+      placeholder: 'Enter your phone number',
+      validationType: 'phone',
+      required: true,
+    };
+  } else if (type === 'date_input') {
+    base.textInputConfig = {
+      placeholder: 'Select a date',
+      validationType: 'none',
+      required: true,
+    };
+  } else if (type === 'execute_flow') {
+    base.executeFlowConfig = {
+      targetFlowId: '',
+      targetFlowName: '',
+      returnAfter: true,
+    };
+  } else if (type === 'raise_ticket') {
+    base.raiseTicketConfig = {
+      priority: 'medium',
+      department: '',
+      message: '',
+    };
+  } else if (type === 'database') {
+    base.databaseConfig = {
+      operation: 'read',
+      table: '',
+      fields: '',
+      condition: '',
+    };
+  } else if (type === 'function') {
+    base.functionConfig = {
+      code: '// Write your logic here\nreturn result;',
+      language: 'javascript',
+      timeout: 30,
+    };
+  } else if (type === 'variable') {
+    base.variableConfig = {
+      action: 'set',
+      variableName: '',
+      value: '',
+    };
+  } else if (type === 'delay') {
+    base.delayConfig = {
+      duration: 5,
+      unit: 'seconds',
+    };
+  } else if (type === 'notification') {
+    base.notificationConfig = {
+      type: 'email',
+      recipient: '',
+      subject: '',
+      body: '',
+    };
+  } else if (type === 'event_trigger') {
+    base.eventTriggerConfig = {
+      eventName: '',
+      payload: '{}',
+    };
   } else if (CHANNEL_TYPES.includes(type)) {
     base.channelConfig = {
       recipientId: '',
@@ -66,6 +158,7 @@ const generateMockFlows = (): Flow[] => [
     description: 'Main customer support conversation flow',
     category: 'Base',
     channel: 'voice',
+    flowType: 'flow',
     currentVersion: '2.1',
     status: 'published',
     nodes: [
@@ -165,6 +258,7 @@ const generateMockFlows = (): Flow[] => [
     description: 'Customer inquiry handling and routing',
     category: 'Base',
     channel: 'chat',
+    flowType: 'flow',
     currentVersion: '1.2',
     status: 'published',
     nodes: [
@@ -215,6 +309,7 @@ const generateMockFlows = (): Flow[] => [
     description: 'Automated product FAQ responses',
     category: 'FAQs',
     channel: 'chat',
+    flowType: 'flow',
     currentVersion: '1.0',
     status: 'published',
     nodes: [
@@ -273,6 +368,7 @@ const generateMockFlows = (): Flow[] => [
     description: 'Handle billing and payment inquiries',
     category: 'FAQs',
     channel: 'voice',
+    flowType: 'workflow',
     currentVersion: '1.1',
     status: 'draft',
     nodes: [
@@ -323,6 +419,7 @@ const generateMockFlows = (): Flow[] => [
     description: 'Schedule and manage customer appointments',
     category: 'Operations',
     channel: 'email',
+    flowType: 'workflow',
     currentVersion: '1.0',
     status: 'published',
     nodes: [
@@ -365,6 +462,72 @@ const generateMockFlows = (): Flow[] => [
     ],
     createdAt: '2024-06-01',
     updatedAt: '2024-06-01',
+  },
+  {
+    id: 'flow-6',
+    name: 'Generate Booking ID',
+    description: 'Backend workflow to generate and store booking IDs',
+    category: 'Operations',
+    channel: 'chat',
+    flowType: 'workflow',
+    currentVersion: '1.0',
+    status: 'published',
+    nodes: [
+      {
+        id: 'start-1',
+        type: 'start',
+        position: { x: 100, y: 300 },
+        data: { label: 'Start' },
+        connections: ['api-1'],
+      },
+      {
+        id: 'api-1',
+        type: 'api_call',
+        position: { x: 350, y: 300 },
+        data: { label: 'Generate ID', apiConfig: { method: 'POST', url: '/api/bookings/generate' } },
+        connections: ['db-1'],
+      },
+      {
+        id: 'db-1',
+        type: 'database',
+        position: { x: 600, y: 300 },
+        data: { label: 'Store Booking', databaseConfig: { operation: 'write', table: 'bookings', fields: 'id, customer_id, status', condition: '' } },
+        connections: ['var-1'],
+      },
+      {
+        id: 'var-1',
+        type: 'variable',
+        position: { x: 850, y: 300 },
+        data: { label: 'Set Booking Ref', variableConfig: { action: 'set', variableName: 'booking_reference', value: '{{api_response.booking_id}}' } },
+        connections: ['notif-1'],
+      },
+      {
+        id: 'notif-1',
+        type: 'notification',
+        position: { x: 1100, y: 300 },
+        data: { label: 'Send Confirmation', notificationConfig: { type: 'email', recipient: '{{customer_email}}', subject: 'Booking Confirmed', body: 'Your booking {{booking_reference}} has been confirmed.' } },
+        connections: ['end-1'],
+      },
+      {
+        id: 'end-1',
+        type: 'end',
+        position: { x: 1350, y: 300 },
+        data: { label: 'End' },
+        connections: [],
+      },
+    ],
+    edges: [
+      { id: 'e1', source: 'start-1', target: 'api-1' },
+      { id: 'e2', source: 'api-1', target: 'db-1' },
+      { id: 'e3', source: 'db-1', target: 'var-1' },
+      { id: 'e4', source: 'var-1', target: 'notif-1' },
+      { id: 'e5', source: 'notif-1', target: 'end-1' },
+    ],
+    versions: [
+      { id: 'v1', version: '1.0', createdAt: '2024-06-10', createdBy: 'Lisa Park', status: 'published', nodes: [], edges: [], changelog: 'Initial booking workflow' },
+    ],
+    createdAt: '2024-06-10',
+    updatedAt: '2024-06-10',
   },
 ];
 
@@ -417,6 +580,7 @@ export function useFlowBuilderData() {
         description: f.description,
         category: f.category,
         channel: f.channel,
+        flowType: f.flowType,
         status: f.status,
         currentVersion: f.currentVersion,
         updatedAt: f.updatedAt,
@@ -428,13 +592,14 @@ export function useFlowBuilderData() {
     return [...new Set(flows.map(f => f.category))];
   }, [flows]);
 
-  const createFlow = useCallback((name: string, description: string, category: string, channel: FlowChannel = 'chat') => {
+  const createFlow = useCallback((name: string, description: string, category: string, channel: FlowChannel = 'chat', flowType: FlowType = 'flow') => {
     const newFlow: Flow = {
       id: `flow-${Date.now()}`,
       name,
       description,
       category,
       channel,
+      flowType,
       currentVersion: '1.0',
       status: 'draft',
       nodes: [
@@ -496,6 +661,7 @@ export function useFlowBuilderData() {
       description: '',
       category: folderName,
       channel: 'chat',
+      flowType: 'flow',
       currentVersion: '0',
       status: 'draft',
       nodes: [],

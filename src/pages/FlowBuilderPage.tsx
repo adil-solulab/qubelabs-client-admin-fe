@@ -14,6 +14,8 @@ import {
   Phone,
   MessageSquare,
   Mail,
+  GitBranch,
+  Zap,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -97,7 +99,7 @@ export default function FlowBuilderPage() {
       if (existing) {
         selectFlow(existing.id);
       } else {
-        const newFlow = createFlow(openFlow, `${openFlow} flow`, 'Base', 'chat');
+        const newFlow = createFlow(openFlow, `${openFlow} flow`, 'Base', 'chat', 'flow');
         selectFlow(newFlow.id);
       }
       setSearchParams({}, { replace: true });
@@ -238,14 +240,22 @@ export default function FlowBuilderPage() {
                 className="hover:text-primary transition-colors cursor-pointer"
                 onClick={handleBackToList}
               >
-                Flows
+                Flows & Workflows
               </button>
               <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-foreground font-semibold truncate">{flow.name}</span>
             </div>
+            <Badge variant="outline" className="text-xs gap-1 ml-1">
+              {flow.flowType === 'workflow' ? (
+                <Zap className="w-3 h-3" />
+              ) : (
+                <GitBranch className="w-3 h-3" />
+              )}
+              {flow.flowType === 'workflow' ? 'Workflow' : 'Flow'}
+            </Badge>
             <Badge
               variant={flow.status === 'published' ? 'default' : 'secondary'}
-              className={cn('ml-2 text-xs', flow.status === 'published' && 'bg-success')}
+              className={cn('ml-1 text-xs', flow.status === 'published' && 'bg-success')}
             >
               {flow.status}
             </Badge>
@@ -325,7 +335,7 @@ export default function FlowBuilderPage() {
         </div>
 
         <div className="flex-1 flex min-h-0 border rounded-xl overflow-hidden">
-          <NodeToolsSidebar onAddNode={handleAddNode} canEdit={canEdit} />
+          <NodeToolsSidebar onAddNode={handleAddNode} canEdit={canEdit} flowType={flow.flowType} />
 
           <div className="flex-1 min-w-0">
             <FlowCanvas

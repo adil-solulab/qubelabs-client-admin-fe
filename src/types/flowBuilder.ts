@@ -1,10 +1,20 @@
+export type FlowType = 'flow' | 'workflow';
+
 export type NodeType = 
-  | 'start' | 'message' | 'condition' | 'api_call' | 'transfer' | 'dtmf' | 'assistant' | 'end'
+  // Shared
+  | 'start' | 'end' | 'condition'
+  // Flow-specific (Prompt Nodes)
+  | 'message' | 'text_input' | 'quick_reply' | 'carousel' | 'name_input' | 'email_input' | 'phone_input' | 'date_input'
+  // Flow-specific (Action Nodes)  
+  | 'dtmf' | 'assistant' | 'transfer' | 'execute_flow' | 'raise_ticket'
+  // Workflow-specific
+  | 'api_call' | 'database' | 'function' | 'variable' | 'delay' | 'notification' | 'event_trigger'
+  // Integration nodes (shared)
   | 'whatsapp' | 'slack' | 'telegram' | 'teams'
   | 'zendesk' | 'freshdesk'
   | 'zoho_crm' | 'salesforce' | 'hubspot';
 
-export type NodeCategory = 'flow' | 'channels' | 'ticketing' | 'crm';
+export type NodeCategory = 'prompts' | 'messages' | 'logic' | 'actions' | 'channels' | 'ticketing' | 'crm' | 'workflow_actions' | 'workflow_logic';
 
 export type FlowStatus = 'draft' | 'published';
 
@@ -69,6 +79,60 @@ export interface NodeData {
     objectType: 'contact' | 'lead' | 'deal' | 'account';
     fieldMapping?: string;
   };
+  textInputConfig?: {
+    placeholder: string;
+    validationType: 'none' | 'email' | 'phone' | 'number' | 'regex';
+    validationPattern?: string;
+    required: boolean;
+  };
+  quickReplyConfig?: {
+    options: { label: string; value: string }[];
+    allowMultiple: boolean;
+  };
+  carouselConfig?: {
+    cards: { title: string; description: string; imageUrl?: string; buttons: { label: string; value: string }[] }[];
+  };
+  executeFlowConfig?: {
+    targetFlowId: string;
+    targetFlowName: string;
+    returnAfter: boolean;
+  };
+  raiseTicketConfig?: {
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    department: string;
+    message: string;
+  };
+  databaseConfig?: {
+    operation: 'read' | 'write' | 'update' | 'delete' | 'query';
+    table: string;
+    fields?: string;
+    condition?: string;
+  };
+  functionConfig?: {
+    code: string;
+    language: 'javascript';
+    timeout: number;
+  };
+  variableConfig?: {
+    action: 'set' | 'get' | 'transform';
+    variableName: string;
+    value?: string;
+    transformExpression?: string;
+  };
+  delayConfig?: {
+    duration: number;
+    unit: 'seconds' | 'minutes' | 'hours';
+  };
+  notificationConfig?: {
+    type: 'email' | 'sms' | 'push' | 'webhook';
+    recipient: string;
+    subject?: string;
+    body: string;
+  };
+  eventTriggerConfig?: {
+    eventName: string;
+    payload?: string;
+  };
 }
 
 export interface FlowEdge {
@@ -95,6 +159,7 @@ export interface Flow {
   description: string;
   category: string;
   channel: FlowChannel;
+  flowType: FlowType;
   currentVersion: string;
   status: FlowStatus;
   nodes: FlowNode[];
@@ -110,13 +175,15 @@ export interface FlowSummary {
   description: string;
   category: string;
   channel: FlowChannel;
+  flowType: FlowType;
   status: FlowStatus;
   currentVersion: string;
   updatedAt: string;
   nodeCount: number;
 }
 
-export const NODE_CATEGORIES: Record<NodeCategory, { label: string; types: NodeType[] }> = {
+/** @deprecated Use FLOW_NODE_CATEGORIES or WORKFLOW_NODE_CATEGORIES instead */
+export const NODE_CATEGORIES: Record<string, { label: string; types: NodeType[] }> = {
   flow: {
     label: 'Flow',
     types: ['message', 'condition', 'api_call', 'dtmf', 'assistant', 'transfer', 'end'],
@@ -132,6 +199,40 @@ export const NODE_CATEGORIES: Record<NodeCategory, { label: string; types: NodeT
   crm: {
     label: 'CRM',
     types: ['zoho_crm', 'salesforce', 'hubspot'],
+  },
+};
+
+export const FLOW_NODE_CATEGORIES: Record<string, { label: string; types: NodeType[] }> = {
+  prompts: {
+    label: 'Prompts',
+    types: ['text_input', 'name_input', 'email_input', 'phone_input', 'date_input', 'quick_reply'],
+  },
+  messages: {
+    label: 'Messages',
+    types: ['message', 'carousel'],
+  },
+  logic: {
+    label: 'Logic',
+    types: ['condition'],
+  },
+  actions: {
+    label: 'Actions',
+    types: ['execute_flow', 'raise_ticket', 'assistant', 'transfer', 'dtmf', 'delay', 'end'],
+  },
+};
+
+export const WORKFLOW_NODE_CATEGORIES: Record<string, { label: string; types: NodeType[] }> = {
+  workflow_actions: {
+    label: 'Actions',
+    types: ['api_call', 'database', 'function', 'variable', 'notification', 'event_trigger'],
+  },
+  workflow_logic: {
+    label: 'Logic',
+    types: ['condition', 'delay'],
+  },
+  integrations: {
+    label: 'Integrations',
+    types: ['whatsapp', 'slack', 'telegram', 'teams', 'zendesk', 'freshdesk', 'zoho_crm', 'salesforce', 'hubspot'],
   },
 };
 
@@ -260,5 +361,110 @@ export const NODE_TYPE_CONFIG: Record<NodeType, {
     color: 'text-orange-600',
     bgColor: 'bg-orange-600/10',
     borderColor: 'border-orange-600/30'
+  },
+  text_input: {
+    label: 'Text Input',
+    icon: '📝',
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/30'
+  },
+  quick_reply: {
+    label: 'Quick Reply',
+    icon: '⚡',
+    color: 'text-amber-500',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/30'
+  },
+  carousel: {
+    label: 'Carousel',
+    icon: '🎠',
+    color: 'text-pink-500',
+    bgColor: 'bg-pink-500/10',
+    borderColor: 'border-pink-500/30'
+  },
+  name_input: {
+    label: 'Name Input',
+    icon: '👤',
+    color: 'text-teal-500',
+    bgColor: 'bg-teal-500/10',
+    borderColor: 'border-teal-500/30'
+  },
+  email_input: {
+    label: 'Email Input',
+    icon: '📧',
+    color: 'text-indigo-500',
+    bgColor: 'bg-indigo-500/10',
+    borderColor: 'border-indigo-500/30'
+  },
+  phone_input: {
+    label: 'Phone Input',
+    icon: '📞',
+    color: 'text-green-600',
+    bgColor: 'bg-green-600/10',
+    borderColor: 'border-green-600/30'
+  },
+  date_input: {
+    label: 'Date Input',
+    icon: '📅',
+    color: 'text-violet-500',
+    bgColor: 'bg-violet-500/10',
+    borderColor: 'border-violet-500/30'
+  },
+  execute_flow: {
+    label: 'Execute Flow',
+    icon: '🔄',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-600/10',
+    borderColor: 'border-blue-600/30'
+  },
+  raise_ticket: {
+    label: 'Raise Ticket',
+    icon: '🎫',
+    color: 'text-rose-500',
+    bgColor: 'bg-rose-500/10',
+    borderColor: 'border-rose-500/30'
+  },
+  database: {
+    label: 'Database',
+    icon: '🗄️',
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-600/10',
+    borderColor: 'border-emerald-600/30'
+  },
+  function: {
+    label: 'Function',
+    icon: '⚙️',
+    color: 'text-slate-600',
+    bgColor: 'bg-slate-600/10',
+    borderColor: 'border-slate-600/30'
+  },
+  variable: {
+    label: 'Variable',
+    icon: '📦',
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-600/10',
+    borderColor: 'border-yellow-600/30'
+  },
+  delay: {
+    label: 'Delay',
+    icon: '⏱️',
+    color: 'text-gray-500',
+    bgColor: 'bg-gray-500/10',
+    borderColor: 'border-gray-500/30'
+  },
+  notification: {
+    label: 'Notification',
+    icon: '🔔',
+    color: 'text-red-500',
+    bgColor: 'bg-red-500/10',
+    borderColor: 'border-red-500/30'
+  },
+  event_trigger: {
+    label: 'Event Trigger',
+    icon: '⚡',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-600/10',
+    borderColor: 'border-amber-600/30'
   },
 };

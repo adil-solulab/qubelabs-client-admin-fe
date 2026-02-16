@@ -40,11 +40,16 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - **Configuration Sections (per agent)**: Persona, Intent Understanding, Start Triggers, Prompt Logic, Variables, Routing Logic, Fallback Behavior, Context Handling, and Guardrails.
 - UI features an agent listing view and a detailed configuration view with collapsible sections.
 
-#### Flow Builder (Flows) - Main USP
-- Visual drag-and-drop canvas for designing conversational flows and background workflows.
+#### Flow Builder (Flows & Workflows) - Main USP
+- Visual drag-and-drop canvas for designing conversational flows and backend workflow automations.
+- **FlowType distinction**: `FlowType = 'flow' | 'workflow'` stored on each Flow/FlowSummary. Flows are conversational logic for rule-based agents; Workflows are backend automation processes.
+- **Flow Nodes** (for conversational flows): Prompt nodes (Text Input, Name Input, Email Input, Phone Input, Date Input, Quick Reply), Message nodes (Message, Carousel), Logic (Condition), Action nodes (Execute Flow, Raise Ticket, AI Assistant, Transfer, DTMF, Delay, End).
+- **Workflow Nodes** (for backend automation): Actions (API Call, Database, Function, Variable, Notification, Event Trigger), Logic (Condition, Delay), Integrations (WhatsApp, Slack, Telegram, Teams, Zendesk, Freshdesk, Zoho CRM, Salesforce, HubSpot).
+- **Node Categories**: `FLOW_NODE_CATEGORIES` and `WORKFLOW_NODE_CATEGORIES` in `src/types/flowBuilder.ts` control which nodes appear in the sidebar based on flowType.
+- **NodeToolsSidebar**: Accepts `flowType` prop and dynamically shows appropriate node palette.
+- **FlowListView**: Type filter tabs (All/Flows/Workflows), type badges (GitBranch for Flow, Zap for Workflow), two-step creation (select type → fill details).
+- **NodePropertiesPanel**: Property forms for all 30+ node types including text inputs, quick replies, database operations, function code, variables, notifications, event triggers.
 - Features an environment selector (Staging, Sandbox, Production) and a category sidebar for flow organization.
-- Supports two creation modes: "Start from scratch" (conversational) and "Create Workflow" (background).
-- Flow Editor includes a Node Tools sidebar with 7 node types (Message, Condition, API Call, DTMF, AI Assistant, Transfer, End), a canvas for design, and right panels for Node Properties and Test Panel.
 - The Test Panel supports Chat and Voice modes, simulating various node functionalities and providing test statistics.
 
 #### Integrations

@@ -4,16 +4,19 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   MessageCircle, Hash, Send, Users,
   Ticket, ClipboardList,
-  BarChart3, Cloud, Hexagon
+  BarChart3, Cloud, Hexagon,
+  TextCursor, Zap, LayoutGrid, UserCircle, AtSign, Smartphone, Calendar,
+  RefreshCw, Database, Code, Box, Timer, Bell, Globe
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { NODE_TYPE_CONFIG, NODE_CATEGORIES, type NodeType, type NodeCategory } from '@/types/flowBuilder';
+import { NODE_TYPE_CONFIG, FLOW_NODE_CATEGORIES, WORKFLOW_NODE_CATEGORIES, type NodeType, type FlowType } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 
 interface NodeToolsSidebarProps {
   onAddNode: (type: NodeType) => void;
   canEdit: boolean;
+  flowType?: FlowType;
 }
 
 const NODE_ICONS: Record<NodeType, React.ReactNode> = {
@@ -34,6 +37,21 @@ const NODE_ICONS: Record<NodeType, React.ReactNode> = {
   zoho_crm: <BarChart3 className="w-5 h-5" />,
   salesforce: <Cloud className="w-5 h-5" />,
   hubspot: <Hexagon className="w-5 h-5" />,
+  text_input: <TextCursor className="w-5 h-5" />,
+  quick_reply: <Zap className="w-5 h-5" />,
+  carousel: <LayoutGrid className="w-5 h-5" />,
+  name_input: <UserCircle className="w-5 h-5" />,
+  email_input: <AtSign className="w-5 h-5" />,
+  phone_input: <Smartphone className="w-5 h-5" />,
+  date_input: <Calendar className="w-5 h-5" />,
+  execute_flow: <RefreshCw className="w-5 h-5" />,
+  raise_ticket: <Ticket className="w-5 h-5" />,
+  database: <Database className="w-5 h-5" />,
+  function: <Code className="w-5 h-5" />,
+  variable: <Box className="w-5 h-5" />,
+  delay: <Timer className="w-5 h-5" />,
+  notification: <Bell className="w-5 h-5" />,
+  event_trigger: <Globe className="w-5 h-5" />,
 };
 
 const NODE_DESCRIPTIONS: Record<NodeType, string> = {
@@ -54,21 +72,37 @@ const NODE_DESCRIPTIONS: Record<NodeType, string> = {
   zoho_crm: 'Sync data with Zoho CRM',
   salesforce: 'Manage Salesforce records',
   hubspot: 'Update HubSpot contacts & deals',
+  text_input: 'Collect text input from user',
+  quick_reply: 'Show quick reply buttons',
+  carousel: 'Display a carousel of cards',
+  name_input: 'Capture user\'s name',
+  email_input: 'Capture email address',
+  phone_input: 'Capture phone number',
+  date_input: 'Capture date or time',
+  execute_flow: 'Call another flow',
+  raise_ticket: 'Escalate to live agent',
+  database: 'Read or write database records',
+  function: 'Run custom code logic',
+  variable: 'Set or transform variables',
+  delay: 'Add a time delay',
+  notification: 'Send a notification',
+  event_trigger: 'Trigger an external event',
 };
 
-const CATEGORY_ORDER: NodeCategory[] = ['flow', 'channels', 'ticketing', 'crm'];
-
-export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) {
+export function NodeToolsSidebar({ onAddNode, canEdit, flowType = 'flow' }: NodeToolsSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsed, setCollapsed] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+
+  const categoriesMap = flowType === 'workflow' ? WORKFLOW_NODE_CATEGORIES : FLOW_NODE_CATEGORIES;
+  const categoryOrder = Object.keys(categoriesMap);
 
   const toggleCategory = (cat: string) => {
     setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
   };
 
-  const getFilteredTypesForCategory = (category: NodeCategory) => {
-    return NODE_CATEGORIES[category].types.filter(type => {
+  const getFilteredTypesForCategory = (category: string) => {
+    return categoriesMap[category].types.filter(type => {
       if (!searchQuery) return true;
       const config = NODE_TYPE_CONFIG[type];
       return config.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,7 +110,7 @@ export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) 
     });
   };
 
-  const allFilteredTypes = CATEGORY_ORDER.flatMap(cat => getFilteredTypesForCategory(cat));
+  const allFilteredTypes = categoryOrder.flatMap(cat => getFilteredTypesForCategory(cat));
 
   if (collapsed) {
     return (
@@ -94,8 +128,8 @@ export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) 
             <TooltipContent side="right">Expand tools panel</TooltipContent>
           </Tooltip>
 
-          {CATEGORY_ORDER.map(cat => {
-            const types = NODE_CATEGORIES[cat].types;
+          {categoryOrder.map(cat => {
+            const types = categoriesMap[cat].types;
             return types.map(type => {
               const config = NODE_TYPE_CONFIG[type];
               return (
@@ -153,8 +187,8 @@ export function NodeToolsSidebar({ onAddNode, canEdit }: NodeToolsSidebarProps) 
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
-        {CATEGORY_ORDER.map(cat => {
-          const catConfig = NODE_CATEGORIES[cat];
+        {categoryOrder.map(cat => {
+          const catConfig = categoriesMap[cat];
           const filteredTypes = getFilteredTypesForCategory(cat);
           if (filteredTypes.length === 0) return null;
           const isCollapsed = collapsedCategories[cat];
