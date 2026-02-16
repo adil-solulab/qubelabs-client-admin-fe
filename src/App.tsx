@@ -26,6 +26,7 @@ import SDKsPage from "./pages/SDKsPage";
 import ThemeSettingsPage from "./pages/ThemeSettingsPage";
 import RolesPage from "./pages/RolesPage";
 import AIEnginePage from "./pages/AIEnginePage";
+import TranscriptsPage from "./pages/TranscriptsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
@@ -143,6 +144,11 @@ const App = () => (
               <Route path="/ai-engine" element={
                 <ProtectedRoute screenId="ai-engine">
                   <AIEnginePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/transcripts" element={
+                <ProtectedRoute screenId="transcripts">
+                  <TranscriptsPage />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

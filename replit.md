@@ -98,4 +98,12 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - **Vite**: Build tool.
 - **TypeScript**: Type checking.
 - **ESLint**: Linting.
-- **PostCSS**: CSS processing.
+
+### Transcripts Module
+- **Purpose**: View, listen to, and manage conversation recordings across all channels
+- **RBAC**: Added `transcripts` to ScreenId type. Client Admin has full access, Supervisor can view/export, Agent can view only. Configurable via Roles page.
+- **Features**: Transcript listing with filters (channel, status, sentiment, has-recording), search, multi-select with bulk delete, per-transcript detail view with conversation timeline, audio player with play/pause/seek/skip/volume controls, export to text file, session metadata sidebar (details, summary, tags)
+- **Data Hook**: `useTranscriptsData` manages transcripts array with filtering, deletion, multi-delete, and stats computation
+- **Types**: `Transcript`, `TranscriptEntry`, `TranscriptChannel`, `TranscriptStatus`, `SentimentType` in `src/types/transcripts.ts`
+- **Components**: `TranscriptsPage` at `/transcripts` route, protected by `ProtectedRoute` with `screenId="transcripts"`
+- **Sidebar**: Listed under Insights group between Analytics and Surveys

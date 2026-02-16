@@ -25,6 +25,7 @@ import {
   Zap,
   Star,
   Home,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -79,6 +80,7 @@ const navGroups: NavGroup[] = [
     label: 'Insights',
     items: [
       { icon: BarChart3, label: 'Analytics', path: '/analytics', screenId: 'analytics' },
+      { icon: FileText, label: 'Transcripts', path: '/transcripts', screenId: 'transcripts' },
       { icon: Star, label: 'Surveys', path: '/surveys', screenId: 'analytics' },
     ],
   },
