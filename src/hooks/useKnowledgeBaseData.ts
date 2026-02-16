@@ -147,7 +147,7 @@ const generateMockDocuments = (): KnowledgeDocument[] => [
 const generateMockURLSources = (): URLSource[] => [
   {
     id: 'url-1',
-    url: 'https://docs.qubelabs.ai/getting-started',
+    url: 'https://docs.conx.ai/getting-started',
     title: 'Getting Started Guide',
     status: 'completed',
     pagesDiscovered: 1,
@@ -161,12 +161,12 @@ const generateMockURLSources = (): URLSource[] => [
     syncFrequency: 'weekly',
     tokensUsed: 8340,
     extractedPages: [
-      { url: 'https://docs.qubelabs.ai/getting-started', title: 'Getting Started Guide', wordCount: 2450, status: 'extracted' },
+      { url: 'https://docs.conx.ai/getting-started', title: 'Getting Started Guide', wordCount: 2450, status: 'extracted' },
     ],
   },
   {
     id: 'url-2',
-    url: 'https://help.qubelabs.ai/troubleshooting',
+    url: 'https://help.conx.ai/troubleshooting',
     title: 'Troubleshooting & FAQ',
     status: 'completed',
     pagesDiscovered: 3,
@@ -180,14 +180,14 @@ const generateMockURLSources = (): URLSource[] => [
     syncFrequency: 'daily',
     tokensUsed: 18920,
     extractedPages: [
-      { url: 'https://help.qubelabs.ai/troubleshooting', title: 'Troubleshooting Overview', wordCount: 1800, status: 'extracted' },
-      { url: 'https://help.qubelabs.ai/troubleshooting/common-issues', title: 'Common Issues', wordCount: 3200, status: 'extracted' },
-      { url: 'https://help.qubelabs.ai/troubleshooting/error-codes', title: 'Error Codes Reference', wordCount: 2100, status: 'extracted' },
+      { url: 'https://help.conx.ai/troubleshooting', title: 'Troubleshooting Overview', wordCount: 1800, status: 'extracted' },
+      { url: 'https://help.conx.ai/troubleshooting/common-issues', title: 'Common Issues', wordCount: 3200, status: 'extracted' },
+      { url: 'https://help.conx.ai/troubleshooting/error-codes', title: 'Error Codes Reference', wordCount: 2100, status: 'extracted' },
     ],
   },
   {
     id: 'url-3',
-    url: 'https://blog.qubelabs.ai/ai-best-practices',
+    url: 'https://blog.conx.ai/ai-best-practices',
     title: 'AI Best Practices Blog',
     status: 'crawling',
     pagesDiscovered: 5,
@@ -200,11 +200,11 @@ const generateMockURLSources = (): URLSource[] => [
     syncFrequency: 'manual',
     tokensUsed: 0,
     extractedPages: [
-      { url: 'https://blog.qubelabs.ai/ai-best-practices', title: 'AI Best Practices', wordCount: 1500, status: 'extracted' },
-      { url: 'https://blog.qubelabs.ai/ai-best-practices/prompt-engineering', title: 'Prompt Engineering Tips', wordCount: 2800, status: 'extracted' },
-      { url: 'https://blog.qubelabs.ai/ai-best-practices/training-data', title: 'Training Data Quality', wordCount: 0, status: 'pending' },
-      { url: 'https://blog.qubelabs.ai/ai-best-practices/fine-tuning', title: 'Fine Tuning Guide', wordCount: 0, status: 'pending' },
-      { url: 'https://blog.qubelabs.ai/ai-best-practices/evaluation', title: 'Model Evaluation', wordCount: 0, status: 'pending' },
+      { url: 'https://blog.conx.ai/ai-best-practices', title: 'AI Best Practices', wordCount: 1500, status: 'extracted' },
+      { url: 'https://blog.conx.ai/ai-best-practices/prompt-engineering', title: 'Prompt Engineering Tips', wordCount: 2800, status: 'extracted' },
+      { url: 'https://blog.conx.ai/ai-best-practices/training-data', title: 'Training Data Quality', wordCount: 0, status: 'pending' },
+      { url: 'https://blog.conx.ai/ai-best-practices/fine-tuning', title: 'Fine Tuning Guide', wordCount: 0, status: 'pending' },
+      { url: 'https://blog.conx.ai/ai-best-practices/evaluation', title: 'Model Evaluation', wordCount: 0, status: 'pending' },
     ],
   },
 ];
@@ -212,8 +212,8 @@ const generateMockURLSources = (): URLSource[] => [
 const generateMockSitemapSources = (): SitemapSource[] => [
   {
     id: 'sm-1',
-    sitemapUrl: 'https://docs.qubelabs.ai/sitemap.xml',
-    domain: 'docs.qubelabs.ai',
+    sitemapUrl: 'https://docs.conx.ai/sitemap.xml',
+    domain: 'docs.conx.ai',
     status: 'completed',
     totalUrls: 47,
     crawledUrls: 47,
@@ -226,17 +226,17 @@ const generateMockSitemapSources = (): SitemapSource[] => [
     syncFrequency: 'daily',
     tokensUsed: 156780,
     discoveredPages: [
-      { url: 'https://docs.qubelabs.ai/overview', title: 'Platform Overview', wordCount: 3400, status: 'extracted' },
-      { url: 'https://docs.qubelabs.ai/api-reference', title: 'API Reference', wordCount: 12500, status: 'extracted' },
-      { url: 'https://docs.qubelabs.ai/sdk', title: 'SDK Documentation', wordCount: 8900, status: 'extracted' },
-      { url: 'https://docs.qubelabs.ai/webhooks', title: 'Webhook Setup', wordCount: 2100, status: 'extracted' },
-      { url: 'https://docs.qubelabs.ai/authentication', title: 'Authentication Guide', wordCount: 4200, status: 'extracted' },
+      { url: 'https://docs.conx.ai/overview', title: 'Platform Overview', wordCount: 3400, status: 'extracted' },
+      { url: 'https://docs.conx.ai/api-reference', title: 'API Reference', wordCount: 12500, status: 'extracted' },
+      { url: 'https://docs.conx.ai/sdk', title: 'SDK Documentation', wordCount: 8900, status: 'extracted' },
+      { url: 'https://docs.conx.ai/webhooks', title: 'Webhook Setup', wordCount: 2100, status: 'extracted' },
+      { url: 'https://docs.conx.ai/authentication', title: 'Authentication Guide', wordCount: 4200, status: 'extracted' },
     ],
   },
   {
     id: 'sm-2',
-    sitemapUrl: 'https://support.qubelabs.ai/sitemap.xml',
-    domain: 'support.qubelabs.ai',
+    sitemapUrl: 'https://support.conx.ai/sitemap.xml',
+    domain: 'support.conx.ai',
     status: 'crawling',
     totalUrls: 128,
     crawledUrls: 84,
@@ -248,9 +248,9 @@ const generateMockSitemapSources = (): SitemapSource[] => [
     syncFrequency: 'weekly',
     tokensUsed: 0,
     discoveredPages: [
-      { url: 'https://support.qubelabs.ai/billing', title: 'Billing FAQ', wordCount: 1800, status: 'extracted' },
-      { url: 'https://support.qubelabs.ai/account', title: 'Account Management', wordCount: 2400, status: 'extracted' },
-      { url: 'https://support.qubelabs.ai/integrations', title: 'Integration Guides', wordCount: 0, status: 'pending' },
+      { url: 'https://support.conx.ai/billing', title: 'Billing FAQ', wordCount: 1800, status: 'extracted' },
+      { url: 'https://support.conx.ai/account', title: 'Account Management', wordCount: 2400, status: 'extracted' },
+      { url: 'https://support.conx.ai/integrations', title: 'Integration Guides', wordCount: 0, status: 'pending' },
     ],
   },
 ];
@@ -307,7 +307,7 @@ const generateMockIntegrationSources = (): IntegrationSource[] => [
     trainingProgress: 0,
     syncFrequency: 'daily',
     tokensUsed: 0,
-    connectionDetails: 'QubeLabs Help Center - All categories',
+    connectionDetails: 'ConX Help Center - All categories',
   },
 ];
 

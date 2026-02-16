@@ -243,7 +243,7 @@ export function SuperAgentProfile({ agent, onBack, onEdit, canEdit }: SuperAgent
 
                 <div className="grid grid-cols-[140px_1fr] gap-y-3 gap-x-8 text-sm">
                   <span className="text-muted-foreground">Company</span>
-                  <span className="text-foreground">QubeLabs</span>
+                  <span className="text-foreground">ConX</span>
 
                   <span className="text-muted-foreground">Model</span>
                   <span className="text-foreground">{agent.prompt.model}</span>

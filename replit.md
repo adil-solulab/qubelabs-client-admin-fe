@@ -2,7 +2,7 @@
 
 ## Overview
 
-QubeLabs is an enterprise AI platform designed as a single-page application (SPA) for managing conversational AI operations. It offers comprehensive tools for AI agent management, knowledge base creation, live operations monitoring, outbound calling campaigns, analytics, and team management. The platform features a robust role-based access control system for Client Admins, Supervisors, and Agents. The core vision is to provide "responsible intelligence" through an interactive prototype that maintains state without a backend.
+ConX is an enterprise AI platform designed as a single-page application (SPA) for managing conversational AI operations. It offers comprehensive tools for AI agent management, knowledge base creation, live operations monitoring, outbound calling campaigns, analytics, and team management. The platform features a robust role-based access control system for Client Admins, Supervisors, and Agents. The core vision is to provide "responsible intelligence" through an interactive prototype that maintains state without a backend.
 
 The application serves as a frontend-only prototype, utilizing in-memory state management to demonstrate functionality and user experience.
 
@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 The application is built with React 18 and TypeScript, using Vite as the build tool. React Router handles client-side navigation with protected routes.
 
 ### UI/UX Decisions
-- **Brand Identity**: QubeLabs, tagline "responsible intelligence". Uses primary blue (#0094FF), primary green (#00FF7A), dark navy (#011B40), and dark (#000A17). Font is DM Sans.
+- **Brand Identity**: ConX, tagline "responsible intelligence". Uses primary blue (#0094FF), primary green (#00FF7A), dark navy (#011B40), and dark (#000A17). Font is DM Sans. Logo files: conx-logo.jpg (light), conx-logo-dark.jpg (dark), conx-logomark.png (icon).
 - **Component Library**: `shadcn/ui` based on Radix UI primitives, styled with Tailwind CSS and CSS variables for theming. Components follow atomic design principles.
 - **Theming**: Supports light/dark/system modes with customizable colors, fonts, spacing, and border radius, managed by `ThemeProvider`.
 - **Sidebar Navigation**: Grouped, collapsible navigation with role-based filtering, highlighting active group headers.
