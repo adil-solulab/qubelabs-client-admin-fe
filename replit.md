@@ -52,10 +52,16 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - Features an environment selector (Staging, Sandbox, Production) and a category sidebar for flow organization.
 - The Test Panel supports Chat and Voice modes, simulating various node functionalities and providing test statistics.
 
-#### Integrations
-- Redesigned interface with a category sidebar and grouped card grid.
-- Covers 19 integrations across CRM, Voice, Communications, LiveChat, and Payments categories.
+#### Integrations & Channels (Merged Module)
+- Unified "Integrations & Channels" page with category sidebar and grouped card grid.
+- Covers 27 integrations across 7 categories: CRM (4), Voice (5), Messaging (6), Email (4), Chat Widget (1), LiveChat (4), Payments (3).
+- **Channel connectors merged**: All Voice (Twilio, Vonage, Genesys Cloud, Asterisk/FreePBX, Amazon Connect), Messaging (WhatsApp, Slack, Telegram, Teams, Facebook Messenger, Instagram Direct), and Email (SendGrid, Amazon SES, Mailgun, Custom SMTP) connectors integrated as integration cards.
+- **Chat Widget**: Special integration card with 5-tab configuration panel (Appearance, Bot Icon, Settings, Navigation, Deploy) accessible directly from the Integrations page.
+- **IntegrationDetailView**: Supports text, password, select, and number field types for connector configuration.
 - Each integration includes configuration fields, setup instructions, and connection management.
+- **Channels page removed**: `/channels` route and sidebar entry removed; all channel functionality lives in Integrations.
+- **Types**: `Integration`, `IntegrationCategory` (includes 'voice' | 'messaging' | 'email' | 'chat_widget') in `src/types/integrations.ts`
+- **Data Hook**: `useIntegrationsData` manages all integrations including channel connectors and chat widget config.
 
 #### Outbound Campaigns (Yellow.ai-style Campaign Management)
 - **Campaign List View**: Dashboard with stats cards (total, running, scheduled, completed), filterable/searchable campaign table with status badges, channel icons, audience counts, and progress bars
@@ -72,21 +78,6 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - Tracks Outcome KPIs like Time Saved, Effort Saved, Conversion Rate, Engagement Rate, and CSAT Score with sparkline charts.
 - Provides detailed analytics for campaigns, channels, LLM usage, transcription accuracy, and compliance.
 - Includes a `KPICard` component for reusable KPI visualization.
-
-#### Channels (Connector-Based Architecture)
-- Redesigned with 4 main category cards: Voice, Messaging, Chat Widget, Email
-- **Voice Connectors**: Twilio (connected), Vonage, Genesys Cloud, Asterisk/FreePBX
-- **Messaging Connectors**: WhatsApp Business (connected), Slack, Telegram, Microsoft Teams, Facebook Messenger, Instagram Direct
-- **Email Connectors**: SendGrid (connected), Amazon SES, Mailgun, Custom SMTP
-- **Chat Widget**: Yellow.ai-inspired configuration with 5 tabs:
-  - Appearance: Bot display name/description, light/dark theme, solid/gradient brand colors, font style (default/custom), font size, widget size, position, initial states (desktop: half-opened/minimized/conversational-layover/chat-bubble; mobile: minimized/chat-bubble)
-  - Bot Icon: Shape (circle/square/bar for desktop, circle/square for mobile), source (avatar/custom), animation (none/bounce/pulse/shake)
-  - Settings: General (auto-complete, message feedback, attachments, slow messages, multiline input, language switcher, RTL support, scroll behavior), Chat History (show history, fresh session per tab, download transcript), Notifications (unread badge, browser tab notification, message sound), Speech & Dictation (speech-to-text, auto-send, text-to-speech)
-  - Navigation: Home button, Menu (up to 10 items)
-  - Deploy: Embeddable script with copy functionality
-- **ConnectorConfigPanel**: Reusable config panel with connection status, form fields, connect/disconnect/save actions, confirmation dialogs
-- **Types**: `Connector`, `ConnectorField`, `ChatWidgetConfig`, `ChannelCategoryInfo` in `src/types/channels.ts`
-- **Data Hook**: `useChannelsData` manages connectors array and chat widget config with connect/disconnect/update operations
 
 #### Security & Compliance Module
 - Organized into 5 tabs: Compliance, SSO, RBAC, Moderation, Audit Logs.
