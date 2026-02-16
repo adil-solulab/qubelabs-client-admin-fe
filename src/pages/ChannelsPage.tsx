@@ -6,17 +6,13 @@ import {
   Mail,
   Wifi,
   ChevronRight,
-  Hash,
-  Globe,
-  Send,
-  Cloud,
-  Server,
-  Camera,
+  ArrowLeft,
   Shield,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useChannelsData } from '@/hooks/useChannelsData';
 import { notify } from '@/hooks/useNotification';
 import { ConnectorConfigPanel, CONNECTOR_ICONS, CONNECTOR_COLORS } from '@/components/channels/ConnectorConfigPanel';
@@ -26,11 +22,11 @@ import { cn } from '@/lib/utils';
 
 type ViewMode = 'categories' | 'connectors' | 'connector-config' | 'chat-widget';
 
-const CATEGORY_CONFIG: Record<ChannelCategory, { icon: React.ElementType; color: string; bg: string }> = {
-  voice: { icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
-  messaging: { icon: MessageCircle, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30' },
-  'chat-widget': { icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
-  email: { icon: Mail, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950/30' },
+const CATEGORY_CONFIG: Record<ChannelCategory, { icon: React.ElementType; color: string; bg: string; border: string }> = {
+  voice: { icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800/40' },
+  messaging: { icon: MessageCircle, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800/40' },
+  'chat-widget': { icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30', border: 'border-purple-200 dark:border-purple-800/40' },
+  email: { icon: Mail, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950/30', border: 'border-orange-200 dark:border-orange-800/40' },
 };
 
 export default function ChannelsPage() {
@@ -147,74 +143,60 @@ export default function ChannelsPage() {
     return (
       <AppLayout>
         <div className="animate-fade-in">
-          <div className="flex items-center gap-3 mb-6">
-            <button
-              onClick={handleBackToCategories}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Channels
-            </button>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{getCategoryLabel(selectedCategory)}</span>
+          <div className="flex items-center gap-2 mb-5">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBackToCategories}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span className="hover:text-foreground cursor-pointer transition-colors" onClick={handleBackToCategories}>Channels</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="font-medium text-foreground">{getCategoryLabel(selectedCategory)}</span>
+            </div>
           </div>
 
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground">
+          <div className="mb-5">
+            <h1 className="text-xl font-bold text-foreground">
               {getCategoryLabel(selectedCategory)} Connectors
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground">
               Connect third-party {getCategoryLabel(selectedCategory).toLowerCase()} services to your platform
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
             {categoryConnectors.map((connector) => {
               const Icon = CONNECTOR_ICONS[connector.id] || Shield;
               const colors = CONNECTOR_COLORS[connector.id] || { color: 'text-primary', bg: 'bg-primary/10' };
               const isConnected = connector.status === 'connected';
 
               return (
-                <Card
+                <div
                   key={connector.id}
                   className={cn(
-                    'gradient-card cursor-pointer transition-all hover:shadow-md',
-                    isConnected && 'ring-1 ring-success/30'
+                    'flex items-center gap-4 p-4 rounded-xl border bg-card cursor-pointer transition-all hover:bg-accent/50 group',
+                    isConnected && 'border-success/20'
                   )}
                   onClick={() => handleConnectorClick(connector)}
                 >
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0', colors.bg)}>
-                        <Icon className={cn('w-6 h-6', colors.color)} />
+                  <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', colors.bg)}>
+                    <Icon className={cn('w-5 h-5', colors.color)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold">{connector.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{connector.description}</p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {isConnected ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-success" />
+                        <span className="text-xs font-medium text-success">Connected</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <h3 className="font-semibold">{connector.name}</h3>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              'text-xs flex-shrink-0',
-                              isConnected ? 'text-success border-success/30 bg-success/10' : 'text-muted-foreground'
-                            )}
-                          >
-                            {isConnected ? (
-                              <><Wifi className="w-3 h-3 mr-1" />Connected</>
-                            ) : (
-                              'Not Connected'
-                            )}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{connector.description}</p>
-                        {isConnected && connector.connectedAt && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Connected {new Date(connector.connectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        )}
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Not connected</span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -226,14 +208,14 @@ export default function ChannelsPage() {
   return (
     <AppLayout>
       <div className="animate-fade-in">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Channels</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-foreground">Channels</h1>
+          <p className="text-sm text-muted-foreground">
             Connect and manage communication channels for your AI agents
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {categoryStats.map((cat) => {
             const config = CATEGORY_CONFIG[cat.id];
             const CatIcon = config.icon;
@@ -241,27 +223,30 @@ export default function ChannelsPage() {
             return (
               <Card
                 key={cat.id}
-                className="gradient-card cursor-pointer transition-all hover:shadow-glow hover:-translate-y-0.5"
+                className={cn(
+                  'cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border',
+                  config.border
+                )}
                 onClick={() => handleCategoryClick(cat.id)}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center', config.bg)}>
-                      <CatIcon className={cn('w-7 h-7', config.color)} />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', config.bg)}>
+                      <CatIcon className={cn('w-5 h-5', config.color)} />
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
 
-                  <h2 className="text-lg font-bold mb-1">{cat.name}</h2>
-                  <p className="text-sm text-muted-foreground mb-4">{cat.description}</p>
+                  <h3 className="text-sm font-bold mb-0.5">{cat.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-3 line-clamp-1">{cat.description}</p>
 
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="text-xs">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-muted-foreground">
                       {cat.connectorCount} {cat.connectorCount === 1 ? 'connector' : 'connectors'}
-                    </Badge>
+                    </span>
                     {cat.activeCount > 0 && (
-                      <Badge className="text-xs bg-success/10 text-success border-success/30">
-                        <Wifi className="w-3 h-3 mr-1" />
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-success/10 text-success border-success/30">
+                        <Wifi className="w-2.5 h-2.5 mr-0.5" />
                         {cat.activeCount} active
                       </Badge>
                     )}
@@ -270,6 +255,45 @@ export default function ChannelsPage() {
               </Card>
             );
           })}
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-sm font-semibold text-foreground mb-3">All Connectors</h2>
+          <div className="space-y-1.5">
+            {connectors.map((connector) => {
+              const Icon = CONNECTOR_ICONS[connector.id] || Shield;
+              const colors = CONNECTOR_COLORS[connector.id] || { color: 'text-primary', bg: 'bg-primary/10' };
+              const isConnected = connector.status === 'connected';
+              const catConfig = CATEGORY_CONFIG[connector.category];
+
+              return (
+                <div
+                  key={connector.id}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg border bg-card cursor-pointer transition-all hover:bg-accent/50 group"
+                  onClick={() => handleConnectorClick(connector)}
+                >
+                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', colors.bg)}>
+                    <Icon className={cn('w-4 h-4', colors.color)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium">{connector.name}</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 flex-shrink-0">
+                    {getCategoryLabel(connector.category)}
+                  </Badge>
+                  {isConnected ? (
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                      <span className="text-[11px] font-medium text-success">Connected</span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-muted-foreground flex-shrink-0">Not connected</span>
+                  )}
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </AppLayout>
