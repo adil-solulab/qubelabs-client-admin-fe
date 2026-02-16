@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LucideIcon } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { LucideIcon, Info } from 'lucide-react';
 
 interface DashboardWidgetProps {
   title: string;
@@ -12,6 +13,7 @@ interface DashboardWidgetProps {
   onClick?: () => void;
   isLoading?: boolean;
   action?: React.ReactNode;
+  definition?: string;
 }
 
 export function DashboardWidget({
@@ -23,6 +25,7 @@ export function DashboardWidget({
   onClick,
   isLoading,
   action,
+  definition,
 }: DashboardWidgetProps) {
   return (
     <Card
@@ -44,6 +47,18 @@ export function DashboardWidget({
             <CardTitle className="text-sm font-medium text-muted-foreground">
               {title}
             </CardTitle>
+            {definition && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    {definition}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
           {action}
         </div>

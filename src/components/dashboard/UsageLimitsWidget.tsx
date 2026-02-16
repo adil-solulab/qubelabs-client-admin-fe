@@ -61,6 +61,7 @@ export function UsageLimitsWidget({ usage, isLoading }: UsageLimitsWidgetProps) 
         iconColor="text-warning"
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="Current consumption of subscribed resources compared to your plan limits. Resets monthly"
       >
         <div className="space-y-3">
           {usage.slice(0, 2).map((item, idx) => {

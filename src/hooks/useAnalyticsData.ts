@@ -130,6 +130,7 @@ export function useAnalyticsData() {
       unit: 'hours',
       icon: 'clock',
       color: 'primary',
+      definition: 'Average time saved per interaction by AI automation compared to manual handling',
     },
     {
       id: 'effort-saved',
@@ -143,6 +144,7 @@ export function useAnalyticsData() {
       unit: '%',
       icon: 'zap',
       color: 'success',
+      definition: 'Reduction in agent workload achieved through AI-powered self-service and automation',
     },
     {
       id: 'conversion-rate',
@@ -156,6 +158,7 @@ export function useAnalyticsData() {
       unit: '%',
       icon: 'target',
       color: 'warning',
+      definition: 'Percentage of AI-handled conversations that result in a successful outcome or sale',
     },
     {
       id: 'engagement-rate',
@@ -169,6 +172,7 @@ export function useAnalyticsData() {
       unit: '%',
       icon: 'heart',
       color: 'destructive',
+      definition: 'Percentage of users who actively interact with the AI agent beyond the initial message',
     },
     {
       id: 'csat-outcome',
@@ -182,6 +186,7 @@ export function useAnalyticsData() {
       unit: '%',
       icon: 'star',
       color: 'primary',
+      definition: 'Customer Satisfaction Score collected through post-interaction surveys, rated 1-5 stars',
     },
   ], []);
 

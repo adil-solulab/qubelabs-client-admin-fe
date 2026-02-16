@@ -50,6 +50,7 @@ export function SentimentWidget({ sentiment, isLoading }: SentimentWidgetProps) 
         iconColor="text-success"
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="AI-powered analysis of customer mood based on voice tone, word choice, and conversation context"
         action={
           <div className={cn('flex items-center gap-1 text-sm', getTrendColor())}>
             {getTrendIcon()}

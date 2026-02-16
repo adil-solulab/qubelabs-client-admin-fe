@@ -1,4 +1,4 @@
-import { Shield, AlertTriangle, FileWarning, Gauge } from 'lucide-react';
+import { Shield, AlertTriangle, FileWarning, Gauge, Info } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -55,14 +56,38 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
           <CardContent className="pt-4">
             <Shield className="w-5 h-5 text-success" />
             <p className="text-2xl font-bold mt-2">{complianceAnalytics.complianceRate}%</p>
-            <p className="text-xs text-muted-foreground">Compliance Rate</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground">Compliance Rate</p>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    Percentage of AI interactions that fully adhere to regulatory guidelines, company policies, and data privacy standards
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            </div>
           </CardContent>
         </Card>
         <Card className="gradient-card">
           <CardContent className="pt-4">
             <AlertTriangle className="w-5 h-5 text-warning" />
             <p className="text-2xl font-bold mt-2">{complianceAnalytics.flaggedInteractions}</p>
-            <p className="text-xs text-muted-foreground">Flagged Interactions</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground">Flagged Interactions</p>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    Number of conversations flagged by the system for potential compliance violations requiring human review
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            </div>
           </CardContent>
         </Card>
         <Card className="gradient-card">
@@ -77,7 +102,19 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
               </Badge>
             </div>
             <p className="text-2xl font-bold mt-2">{complianceAnalytics.policyViolations}</p>
-            <p className="text-xs text-muted-foreground">Policy Violations</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground">Policy Violations</p>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    Total confirmed breaches of company policies including data privacy, regulatory rules, and content guidelines
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            </div>
           </CardContent>
         </Card>
         <Card className="gradient-card">
@@ -92,7 +129,19 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
               </Badge>
             </div>
             <p className="text-2xl font-bold mt-2">{complianceAnalytics.avgRiskScore}</p>
-            <p className="text-xs text-muted-foreground">Avg Risk Score</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground">Avg Risk Score</p>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    Composite score (0-100) assessing overall compliance risk. Lower scores indicate better compliance health
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -100,7 +149,19 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="gradient-card">
           <CardHeader>
-            <CardTitle className="text-base font-medium">Risk Distribution</CardTitle>
+            <CardTitle className="text-base font-medium flex items-center gap-2">
+              Risk Distribution
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    Breakdown of compliance risk levels (High, Medium, Low) across all monitored interactions
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center">
@@ -130,7 +191,19 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
 
         <Card className="gradient-card">
           <CardHeader>
-            <CardTitle className="text-base font-medium">Flagged vs Resolved Over Time</CardTitle>
+            <CardTitle className="text-base font-medium flex items-center gap-2">
+              Flagged vs Resolved Over Time
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[250px] text-xs">
+                    Trend of newly flagged compliance issues versus issues that have been reviewed and resolved
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -150,7 +223,19 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
 
       <Card className="gradient-card">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Violation Categories</CardTitle>
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            Violation Categories
+            <TooltipProvider>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  Classification of policy violations by type with severity assessment
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -180,7 +265,19 @@ export function ComplianceTab({ complianceAnalytics }: ComplianceTabProps) {
 
       <Card className="gradient-card">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Recent Violations</CardTitle>
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            Recent Violations
+            <TooltipProvider>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  Latest compliance violations with details on type, severity, assigned agent, and resolution status
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>

@@ -79,6 +79,7 @@ export interface OutcomeKPI {
   unit?: string;
   icon: string;
   color: string;
+  definition?: string;
 }
 
 export interface CampaignMetrics {

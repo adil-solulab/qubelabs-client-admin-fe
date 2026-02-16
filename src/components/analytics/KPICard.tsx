@@ -1,7 +1,8 @@
-import { TrendingUp, TrendingDown, Clock, Zap, Target, Heart, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, Zap, Target, Heart, Star, Info } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -35,9 +36,10 @@ interface KPICardProps {
   sparklineData: number[];
   icon: string;
   color: string;
+  definition?: string;
 }
 
-export function KPICard({ label, value, change, changeLabel, trendDirection, sparklineData, icon, color }: KPICardProps) {
+export function KPICard({ label, value, change, changeLabel, trendDirection, sparklineData, icon, color, definition }: KPICardProps) {
   const IconComponent = iconMap[icon] || Star;
   const lineColor = colorMap[color] || colorMap.primary;
   const iconClass = iconColorMap[color] || 'text-primary';
@@ -51,6 +53,18 @@ export function KPICard({ label, value, change, changeLabel, trendDirection, spa
             <div className="flex items-center gap-2 mb-1">
               <IconComponent className={cn('w-4 h-4', iconClass)} />
               <span className="text-xs text-muted-foreground">{label}</span>
+              {definition && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      {definition}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <p className="text-2xl font-bold">{value}</p>
             <div className="flex items-center gap-1 mt-1">

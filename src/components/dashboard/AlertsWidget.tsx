@@ -97,6 +97,7 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
         iconColor={critical.length > 0 ? 'text-destructive' : 'text-warning'}
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="Critical system notifications including SLA breaches, idle agents, and sentiment drops requiring attention"
       >
         <div className="space-y-2">
           {unacknowledged.length === 0 ? (

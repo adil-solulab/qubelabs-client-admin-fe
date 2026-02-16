@@ -102,6 +102,7 @@ export function ActiveChatsWidget({ chats: initialChats, isLoading }: ActiveChat
         iconColor="text-channel-chat"
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="Total number of text-based chat conversations currently active across all channels"
       >
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold text-foreground">{chatList.length}</span>

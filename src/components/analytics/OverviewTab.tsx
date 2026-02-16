@@ -10,6 +10,7 @@ import {
   ThumbsUp,
   Bot,
   Award,
+  Info,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -31,6 +32,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -142,6 +144,7 @@ export function OverviewTab({
               sparklineData={kpi.sparklineData}
               icon={kpi.icon}
               color={kpi.color}
+              definition={kpi.definition}
             />
           ))}
         </div>
@@ -162,7 +165,19 @@ export function OverviewTab({
                 </Badge>
               </div>
               <p className="text-2xl font-bold mt-2">{conversationMetrics.totalConversations.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">Total Conversations</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">Total Conversations</p>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      Total number of conversations handled across all channels during the selected period
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardContent>
           </Card>
 
@@ -170,7 +185,19 @@ export function OverviewTab({
             <CardContent className="pt-4">
               <Clock className="w-5 h-5 text-warning" />
               <p className="text-2xl font-bold mt-2">{formatDuration(conversationMetrics.avgDuration)}</p>
-              <p className="text-xs text-muted-foreground">Avg Duration</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">Avg Duration</p>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      Average length of time from conversation start to resolution across all channels
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardContent>
           </Card>
 
@@ -178,7 +205,19 @@ export function OverviewTab({
             <CardContent className="pt-4">
               <ThumbsUp className="w-5 h-5 text-success" />
               <p className="text-2xl font-bold mt-2">{conversationMetrics.resolutionRate}%</p>
-              <p className="text-xs text-muted-foreground">Resolution Rate</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">Resolution Rate</p>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      Percentage of conversations successfully resolved without escalation to a human agent
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardContent>
           </Card>
 
@@ -194,7 +233,19 @@ export function OverviewTab({
                 </Badge>
               </div>
               <p className="text-2xl font-bold mt-2">{csatNpsData.csat}%</p>
-              <p className="text-xs text-muted-foreground">CSAT Score</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">CSAT Score</p>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      Customer Satisfaction Score from post-interaction surveys. Higher is better (target: &gt;85%)
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardContent>
           </Card>
 
@@ -210,7 +261,19 @@ export function OverviewTab({
                 </Badge>
               </div>
               <p className="text-2xl font-bold mt-2">{csatNpsData.nps}</p>
-              <p className="text-xs text-muted-foreground">NPS Score</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">NPS Score</p>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      Net Promoter Score measuring customer loyalty. Ranges from -100 to +100 (target: &gt;50)
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardContent>
           </Card>
 
@@ -218,7 +281,19 @@ export function OverviewTab({
             <CardContent className="pt-4">
               <Users className="w-5 h-5 text-muted-foreground" />
               <p className="text-2xl font-bold mt-2">{conversationMetrics.handoffRate}%</p>
-              <p className="text-xs text-muted-foreground">Handoff Rate</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">Handoff Rate</p>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px] text-xs">
+                      Percentage of AI conversations that required transfer to a human agent
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardContent>
           </Card>
         </div>

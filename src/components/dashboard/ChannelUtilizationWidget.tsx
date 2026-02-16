@@ -74,6 +74,7 @@ export function ChannelUtilizationWidget({ utilization, isLoading }: ChannelUtil
         iconColor="text-primary"
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="Distribution of conversations across Voice, Chat, and Email channels showing which channels are most active"
       >
         <div className="flex items-center gap-4">
           {/* Mini Pie Chart */}

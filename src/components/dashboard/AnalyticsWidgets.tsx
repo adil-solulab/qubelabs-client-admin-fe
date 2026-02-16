@@ -13,6 +13,7 @@ import {
   Zap,
   Target,
   Heart,
+  Info,
 } from 'lucide-react';
 import {
   LineChart,
@@ -34,6 +35,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type {
   ConversationMetrics,
@@ -102,7 +104,19 @@ export function TotalConversationsKPI({ data }: { data: ConversationMetrics }) {
         <p className="text-2xl font-bold mt-2">
           {data.totalConversations.toLocaleString()}
         </p>
-        <p className="text-xs text-muted-foreground">Total Conversations</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">Total Conversations</p>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] text-xs">
+                Total conversations handled across all channels during the selected period
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        </div>
       </CardContent>
     </Card>
   );
@@ -117,7 +131,19 @@ export function ResolutionRateKPI({ data }: { data: ConversationMetrics }) {
           <DiveDeepButton />
         </div>
         <p className="text-2xl font-bold mt-2">{data.resolutionRate}%</p>
-        <p className="text-xs text-muted-foreground">Resolution Rate</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">Resolution Rate</p>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] text-xs">
+                Percentage of conversations resolved without human agent escalation
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        </div>
       </CardContent>
     </Card>
   );
@@ -136,7 +162,19 @@ export function AvgDurationKPI({ data }: { data: ConversationMetrics }) {
         <p className="text-2xl font-bold mt-2">
           {mins}:{secs.toString().padStart(2, '0')}
         </p>
-        <p className="text-xs text-muted-foreground">Avg Duration</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">Avg Duration</p>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] text-xs">
+                Average time from conversation start to resolution
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        </div>
       </CardContent>
     </Card>
   );
@@ -165,7 +203,19 @@ export function CSATScoreKPI({ data }: { data: CSATNPSData }) {
           </div>
         </div>
         <p className="text-2xl font-bold mt-2">{data.csat}%</p>
-        <p className="text-xs text-muted-foreground">CSAT Score</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">CSAT Score</p>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] text-xs">
+                Customer Satisfaction Score from post-interaction surveys (target: &gt;85%)
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        </div>
       </CardContent>
     </Card>
   );
@@ -194,7 +244,19 @@ export function NPSScoreKPI({ data }: { data: CSATNPSData }) {
           </div>
         </div>
         <p className="text-2xl font-bold mt-2">{data.nps}</p>
-        <p className="text-xs text-muted-foreground">NPS Score</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">NPS Score</p>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] text-xs">
+                Net Promoter Score measuring customer loyalty (-100 to +100, target: &gt;50)
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        </div>
       </CardContent>
     </Card>
   );
@@ -209,7 +271,19 @@ export function HandoffRateKPI({ data }: { data: ConversationMetrics }) {
           <DiveDeepButton />
         </div>
         <p className="text-2xl font-bold mt-2">{data.handoffRate}%</p>
-        <p className="text-xs text-muted-foreground">Handoff Rate</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">Handoff Rate</p>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] text-xs">
+                Percentage of AI conversations requiring transfer to a human agent
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        </div>
       </CardContent>
     </Card>
   );
@@ -657,7 +731,21 @@ export function OutcomeKPIWidget({ kpi }: { kpi: OutcomeKPI }) {
           </div>
         </div>
         <p className="text-2xl font-bold mt-2">{kpi.value}</p>
-        <p className="text-xs text-muted-foreground">{kpi.label}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">{kpi.label}</p>
+          {kpi.definition && (
+            <TooltipProvider>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3 h-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                  {kpi.definition}
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

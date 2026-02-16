@@ -132,6 +132,7 @@ export function ActiveEmailsWidget({ emails: initialEmails, isLoading }: ActiveE
         iconColor="text-channel-email"
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="Total number of email conversations currently in queue or being processed"
       >
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold text-foreground">{emailList.length}</span>

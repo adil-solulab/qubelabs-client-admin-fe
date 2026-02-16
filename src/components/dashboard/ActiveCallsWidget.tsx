@@ -161,6 +161,7 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
         iconColor="text-channel-voice"
         onClick={() => setIsOpen(true)}
         isLoading={isLoading}
+        definition="Total number of voice calls currently being handled by AI or human agents in real-time"
       >
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold text-foreground">{calls.length}</span>
