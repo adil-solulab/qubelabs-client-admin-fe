@@ -32,7 +32,7 @@ export default function OutboundCallsPage() {
     clearUploadProgress,
   } = useOutboundCallingData();
 
-  const { getFlowSummaries } = useFlowBuilderData();
+  const { getFlowSummaries, createFlow } = useFlowBuilderData();
   const flowSummaries = getFlowSummaries();
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -111,6 +111,7 @@ export default function OutboundCallsPage() {
           templates={templates}
           segments={segments}
           flows={flowSummaries}
+          onCreateFlow={createFlow}
           onSubmit={handleSubmitCampaign}
           onSaveDraft={handleSaveDraft}
           onCancel={handleBackToList}

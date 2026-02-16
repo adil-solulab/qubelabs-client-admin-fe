@@ -14,6 +14,8 @@ import {
   GitBranch,
   Zap,
   Search,
+  Plus,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,13 +37,14 @@ import type {
   CreateCampaignData,
 } from '@/types/outboundCalling';
 import { CHANNEL_CONFIG } from '@/types/outboundCalling';
-import type { FlowSummary } from '@/types/flowBuilder';
+import type { FlowSummary, FlowType, FlowChannel, Flow } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 
 interface CreateCampaignWizardProps {
   templates: CampaignTemplate[];
   segments: CampaignSegment[];
   flows?: FlowSummary[];
+  onCreateFlow?: (name: string, description: string, category: string, channel?: FlowChannel, flowType?: FlowType) => Flow;
   onSubmit: (data: CreateCampaignData) => Promise<void>;
   onSaveDraft: (data: Partial<CreateCampaignData>) => Promise<void>;
   onCancel: () => void;
@@ -87,6 +90,7 @@ export function CreateCampaignWizard({
   templates,
   segments,
   flows = [],
+  onCreateFlow,
   onSubmit,
   onSaveDraft,
   onCancel,
@@ -103,8 +107,33 @@ export function CreateCampaignWizard({
   const [flowSearch, setFlowSearch] = useState('');
   const [workflowSearch, setWorkflowSearch] = useState('');
 
+  const [showCreateFlow, setShowCreateFlow] = useState(false);
+  const [newFlowName, setNewFlowName] = useState('');
+  const [newFlowDesc, setNewFlowDesc] = useState('');
+  const [showCreateWorkflow, setShowCreateWorkflow] = useState(false);
+  const [newWorkflowName, setNewWorkflowName] = useState('');
+  const [newWorkflowDesc, setNewWorkflowDesc] = useState('');
+
   const conversationalFlows = flows.filter(f => f.flowType === 'flow');
   const automationWorkflows = flows.filter(f => f.flowType === 'workflow');
+
+  const handleCreateNewFlow = () => {
+    if (!onCreateFlow || !newFlowName.trim()) return;
+    const newFlow = onCreateFlow(newFlowName.trim(), newFlowDesc.trim(), 'General', 'chat', 'flow');
+    setFlowId(newFlow.id);
+    setNewFlowName('');
+    setNewFlowDesc('');
+    setShowCreateFlow(false);
+  };
+
+  const handleCreateNewWorkflow = () => {
+    if (!onCreateFlow || !newWorkflowName.trim()) return;
+    const newWf = onCreateFlow(newWorkflowName.trim(), newWorkflowDesc.trim(), 'General', 'chat', 'workflow');
+    setWorkflowId(newWf.id);
+    setNewWorkflowName('');
+    setNewWorkflowDesc('');
+    setShowCreateWorkflow(false);
+  };
 
   const filteredFlows = conversationalFlows.filter(f =>
     f.name.toLowerCase().includes(flowSearch.toLowerCase())
@@ -293,11 +322,50 @@ export function CreateCampaignWizard({
                   />
                 </div>
 
-                {conversationalFlows.length === 0 ? (
+                {showCreateFlow ? (
+                  <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">Create New Flow</p>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setShowCreateFlow(false); setNewFlowName(''); setNewFlowDesc(''); }}>
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Flow name *"
+                      value={newFlowName}
+                      onChange={(e) => setNewFlowName(e.target.value)}
+                      autoFocus
+                    />
+                    <Input
+                      placeholder="Description (optional)"
+                      value={newFlowDesc}
+                      onChange={(e) => setNewFlowDesc(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => { setShowCreateFlow(false); setNewFlowName(''); setNewFlowDesc(''); }}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" disabled={!newFlowName.trim()} onClick={handleCreateNewFlow}>
+                        <Plus className="w-3.5 h-3.5 mr-1" />
+                        Create
+                      </Button>
+                    </div>
+                  </div>
+                ) : onCreateFlow ? (
+                  <button
+                    onClick={() => setShowCreateFlow(true)}
+                    className="w-full text-left px-3 py-2.5 rounded-lg border border-dashed border-primary/40 hover:border-primary hover:bg-primary/5 transition-all flex items-center gap-2 text-sm text-primary"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="font-medium">Create New Flow</span>
+                  </button>
+                ) : null}
+
+                {conversationalFlows.length === 0 && !showCreateFlow ? (
                   <div className="text-center py-6 text-muted-foreground">
                     <GitBranch className="w-8 h-8 mx-auto mb-2 opacity-40" />
                     <p className="text-sm">No conversational flows available</p>
-                    <p className="text-xs">Create flows in the Flow Builder first</p>
+                    <p className="text-xs">Create one above or in the Flow Builder</p>
                   </div>
                 ) : (
                   <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
@@ -363,11 +431,50 @@ export function CreateCampaignWizard({
                   />
                 </div>
 
-                {automationWorkflows.length === 0 ? (
+                {showCreateWorkflow ? (
+                  <div className="p-3 rounded-lg border border-purple-400/30 bg-purple-500/5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">Create New Workflow</p>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setShowCreateWorkflow(false); setNewWorkflowName(''); setNewWorkflowDesc(''); }}>
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Workflow name *"
+                      value={newWorkflowName}
+                      onChange={(e) => setNewWorkflowName(e.target.value)}
+                      autoFocus
+                    />
+                    <Input
+                      placeholder="Description (optional)"
+                      value={newWorkflowDesc}
+                      onChange={(e) => setNewWorkflowDesc(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => { setShowCreateWorkflow(false); setNewWorkflowName(''); setNewWorkflowDesc(''); }}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" disabled={!newWorkflowName.trim()} onClick={handleCreateNewWorkflow}>
+                        <Plus className="w-3.5 h-3.5 mr-1" />
+                        Create
+                      </Button>
+                    </div>
+                  </div>
+                ) : onCreateFlow ? (
+                  <button
+                    onClick={() => setShowCreateWorkflow(true)}
+                    className="w-full text-left px-3 py-2.5 rounded-lg border border-dashed border-purple-400/40 hover:border-purple-500 hover:bg-purple-500/5 transition-all flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="font-medium">Create New Workflow</span>
+                  </button>
+                ) : null}
+
+                {automationWorkflows.length === 0 && !showCreateWorkflow ? (
                   <div className="text-center py-6 text-muted-foreground">
                     <Zap className="w-8 h-8 mx-auto mb-2 opacity-40" />
                     <p className="text-sm">No automation workflows available</p>
-                    <p className="text-xs">Create workflows in the Flow Builder first</p>
+                    <p className="text-xs">Create one above or in the Flow Builder</p>
                   </div>
                 ) : (
                   <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
