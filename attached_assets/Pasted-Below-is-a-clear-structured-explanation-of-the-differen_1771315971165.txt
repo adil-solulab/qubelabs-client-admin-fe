@@ -1,0 +1,132 @@
+Below is a clear, structured explanation of the difference between Supervisor View vs Agent View, and the exact UI/UX + functional flow both should have — especially in a voice + chat AI agent inbox system like Yellow.ai.
+This is the same structure used in industry platforms: Yellow.ai, Zendesk, Freshdesk, Five9, Genesys.
+✅ 1. Roles & What They Can See
+A. Agent View (Individual Support Agent)
+This user handles only their own calls/chats.
+They do not manage other agents.
+Agent can see:
+Their assigned conversations (voice + chat)
+AI to Human escalated tickets assigned to them
+Their performance stats (optional, limited)
+Co-Pilot assistant (reply suggestions, actions, call summaries)
+Their own call history
+Their own availability status (Online / Break / Busy)
+WebRTC panel to receive calls
+Agent cannot see:
+Other agents’ performance
+Routing rules
+Team-wide analytics
+Monitoring and barging options
+Bulk outbound campaigns
+B. Supervisor View (Team Lead / Manager)
+This user manages multiple agents.
+Supervisor can see:
+All agents' activity
+Live dashboards:
+Total active chats
+Total active voice calls
+AI handled vs Agent handled
+SLA breaches
+Each agent’s:
+Live status
+Current call/chat
+Queue length
+Monitor agent calls (silent listening)
+Barge into a call (speak if needed)
+Take Over a call
+Transfer calls between agents
+Team performance analytics:
+AHT (Average Handling Time)
+CSAT
+Resolution rate
+Queue times
+Supervisor cannot:
+Edit system-wide settings (unless also Admin)
+Change integrations, routing, SDK config
+ 
+FLOW 1: AI Handles → Human Agent Escalation
+Customer starts chat/voice
+AI Agent handles initial conversation
+AI determines: "Escalation needed"
+Routing engine assigns conversation to an Agent
+Agent sees:
+Live transcript
+Context summary
+Conversation history
+Co-Pilot suggestions
+Agent handles the call/chat
+Supervisor sees this in real-time but does not interfere unless needed.
+FLOW 2: Agent Needs Supervisor Help (Internal Escalation)
+From the Agent’s screen:
+Request Supervisor
+Mark conversation as Escalated
+Optionally: ask a supervisor privately via internal note
+Supervisor receives:
+Notification
+Option to monitor → whisper → take over
+FLOW 3: Supervisor Monitors the Team
+Supervisor dashboard shows:
+Live Queue
+How many calls waiting
+How many agents online
+Live Conversations
+For each agent:
+Name
+Current call duration
+Sentiment
+SLA status
+AI vs human handling
+Supervisor can:
+Monitor (silent)
+Whisper (only agent hears)
+Barge (join conversation)
+Take Over (become primary handler)
+FLOW 4: Outbound Voice Campaigns (Supervisor Only)
+Only supervisor sees:
+Campaign creation
+Contact lists
+Progress
+Completion rates
+AI vs Agent follow-ups
+Agents only see:
+Calls assigned to them from outbound queue
+🎨 4. UI/UX Differences
+✔ Agent UI (simple, focused)
+Left side: Inbox (My calls, My chats)
+Center: Live call / transcript / chat window
+Right: Co-Pilot (Intent, Summary, Call Actions)
+Top: Status toggle (Online, Break)
+No distracting data.
+✔ Supervisor UI (dashboard-style)
+Left: All teams, all agents
+Top: Live metrics
+Center: Wallboard (real-time activity)
+Right: Selected agent or selected call
+Floating actions:
+Monitor
+Whisper
+Barge
+Transfer
+End call
+🧠 5. What You Need to Build in Your System (Exact Requirements)
+For Agent
+My Inbox
+My Availability
+WebRTC call panel
+Co-Pilot
+Transcript
+Customer history
+Take Over button (from AI)
+Internal notes
+For Supervisor
+Team view
+Agent list (status)
+Live monitoring
+Call barging
+Queue management
+Analytics (AHT, CSAT, wait time)
+Escalation management
+Outbound campaign control
+📌 6. Should Supervisor Also See Co-Pilot?
+Yes, but with read-only mode.
+Supervisor should NOT send messages using Co-Pilot unless they take over the call.
