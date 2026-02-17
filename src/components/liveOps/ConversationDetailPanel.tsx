@@ -18,11 +18,8 @@ import {
   PhoneOff,
   Loader2,
   Flag,
-  MicOff,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
+  PanelRightOpen,
+  PanelRightClose,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { LiveConversation, Agent } from '@/types/liveOps';
+import type { LiveConversation, Agent, CallDisposition, CoPilotSuggestion } from '@/types/liveOps';
 import { SENTIMENT_CONFIG, CHANNEL_CONFIG, STATUS_CONFIG } from '@/types/liveOps';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -42,6 +39,9 @@ import { TranslationControls } from '@/components/translation/TranslationControl
 import { VoiceTranslationPanel } from '@/components/translation/VoiceTranslationPanel';
 import { LanguageSettingsModal } from '@/components/translation/LanguageSettingsModal';
 import { TransferPanel } from '@/components/liveOps/TransferPanel';
+import { VoiceCallControls } from '@/components/liveOps/VoiceCallControls';
+import { CustomerInfoSidebar } from '@/components/liveOps/CustomerInfoSidebar';
+import { PostCallDispositionModal } from '@/components/liveOps/PostCallDispositionModal';
 
 interface ConversationDetailPanelProps {
   conversation: LiveConversation;
@@ -56,6 +56,8 @@ interface ConversationDetailPanelProps {
   onResolveConversation?: () => void;
   onReport?: () => void;
   onSendMessage?: (content: string) => void;
+  onDisposition?: (disposition: CallDisposition) => void;
+  onAddNote?: (note: string) => void;
 }
 
 export function ConversationDetailPanel({
@@ -71,6 +73,8 @@ export function ConversationDetailPanel({
   onResolveConversation,
   onReport,
   onSendMessage,
+  onDisposition,
+  onAddNote,
 }: ConversationDetailPanelProps) {
   const [whisperMessage, setWhisperMessage] = useState('');
   const [chatMessage, setChatMessage] = useState('');
@@ -80,6 +84,8 @@ export function ConversationDetailPanel({
   const [voiceMuted, setVoiceMuted] = useState(false);
   const [voiceOnHold, setVoiceOnHold] = useState(false);
   const [voiceSpeaker, setVoiceSpeaker] = useState(false);
+  const [showCustomerInfo, setShowCustomerInfo] = useState(false);
+  const [dispositionOpen, setDispositionOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { currentRole, isClientAdmin } = useAuth();
@@ -193,6 +199,28 @@ export function ConversationDetailPanel({
     notify.success('Language updated', 'Customer language has been updated.');
   }, [conversation.id, setCustomerLanguage]);
 
+  const handleEndCall = () => {
+    if (conversation.channel === 'voice') {
+      setDispositionOpen(true);
+    } else if (onEndConversation) {
+      onEndConversation();
+    }
+  };
+
+  const handleDisposition = (disposition: CallDisposition) => {
+    onDisposition?.(disposition);
+    onEndConversation?.();
+  };
+
+  const handleUseSuggestion = (suggestion: CoPilotSuggestion) => {
+    if (suggestion.type === 'reply' && onSendMessage) {
+      notify.info('Suggestion Applied', 'AI suggestion has been used as a reply');
+    } else {
+      notify.info('Suggestion Noted', suggestion.content);
+    }
+  };
+
+  const isVoiceCall = conversation.channel === 'voice';
 
   const conversationTranslation = getConversationTranslation(conversation.id);
 
@@ -212,7 +240,25 @@ export function ConversationDetailPanel({
   );
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] z-50 border-l bg-background flex flex-col h-full min-h-0 max-h-full overflow-hidden animate-slide-in-right shadow-2xl">
+    <>
+    <div className={cn(
+      "fixed inset-y-0 right-0 z-50 flex animate-slide-in-right shadow-2xl",
+      showCustomerInfo && isVoiceCall ? 'w-full sm:w-[700px]' : 'w-full sm:w-[400px]'
+    )}>
+      {showCustomerInfo && isVoiceCall && conversation.customerInfo && (
+        <div className="hidden sm:block w-[300px] border-l bg-background">
+          <CustomerInfoSidebar
+            customerName={conversation.customerName}
+            customerInfo={conversation.customerInfo}
+            coPilotSuggestions={conversation.coPilotSuggestions}
+            notes={conversation.notes}
+            onAddNote={onAddNote}
+            onUseSuggestion={handleUseSuggestion}
+            onClose={() => setShowCustomerInfo(false)}
+          />
+        </div>
+      )}
+    <div className="flex-1 w-full sm:w-[400px] border-l bg-background flex flex-col h-full min-h-0 max-h-full overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b flex-shrink-0">
         <div className="flex items-start justify-between">
@@ -243,9 +289,25 @@ export function ConversationDetailPanel({
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {isVoiceCall && conversation.customerInfo && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={showCustomerInfo ? 'secondary' : 'ghost'}
+                    size="icon"
+                    onClick={() => setShowCustomerInfo(!showCustomerInfo)}
+                  >
+                    {showCustomerInfo ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{showCustomerInfo ? 'Hide Customer Info' : 'Show Customer Info'}</TooltipContent>
+              </Tooltip>
+            )}
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Meta Info */}
@@ -379,7 +441,7 @@ export function ConversationDetailPanel({
                 setIsEndingConversation(true);
                 try {
                   await new Promise(resolve => setTimeout(resolve, 800));
-                  onEndConversation();
+                  handleEndCall();
                 } finally {
                   setIsEndingConversation(false);
                 }
@@ -530,64 +592,28 @@ export function ConversationDetailPanel({
         </div>
       </div>
 
-      {conversation.channel === 'voice' && conversation.status === 'active' && (
-        <div className="p-3 border-t flex-shrink-0">
-          <div className="flex items-center justify-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={voiceMuted ? 'destructive' : 'outline'}
-                  size="icon"
-                  className="rounded-full h-10 w-10"
-                  onClick={() => {
-                    setVoiceMuted(!voiceMuted);
-                    notify.info(voiceMuted ? 'Unmuted' : 'Muted', voiceMuted ? 'Microphone is now on' : 'Microphone is now off');
-                  }}
-                >
-                  {voiceMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{voiceMuted ? 'Unmute' : 'Mute'}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={voiceOnHold ? 'secondary' : 'outline'}
-                  size="icon"
-                  className="rounded-full h-10 w-10"
-                  onClick={() => {
-                    setVoiceOnHold(!voiceOnHold);
-                    notify.info(voiceOnHold ? 'Resumed' : 'On Hold', voiceOnHold ? 'Call resumed' : 'Call placed on hold');
-                  }}
-                >
-                  {voiceOnHold ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{voiceOnHold ? 'Resume' : 'Hold'}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={voiceSpeaker ? 'secondary' : 'outline'}
-                  size="icon"
-                  className="rounded-full h-10 w-10"
-                  onClick={() => {
-                    setVoiceSpeaker(!voiceSpeaker);
-                    notify.info(voiceSpeaker ? 'Speaker Off' : 'Speaker On', voiceSpeaker ? 'Audio through headset' : 'Audio through speaker');
-                  }}
-                >
-                  {voiceSpeaker ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{voiceSpeaker ? 'Speaker Off' : 'Speaker On'}</TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            {voiceMuted && <Badge variant="destructive" className="text-[10px]">Muted</Badge>}
-            {voiceOnHold && <Badge variant="secondary" className="text-[10px]">On Hold</Badge>}
-            {voiceSpeaker && <Badge variant="secondary" className="text-[10px]">Speaker</Badge>}
-          </div>
-        </div>
+      {isVoiceCall && conversation.status === 'active' && (
+        <VoiceCallControls
+          voiceMuted={voiceMuted}
+          voiceOnHold={voiceOnHold}
+          voiceSpeaker={voiceSpeaker}
+          onToggleMute={() => {
+            setVoiceMuted(!voiceMuted);
+            notify.info(voiceMuted ? 'Unmuted' : 'Muted', voiceMuted ? 'Microphone is now on' : 'Microphone is now off');
+          }}
+          onToggleHold={() => {
+            setVoiceOnHold(!voiceOnHold);
+            notify.info(voiceOnHold ? 'Resumed' : 'On Hold', voiceOnHold ? 'Call resumed' : 'Call placed on hold');
+          }}
+          onToggleSpeaker={() => {
+            setVoiceSpeaker(!voiceSpeaker);
+            notify.info(voiceSpeaker ? 'Speaker Off' : 'Speaker On', voiceSpeaker ? 'Audio through headset' : 'Audio through speaker');
+          }}
+          onEndCall={handleEndCall}
+          networkQuality={conversation.networkQuality}
+          recordingInfo={conversation.recordingInfo}
+          isAiHandled={conversation.isAiHandled}
+        />
       )}
 
       {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && onSendMessage && (
@@ -650,5 +676,15 @@ export function ConversationDetailPanel({
         onUpdateSettings={updateSettings}
       />
     </div>
+    </div>
+
+    <PostCallDispositionModal
+      open={dispositionOpen}
+      onOpenChange={setDispositionOpen}
+      customerName={conversation.customerName}
+      duration={conversation.duration}
+      onSubmit={handleDisposition}
+    />
+    </>
   );
 }

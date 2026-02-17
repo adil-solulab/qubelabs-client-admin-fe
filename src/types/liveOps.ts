@@ -24,6 +24,52 @@ export interface ConversationMessage {
   sentiment?: SentimentType;
 }
 
+export interface CustomerInfo {
+  phone?: string;
+  email?: string;
+  crmId?: string;
+  company?: string;
+  location?: string;
+  tier?: 'standard' | 'premium' | 'enterprise';
+  lifetimeValue?: string;
+  previousInteractions: PreviousInteraction[];
+  tags?: string[];
+}
+
+export interface PreviousInteraction {
+  id: string;
+  channel: ConversationChannel;
+  topic: string;
+  date: string;
+  outcome: 'resolved' | 'escalated' | 'callback';
+  agent?: string;
+}
+
+export interface RecordingInfo {
+  available: boolean;
+  url?: string;
+  duration?: number;
+  transcriptUrl?: string;
+}
+
+export interface CoPilotSuggestion {
+  id: string;
+  type: 'intent' | 'reply' | 'action' | 'knowledge';
+  content: string;
+  confidence: number;
+}
+
+export type NetworkQuality = 'excellent' | 'good' | 'fair' | 'poor';
+
+export type DispositionOutcome = 'resolved' | 'follow_up' | 'escalated' | 'callback_scheduled' | 'voicemail';
+
+export interface CallDisposition {
+  outcome: DispositionOutcome;
+  summary: string;
+  tags: string[];
+  followUpDate?: string;
+}
+
 export interface LiveConversation {
   id: string;
   customerId: string;
@@ -47,6 +93,12 @@ export interface LiveConversation {
   slaBreached?: boolean;
   priority?: 'low' | 'medium' | 'high' | 'urgent';
   resolvedAt?: string;
+  customerInfo?: CustomerInfo;
+  recordingInfo?: RecordingInfo;
+  networkQuality?: NetworkQuality;
+  coPilotSuggestions?: CoPilotSuggestion[];
+  disposition?: CallDisposition;
+  notes?: string[];
 }
 
 export interface Agent {

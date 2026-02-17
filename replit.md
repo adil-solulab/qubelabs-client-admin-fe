@@ -48,8 +48,16 @@ Manages outbound calling campaigns (Voice, WhatsApp, SMS, Email) with a dashboar
 #### Analytics Module
 Provides 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns. Tracks Outcome KPIs (Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score) with sparkline charts and detailed analytics across various aspects of the platform.
 
-#### Live Operations (Enhanced)
+#### Live Operations (Enhanced with Voice Agent Inbox)
 Real-time monitoring of conversations with auto-updating durations and simulated messages. Features chat categorization tabs (All, Active, Queued, Resolved, Missed), configurable SLA monitoring with breach alerts, stats cards, and an Agent Status Panel. Supervisors can monitor, whisper, barge-in, transfer, and resolve conversations.
+
+**Voice Agent Inbox Features:**
+- **Customer Info Sidebar**: Expandable right panel showing customer profile (phone, email, company, tier, LTV), interaction history, AI co-pilot suggestions (intent detection, reply suggestions, action recommendations, knowledge base tips), and editable notes. Toggle via panel button in header.
+- **AI Co-Pilot Panel**: Real-time AI suggestions with confidence scores, organized by type (Intent, Reply, Action, Knowledge). Click to apply suggestions.
+- **Post-Call Disposition**: Modal triggered on call end with outcome selection (Resolved, Follow Up, Escalated, Callback, Voicemail), call summary, tags, and optional follow-up date. Disposition data persisted in conversation state.
+- **VoiceCallControls Component**: Unified voice control bar with Mute, Hold, Speaker, End Call buttons plus network quality indicator (Excellent/Good/Fair/Poor) and recording/transcript download buttons.
+- **Enhanced Voice Data**: Conversations enriched with CustomerInfo, RecordingInfo, NetworkQuality, CoPilotSuggestions, and CallDisposition types.
+- **Reusable Components**: CustomerInfoSidebar, PostCallDispositionModal, VoiceCallControls are standalone components used in both ConversationDetailPanel (Live Ops) and ActiveChatDetailPanel (Active Chats).
 
 #### Users & Team Management (Enhanced with Groups)
 Offers tabbed views for Users and Groups. The Users tab provides CRUD operations for user accounts, role management, agent status workflow (Available, Busy, Away, Offline), and concurrency control (`maxConcurrentChats`). The Groups tab enables creation and management of agent groups with supervisor assignment, agent members, working hours, and auto-assignment settings.

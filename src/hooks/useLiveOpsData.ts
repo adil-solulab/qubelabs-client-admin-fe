@@ -5,7 +5,8 @@ import type {
   Agent, 
   QueueStats,
   SentimentType,
-  SupervisorMode 
+  SupervisorMode,
+  CallDisposition 
 } from '@/types/liveOps';
 
 const generateMockConversations = (): LiveConversation[] => [
@@ -32,6 +33,30 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm4', role: 'agent', content: 'Thank you. I can see your account. I notice there\'s a $50 charge from last week. Is that what you\'re asking about?', timestamp: new Date(Date.now() - 3.5 * 60 * 1000).toISOString() },
       { id: 'm5', role: 'customer', content: 'Sí, exactamente. No reconozco ese cargo.', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString(), sentiment: 'negative' },
     ],
+    customerInfo: {
+      phone: '+1 (555) 234-5678',
+      email: 'maria.garcia@email.com',
+      crmId: 'CRM-10234',
+      company: 'García Consulting',
+      location: 'Miami, FL',
+      tier: 'premium',
+      lifetimeValue: '$12,450',
+      tags: ['Spanish-speaking', 'Premium', 'Billing'],
+      previousInteractions: [
+        { id: 'pi-1', channel: 'voice', topic: 'Account Setup', date: '2025-12-10', outcome: 'resolved', agent: 'Emma Wilson' },
+        { id: 'pi-2', channel: 'chat', topic: 'Plan Upgrade', date: '2026-01-15', outcome: 'resolved', agent: 'AI Assistant' },
+        { id: 'pi-3', channel: 'voice', topic: 'Billing Dispute', date: '2026-02-01', outcome: 'escalated', agent: 'John Smith' },
+      ],
+    },
+    recordingInfo: { available: true, url: '#recording-conv-1', duration: 300, transcriptUrl: '#transcript-conv-1' },
+    networkQuality: 'good',
+    coPilotSuggestions: [
+      { id: 'cp-1', type: 'intent', content: 'Customer is disputing an unrecognized charge of $50', confidence: 0.95 },
+      { id: 'cp-2', type: 'reply', content: 'I can see the $50 charge was from a subscription renewal. Would you like me to issue a refund?', confidence: 0.88 },
+      { id: 'cp-3', type: 'action', content: 'Open billing dispute form for account CRM-10234', confidence: 0.82 },
+      { id: 'cp-4', type: 'knowledge', content: 'Policy: Disputes under $100 can be auto-refunded within 30 days', confidence: 0.91 },
+    ],
+    notes: ['Customer prefers communication in Spanish', 'Previous billing dispute was resolved with credit'],
   },
   {
     id: 'conv-2',
@@ -78,6 +103,32 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm3', role: 'system', content: 'Supervisor started monitoring this conversation', timestamp: new Date(Date.now() - 14 * 60 * 1000).toISOString() },
       { id: 'm4', role: 'customer', content: 'I really hope so. This has been going on for weeks.', timestamp: new Date(Date.now() - 13.5 * 60 * 1000).toISOString(), sentiment: 'negative' },
     ],
+    customerInfo: {
+      phone: '+1 (555) 987-6543',
+      email: 'sarah.j@techcorp.io',
+      crmId: 'CRM-20891',
+      company: 'TechCorp Industries',
+      location: 'Austin, TX',
+      tier: 'enterprise',
+      lifetimeValue: '$85,200',
+      tags: ['Enterprise', 'Technical', 'Escalation-History'],
+      previousInteractions: [
+        { id: 'pi-4', channel: 'voice', topic: 'API Integration Issue', date: '2026-01-28', outcome: 'escalated', agent: 'David Kim' },
+        { id: 'pi-5', channel: 'voice', topic: 'Same API Issue - Follow Up', date: '2026-02-05', outcome: 'callback', agent: 'John Smith' },
+        { id: 'pi-6', channel: 'email', topic: 'Service Level Complaint', date: '2026-02-10', outcome: 'escalated', agent: 'Carlos Mendez' },
+        { id: 'pi-7', channel: 'chat', topic: 'Account Status Check', date: '2026-02-14', outcome: 'resolved', agent: 'AI Assistant' },
+      ],
+    },
+    recordingInfo: { available: true, url: '#recording-conv-3', duration: 900, transcriptUrl: '#transcript-conv-3' },
+    networkQuality: 'excellent',
+    coPilotSuggestions: [
+      { id: 'cp-5', type: 'intent', content: 'Repeat caller — 3rd contact about unresolved API integration issue', confidence: 0.97 },
+      { id: 'cp-6', type: 'reply', content: 'Sarah, I can see this has been ongoing. Let me escalate to our engineering team with a priority ticket.', confidence: 0.90 },
+      { id: 'cp-7', type: 'action', content: 'Create P1 engineering ticket for API webhook failures on account CRM-20891', confidence: 0.93 },
+      { id: 'cp-8', type: 'knowledge', content: 'Known issue: Webhook delivery failures affecting enterprise accounts since Feb 3. Fix ETA: Feb 20.', confidence: 0.96 },
+      { id: 'cp-9', type: 'action', content: 'Offer 15% service credit per enterprise SLA breach policy', confidence: 0.85 },
+    ],
+    notes: ['Enterprise customer — high priority', 'Recurring API webhook issue', 'Supervisor monitoring active'],
   },
   {
     id: 'conv-4',
@@ -170,6 +221,25 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm3', role: 'customer', content: 'Perfect, thanks for the quick help!', timestamp: new Date(Date.now() - 36 * 60 * 1000).toISOString(), sentiment: 'positive' },
       { id: 'm4', role: 'system', content: 'Conversation resolved', timestamp: new Date(Date.now() - 35 * 60 * 1000).toISOString() },
     ],
+    customerInfo: {
+      phone: '+1 (555) 111-2233',
+      email: 'anna.t@email.com',
+      crmId: 'CRM-30567',
+      location: 'Portland, OR',
+      tier: 'standard',
+      lifetimeValue: '$2,800',
+      tags: ['Standard', 'Subscription'],
+      previousInteractions: [
+        { id: 'pi-8', channel: 'chat', topic: 'Plan Inquiry', date: '2025-11-20', outcome: 'resolved', agent: 'AI Assistant' },
+      ],
+    },
+    recordingInfo: { available: true, url: '#recording-conv-7', duration: 1500, transcriptUrl: '#transcript-conv-7' },
+    networkQuality: 'fair',
+    disposition: {
+      outcome: 'resolved',
+      summary: 'Customer upgraded from Standard to Pro plan. Confirmed new features access.',
+      tags: ['Subscription', 'Upgrade', 'Upsell'],
+    },
   },
   {
     id: 'conv-8',
@@ -583,6 +653,34 @@ export function useLiveOpsData() {
     }
   }, [selectedConversation]);
 
+  const addNote = useCallback((conversationId: string, note: string) => {
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? { ...conv, notes: [...(conv.notes || []), note] }
+        : conv
+    ));
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        notes: [...(prev.notes || []), note]
+      } : null);
+    }
+  }, [selectedConversation]);
+
+  const setDisposition = useCallback((conversationId: string, disposition: CallDisposition) => {
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? { ...conv, disposition }
+        : conv
+    ));
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        disposition
+      } : null);
+    }
+  }, [selectedConversation]);
+
   return {
     conversations: conversationsWithSLA,
     agents,
@@ -601,5 +699,7 @@ export function useLiveOpsData() {
     sendMessage,
     chatCategoryStats,
     slaStats,
+    addNote,
+    setDisposition,
   };
 }

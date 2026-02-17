@@ -67,6 +67,8 @@ export default function LiveOpsPage() {
     sendMessage,
     chatCategoryStats,
     slaStats,
+    addNote,
+    setDisposition,
   } = useLiveOpsData();
 
   const { currentRole, isClientAdmin, currentUser } = useAuth();
@@ -631,6 +633,11 @@ export default function LiveOpsPage() {
               onResolveConversation={handleResolveConversation}
               onReport={() => setReportModalOpen(true)}
               onSendMessage={(content) => sendMessage(selectedConversation.id, content)}
+              onDisposition={(disposition) => {
+                setDisposition(selectedConversation.id, disposition);
+                notify.success('Disposition Saved', `Call with ${selectedConversation.customerName} has been documented.`);
+              }}
+              onAddNote={(note) => addNote(selectedConversation.id, note)}
             />
           </>
         )}

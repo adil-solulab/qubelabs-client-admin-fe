@@ -13,12 +13,8 @@ import {
   PhoneOff,
   Loader2,
   Send,
-  Mic,
-  MicOff,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
+  PanelRightOpen,
+  PanelRightClose,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,10 +32,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import type { LiveConversation, Agent } from '@/types/liveOps';
+import type { LiveConversation, Agent, CallDisposition, CoPilotSuggestion } from '@/types/liveOps';
 import { SENTIMENT_CONFIG, CHANNEL_CONFIG, STATUS_CONFIG } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
 import { TransferPanel } from '@/components/liveOps/TransferPanel';
+import { VoiceCallControls } from '@/components/liveOps/VoiceCallControls';
+import { CustomerInfoSidebar } from '@/components/liveOps/CustomerInfoSidebar';
+import { PostCallDispositionModal } from '@/components/liveOps/PostCallDispositionModal';
 
 interface ActiveChatDetailPanelProps {
   conversation: LiveConversation;
@@ -51,6 +50,8 @@ interface ActiveChatDetailPanelProps {
   onResolve: () => void;
   onEnd: () => void;
   onSendMessage?: (content: string) => void;
+  onDisposition?: (disposition: CallDisposition) => void;
+  onAddNote?: (note: string) => void;
 }
 
 export function ActiveChatDetailPanel({
@@ -63,6 +64,8 @@ export function ActiveChatDetailPanel({
   onResolve,
   onEnd,
   onSendMessage,
+  onDisposition,
+  onAddNote,
 }: ActiveChatDetailPanelProps) {
   const [isTakingOver, setIsTakingOver] = useState(false);
   const [escalateOpen, setEscalateOpen] = useState(false);
@@ -73,6 +76,8 @@ export function ActiveChatDetailPanel({
   const [voiceMuted, setVoiceMuted] = useState(false);
   const [voiceOnHold, setVoiceOnHold] = useState(false);
   const [voiceSpeaker, setVoiceSpeaker] = useState(false);
+  const [showCustomerInfo, setShowCustomerInfo] = useState(false);
+  const [dispositionOpen, setDispositionOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const sentiment = SENTIMENT_CONFIG[conversation.sentiment];
@@ -124,18 +129,75 @@ export function ActiveChatDetailPanel({
     }
   };
 
+  const handleEndCall = () => {
+    if (conversation.channel === 'voice') {
+      setDispositionOpen(true);
+    } else {
+      onEnd();
+    }
+  };
+
+  const handleDisposition = (disposition: CallDisposition) => {
+    onDisposition?.(disposition);
+    onEnd();
+  };
+
+  const handleUseSuggestion = (suggestion: CoPilotSuggestion) => {
+    if (suggestion.type === 'reply' && onSendMessage) {
+      notify.info('Suggestion Applied', 'AI suggestion has been used as a reply');
+    } else {
+      notify.info('Suggestion Noted', suggestion.content);
+    }
+  };
+
+  const isVoiceCall = conversation.channel === 'voice';
+
   return (
     <>
-      <div className="fixed inset-y-0 right-0 w-full sm:w-[420px] z-50 border-l bg-background flex flex-col h-full overflow-hidden animate-slide-in-right shadow-2xl">
+      <div className={cn(
+        "fixed inset-y-0 right-0 z-50 flex animate-slide-in-right shadow-2xl",
+        showCustomerInfo && isVoiceCall ? 'w-full sm:w-[720px]' : 'w-full sm:w-[420px]'
+      )}>
+        {showCustomerInfo && isVoiceCall && conversation.customerInfo && (
+          <div className="hidden sm:block w-[300px] border-l bg-background">
+            <CustomerInfoSidebar
+              customerName={conversation.customerName}
+              customerInfo={conversation.customerInfo}
+              coPilotSuggestions={conversation.coPilotSuggestions}
+              notes={conversation.notes}
+              onAddNote={onAddNote}
+              onUseSuggestion={handleUseSuggestion}
+              onClose={() => setShowCustomerInfo(false)}
+            />
+          </div>
+        )}
+        <div className="flex-1 w-full sm:w-[420px] border-l bg-background flex flex-col h-full overflow-hidden">
         <div className="p-5 border-b flex-shrink-0">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-lg font-semibold">Chat with {conversation.customerName}</h3>
               <p className="text-sm text-muted-foreground">View conversation details and take actions.</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {isVoiceCall && conversation.customerInfo && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={showCustomerInfo ? 'secondary' : 'ghost'}
+                      size="icon"
+                      onClick={() => setShowCustomerInfo(!showCustomerInfo)}
+                      className="shrink-0"
+                    >
+                      {showCustomerInfo ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{showCustomerInfo ? 'Hide Customer Info' : 'Show Customer Info'}</TooltipContent>
+                </Tooltip>
+              )}
+              <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -241,64 +303,28 @@ export function ActiveChatDetailPanel({
           </div>
         </div>
 
-        {conversation.channel === 'voice' && conversation.status === 'active' && (
-          <div className="p-3 border-t flex-shrink-0">
-            <div className="flex items-center justify-center gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={voiceMuted ? 'destructive' : 'outline'}
-                    size="icon"
-                    className="rounded-full h-10 w-10"
-                    onClick={() => {
-                      setVoiceMuted(!voiceMuted);
-                      notify.info(voiceMuted ? 'Unmuted' : 'Muted', voiceMuted ? 'Microphone is now on' : 'Microphone is now off');
-                    }}
-                  >
-                    {voiceMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{voiceMuted ? 'Unmute' : 'Mute'}</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={voiceOnHold ? 'secondary' : 'outline'}
-                    size="icon"
-                    className="rounded-full h-10 w-10"
-                    onClick={() => {
-                      setVoiceOnHold(!voiceOnHold);
-                      notify.info(voiceOnHold ? 'Resumed' : 'On Hold', voiceOnHold ? 'Call resumed' : 'Call placed on hold');
-                    }}
-                  >
-                    {voiceOnHold ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{voiceOnHold ? 'Resume' : 'Hold'}</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={voiceSpeaker ? 'secondary' : 'outline'}
-                    size="icon"
-                    className="rounded-full h-10 w-10"
-                    onClick={() => {
-                      setVoiceSpeaker(!voiceSpeaker);
-                      notify.info(voiceSpeaker ? 'Speaker Off' : 'Speaker On', voiceSpeaker ? 'Audio through headset' : 'Audio through speaker');
-                    }}
-                  >
-                    {voiceSpeaker ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{voiceSpeaker ? 'Speaker Off' : 'Speaker On'}</TooltipContent>
-              </Tooltip>
-            </div>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              {voiceMuted && <Badge variant="destructive" className="text-[10px]">Muted</Badge>}
-              {voiceOnHold && <Badge variant="secondary" className="text-[10px]">On Hold</Badge>}
-              {voiceSpeaker && <Badge variant="secondary" className="text-[10px]">Speaker</Badge>}
-            </div>
-          </div>
+        {isVoiceCall && conversation.status === 'active' && (
+          <VoiceCallControls
+            voiceMuted={voiceMuted}
+            voiceOnHold={voiceOnHold}
+            voiceSpeaker={voiceSpeaker}
+            onToggleMute={() => {
+              setVoiceMuted(!voiceMuted);
+              notify.info(voiceMuted ? 'Unmuted' : 'Muted', voiceMuted ? 'Microphone is now on' : 'Microphone is now off');
+            }}
+            onToggleHold={() => {
+              setVoiceOnHold(!voiceOnHold);
+              notify.info(voiceOnHold ? 'Resumed' : 'On Hold', voiceOnHold ? 'Call resumed' : 'Call placed on hold');
+            }}
+            onToggleSpeaker={() => {
+              setVoiceSpeaker(!voiceSpeaker);
+              notify.info(voiceSpeaker ? 'Speaker Off' : 'Speaker On', voiceSpeaker ? 'Audio through headset' : 'Audio through speaker');
+            }}
+            onEndCall={handleEndCall}
+            networkQuality={conversation.networkQuality}
+            recordingInfo={conversation.recordingInfo}
+            isAiHandled={conversation.isAiHandled}
+          />
         )}
 
         {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && onSendMessage && (
@@ -394,7 +420,7 @@ export function ActiveChatDetailPanel({
                 variant="outline"
                 size="sm"
                 className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10"
-                onClick={onEnd}
+                onClick={handleEndCall}
               >
                 <PhoneOff className="w-3.5 h-3.5 mr-1.5" />
                 End
@@ -403,6 +429,15 @@ export function ActiveChatDetailPanel({
           </div>
         </div>
       </div>
+      </div>
+
+      <PostCallDispositionModal
+        open={dispositionOpen}
+        onOpenChange={setDispositionOpen}
+        customerName={conversation.customerName}
+        duration={conversation.duration}
+        onSubmit={handleDisposition}
+      />
 
       <Dialog open={escalateOpen} onOpenChange={setEscalateOpen}>
         <DialogContent>

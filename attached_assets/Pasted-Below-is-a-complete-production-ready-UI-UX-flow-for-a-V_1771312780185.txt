@@ -1,0 +1,159 @@
+Below is a complete, production-ready UI/UX flow for a Voice Agent Inbox, based on how Yellow.ai, Zendesk, Intercom, Talkdesk, and Freshworks design their voice modules — but adapted to your architecture where voice comes through WebRTC + Connectors.
+This is exactly what your design + dev team needs.
+🎨 VOICE AGENT INBOX — FULL UI/UX FLOW
+1. Agent “Inbox” Main Screen
+Purpose: Show all ongoing + queued conversations (voice + chat)
+UI Elements:
+Left List Panel
+Customer name
+Issue summary
+Icon for channel (Voice / WhatsApp / Chat)
+Status tags (AI Handling / Ringing / Waiting / Active / SLA)
+Timer (how long customer is waiting)
+Tag if “Escalated to Human”
+UX Actions:
+Agent clicks a conversation → opens call window on right.
+Voice items show a phone icon + “Voice” tag.
+If bot is handling the call, status shows AI Handling.
+If customer is waiting for agent: Ringing or Waiting.
+2. Voice Call Detail Panel (Right Side)
+When agent selects a voice conversation:
+Header Section:
+Customer Name + Avatar
+Call type: Voice
+Handler: AI Assistant or Agent Name
+Status:
+AI Handling
+Ringing
+Connected
+On Hold
+Ended
+Wait Time (how long caller waited)
+Call Duration Timer
+3. Live Transcript Section
+Shows real-time transcription
+Bot: Hello, how can I help you?
+User: I don’t recognize this charge.
+AI: Let me check that for you…
+UX:
+Scrollable area
+Labels:
+AI
+Customer
+Agent
+Timestamp on hover
+Optional:
+AI summaries (Live Notes)
+Smart Suggestions (Co-pilot answers)
+4. Voice Controls Section
+Placed prominently at bottom-center:
+Big Circle Buttons:
+Button	Icon	Behavior
+Mic/Mute	🎙️	Toggles agent audio ON/OFF
+Hold	⏸️	Puts customer on hold; plays hold music
+Speaker	🔊	Output device switch
+End Call	❌	Disconnects call
+UX Rules:
+Hold button glows when on hold
+Mute button turns red when muted
+End Call is red and always accessible
+Speaker opens dropdown of audio output devices
+5. AI → Human Takeover Flow
+This is the most critical part.
+When AI is handling:
+A big blue button appears:
+[ Take Over ]
+UX behavior on click:
+AI stream stops
+Agent WebRTC stream activates
+Status changes to "Agent Handling"
+AI Co-Pilot appears on right (suggestions, summaries, customer profile)
+6. Transfer / Escalate Section
+Below voice controls:
+Button	Action
+Transfer	Choose agent/group
+Escalate	Send to supervisor
+Add Note	Add internal notes
+Tag Conversation	Add labels
+UX:
+Modal opens for transfer options:
+Billing Support
+Technical Team
+Supervisor
+Shows availability of other agents
+Agent can add reason for transfer
+7. Customer Information Panel (Right Sidebar)
+Sections:
+User Profile
+Name
+Phone number
+CRM ID
+Interaction History
+Previous calls
+Previous chats
+Tickets
+AI Co-Pilot Suggestions
+“Possible intents”
+“Suggested replies”
+Notes
+Internal notes (not visible to customer)
+Attachments
+Files sent/received
+UX:
+Collapsible sidebar
+AI summary always at top
+Notes editable live during call
+8. Post-Call Screen (Disposition)
+When call ends → show disposition screen.
+Fields:
+Call outcome
+Resolved
+Follow-up required
+Escalated
+Callback scheduled
+Add summary
+Add tags (Billing / Fraud / Inquiry / Technical)
+UX rule:
+Agent must select a disposition before closing the ticket.
+9. Call Recording & Transcript Download
+Inside the conversation detail view:
+Options:
+Download Transcript (.txt / .pdf)
+Play Recording (audio player)
+Copy Transcript URL
+Share to team
+If outbound calls:
+“View Dialer Logs”
+These appear in the top-right corner inside the call detail.
+10. Real-Time Status Indicators
+Example UI badges:
+AI Handled (blue)
+Agent Connected (green)
+On Hold (yellow)
+Muted (red)
+Poor Network (grey)
+Network status indicator:
+Show connection strength (WebRTC quality)
+🎯 FINAL: Full UX Flow Summary
+1. Incoming call (customer hears bot)
+Shows in left panel as “AI Handling”
+2. Customer requests agent → agent sees “Take Over”
+They click Take Over
+AI pauses, agent joins with WebRTC
+3. Agent controls call using Mute/Hold/End
+All buttons accessible
+Status update changes in real-time
+4. Live transcript + Co-pilot assist appear
+Agent sees what bot already discussed
+Co-pilot gives suggestions
+5. Optional actions
+Transfer
+Escalate
+Add notes
+Tag ticket
+6. End Call
+Disposition screen appears
+Agent fills summary
+7. Conversation archived
+Recording + transcript saved
+CRM sync done

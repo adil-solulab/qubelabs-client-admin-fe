@@ -42,6 +42,8 @@ export default function ActiveChatsPage() {
     resolveConversation,
     endConversation,
     sendMessage,
+    addNote,
+    setDisposition,
   } = useLiveOpsData();
 
   const { currentUser, currentRole, isClientAdmin } = useAuth();
@@ -381,6 +383,11 @@ export default function ActiveChatsPage() {
               onResolve={() => handleResolve(selectedConversation.id)}
               onEnd={() => handleEnd(selectedConversation.id)}
               onSendMessage={(content) => sendMessage(selectedConversation.id, content)}
+              onDisposition={(disposition) => {
+                setDisposition(selectedConversation.id, disposition);
+                notify.success('Disposition Saved', `Call with ${selectedConversation.customerName} has been documented.`);
+              }}
+              onAddNote={(note) => addNote(selectedConversation.id, note)}
             />
           </>
         )}
