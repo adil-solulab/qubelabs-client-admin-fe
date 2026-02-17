@@ -268,11 +268,11 @@ export function ConversationDetailPanel({
       )}
     <div className="flex-1 w-full sm:w-[400px] border-l bg-background flex flex-col h-full min-h-0 max-h-full overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b flex-shrink-0">
+      <div className="px-4 py-3 border-b flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className={cn(sentiment.bgColor, sentiment.color)}>
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className={cn(sentiment.bgColor, sentiment.color, 'text-sm')}>
                 {conversation.customerName.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
@@ -317,34 +317,6 @@ export function ConversationDetailPanel({
             </Button>
           </div>
         </div>
-
-        {/* Meta Info */}
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-          <div className="p-2 rounded-lg bg-muted/50">
-            <p className="text-lg font-bold">{formatDuration(conversation.duration)}</p>
-            <p className="text-[10px] text-muted-foreground">Duration</p>
-          </div>
-          <div className="p-2 rounded-lg bg-muted/50">
-            <p className="text-lg font-bold">{channel.icon}</p>
-            <p className="text-[10px] text-muted-foreground">{channel.label}</p>
-          </div>
-          <div className="p-2 rounded-lg bg-muted/50">
-            <p className="text-lg font-bold flex items-center justify-center">
-              {conversation.isAiHandled ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
-            </p>
-            <p className="text-[10px] text-muted-foreground truncate">{conversation.agentName || 'Waiting'}</p>
-          </div>
-        </div>
-
-        {/* Translation Controls */}
-        <div className="mt-3 pt-3 border-t">
-          <TranslationControls
-            conversationTranslation={conversationTranslation}
-            onToggleTranslation={handleToggleTranslation}
-            onSetCustomerLanguage={handleSetCustomerLanguage}
-            onOpenSettings={() => setLanguageSettingsOpen(true)}
-          />
-        </div>
       </div>
 
       {isTransferred && (
@@ -369,9 +341,9 @@ export function ConversationDetailPanel({
                     conversation.supervisorMode === 'whispering' && 'bg-accent text-accent-foreground',
                     conversation.supervisorMode === 'barged_in' && 'bg-warning text-warning-foreground'
                   )}>
-                    {conversation.supervisorMode === 'monitoring' && '👁️ Monitoring'}
+                    {conversation.supervisorMode === 'monitoring' && '👁\uFE0F Monitoring'}
                     {conversation.supervisorMode === 'whispering' && '🔇 Whispering'}
-                    {conversation.supervisorMode === 'barged_in' && '🎙️ Barged In'}
+                    {conversation.supervisorMode === 'barged_in' && '🎙\uFE0F Barged In'}
                   </Badge>
                   <Button variant="outline" size="sm" onClick={onStopSupervision}>
                     <EyeOff className="w-3 h-3 mr-1" />
@@ -473,6 +445,37 @@ export function ConversationDetailPanel({
 
       {/* Scrollable Content (ONLY this section scrolls) */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        {/* Meta Info */}
+        <div className="px-4 pt-3 pb-2">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-2 rounded-lg bg-muted/50">
+              <p className="text-base font-bold">{formatDuration(conversation.duration)}</p>
+              <p className="text-[10px] text-muted-foreground">Duration</p>
+            </div>
+            <div className="p-2 rounded-lg bg-muted/50">
+              <p className="text-base font-bold">{channel.icon}</p>
+              <p className="text-[10px] text-muted-foreground">{channel.label}</p>
+            </div>
+            <div className="p-2 rounded-lg bg-muted/50">
+              <p className="text-base font-bold flex items-center justify-center">
+                {conversation.isAiHandled ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+              </p>
+              <p className="text-[10px] text-muted-foreground truncate">{conversation.agentName || 'Waiting'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Translation Controls */}
+        <div className="px-4 pb-3">
+          <div className="pt-2 border-t">
+            <TranslationControls
+              conversationTranslation={conversationTranslation}
+              onToggleTranslation={handleToggleTranslation}
+              onSetCustomerLanguage={handleSetCustomerLanguage}
+              onOpenSettings={() => setLanguageSettingsOpen(true)}
+            />
+          </div>
+        </div>
         {/* Voice Translation (scrolls with content) */}
         {conversation.channel === 'voice' && (
           <div className="p-3 border-b">

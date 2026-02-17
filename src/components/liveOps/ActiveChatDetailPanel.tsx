@@ -178,8 +178,8 @@ export function ActiveChatDetailPanel({
           </div>
         )}
         <div className="flex-1 w-full sm:w-[420px] border-l bg-background flex flex-col h-full overflow-hidden">
-        <div className="p-5 border-b flex-shrink-0">
-          <div className="flex items-start justify-between mb-4">
+        <div className="px-4 py-3 border-b flex-shrink-0">
+          <div className="flex items-start justify-between">
             <div>
               <h3 className="text-lg font-semibold">Chat with {conversation.customerName}</h3>
               <p className="text-sm text-muted-foreground">View conversation details and take actions.</p>
@@ -205,51 +205,53 @@ export function ActiveChatDetailPanel({
               </Button>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-lg bg-muted/50 border">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Channel</p>
-              <div className="flex items-center gap-2">
-                <span className={cn(channel.color)}>{getChannelIcon()}</span>
-                <span className="text-sm font-medium capitalize">{conversation.channel}</span>
-              </div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50 border">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Wait Time</p>
-              <p className="text-sm font-medium font-mono">
-                {formatDuration(conversation.status === 'waiting' ? (conversation.waitTime || 0) : conversation.duration)}
-              </p>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50 border">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Handler</p>
-              <div className="flex items-center gap-2">
-                {conversation.isAiHandled ? (
-                  <Bot className="w-4 h-4 text-primary" />
-                ) : (
-                  <User className="w-4 h-4 text-muted-foreground" />
-                )}
-                <span className="text-sm font-medium truncate">{conversation.agentName}</span>
-              </div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50 border">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Status</p>
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-xs',
-                  conversation.isAiHandled && 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400',
-                  !conversation.isAiHandled && conversation.status === 'active' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400',
-                  conversation.status === 'waiting' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400',
-                )}
-              >
-                {conversation.isAiHandled ? 'AI Handled' : status.label}
-              </Badge>
-            </div>
-          </div>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-          <div className="p-5">
+          <div className="px-4 pt-3 pb-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 rounded-lg bg-muted/50 border">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-0.5">Channel</p>
+                <div className="flex items-center gap-2">
+                  <span className={cn(channel.color)}>{getChannelIcon()}</span>
+                  <span className="text-sm font-medium capitalize">{conversation.channel}</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50 border">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-0.5">Wait Time</p>
+                <p className="text-sm font-medium font-mono">
+                  {formatDuration(conversation.status === 'waiting' ? (conversation.waitTime || 0) : conversation.duration)}
+                </p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50 border">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-0.5">Handler</p>
+                <div className="flex items-center gap-2">
+                  {conversation.isAiHandled ? (
+                    <Bot className="w-4 h-4 text-primary" />
+                  ) : (
+                    <User className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <span className="text-sm font-medium truncate">{conversation.agentName}</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/50 border">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-0.5">Status</p>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-xs',
+                    conversation.isAiHandled && 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400',
+                    !conversation.isAiHandled && conversation.status === 'active' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400',
+                    conversation.status === 'waiting' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400',
+                  )}
+                >
+                  {conversation.isAiHandled ? 'AI Handled' : status.label}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pb-4">
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Recent Messages</h4>
             <div className="space-y-3">
               {conversation.messages.map((message) => {
