@@ -9,7 +9,6 @@ import {
   Mail,
   Bot,
   User,
-  Filter,
   Search,
   RefreshCw,
   Info,
@@ -25,7 +24,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -300,9 +298,8 @@ export default function LiveOpsPage() {
 
   return (
     <AppLayout>
-      <div className="absolute inset-6 flex flex-col animate-fade-in overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 flex-shrink-0">
+      <div className="animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Live Operations</h1>
             <p className="text-sm text-muted-foreground">
@@ -313,7 +310,7 @@ export default function LiveOpsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 animate-pulse">
+            <Badge variant="outline" className="gap-1.5 px-3 py-1 animate-pulse">
               <div className="w-2 h-2 rounded-full bg-success" />
               Live
             </Badge>
@@ -333,9 +330,8 @@ export default function LiveOpsPage() {
           </div>
         </div>
 
-        {/* SLA Breach Banner */}
         {slaStats.totalBreached > 0 && canViewAll && (
-          <Alert variant="destructive" className="mb-4 flex-shrink-0">
+          <Alert variant="destructive" className="mb-5">
             <AlertTriangle className="w-4 h-4" />
             <AlertDescription>
               <span className="font-semibold">{slaStats.totalBreached} SLA breach{slaStats.totalBreached > 1 ? 'es' : ''} detected</span>
@@ -347,9 +343,8 @@ export default function LiveOpsPage() {
           </Alert>
         )}
 
-        {/* Role-based info banner for Agent */}
         {!canViewAll && (
-          <Alert className="mb-4 flex-shrink-0">
+          <Alert className="mb-5">
             <Info className="w-4 h-4" />
             <AlertDescription>
               You are viewing only your assigned conversations. Contact a supervisor for full queue access.
@@ -357,17 +352,16 @@ export default function LiveOpsPage() {
           </Alert>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4 flex-shrink-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           <Card className="gradient-card">
-            <CardContent className="pt-3 pb-3">
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Headphones className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold">{roleQueueStats.activeConversations}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-2xl font-bold leading-none">{roleQueueStats.activeConversations}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {canViewAll ? 'Active' : 'My Active'}
                   </p>
                 </div>
@@ -376,14 +370,14 @@ export default function LiveOpsPage() {
           </Card>
 
           <Card className="gradient-card">
-            <CardContent className="pt-3 pb-3">
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-warning/10 flex items-center justify-center">
                   <Clock className="w-4 h-4 text-warning" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold">{roleQueueStats.totalWaiting}</p>
-                  <p className="text-[10px] text-muted-foreground">Queued</p>
+                  <p className="text-2xl font-bold leading-none">{roleQueueStats.totalWaiting}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Queued</p>
                 </div>
               </div>
             </CardContent>
@@ -392,56 +386,56 @@ export default function LiveOpsPage() {
           {canViewAll && (
             <>
               <Card className="gradient-card">
-                <CardContent className="pt-3 pb-3">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center">
                       <Users className="w-4 h-4 text-success" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold">{queueStats.availableAgents}</p>
-                      <p className="text-[10px] text-muted-foreground">Available Agents</p>
+                      <p className="text-2xl font-bold leading-none">{queueStats.availableAgents}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Available Agents</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="gradient-card">
-                <CardContent className="pt-3 pb-3">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
                       <TrendingUp className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold">{formatTime(queueStats.averageWaitTime)}</p>
-                      <p className="text-[10px] text-muted-foreground">Avg Wait</p>
+                      <p className="text-2xl font-bold leading-none">{formatTime(queueStats.averageWaitTime)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Avg Wait</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="gradient-card">
-                <CardContent className="pt-3 pb-3">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
                       <Clock className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold">{formatTime(queueStats.longestWait)}</p>
-                      <p className="text-[10px] text-muted-foreground">Longest Wait</p>
+                      <p className="text-2xl font-bold leading-none">{formatTime(queueStats.longestWait)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Longest Wait</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="gradient-card">
-                <CardContent className="pt-3 pb-3">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-lg bg-destructive/10 flex items-center justify-center">
                       <AlertTriangle className="w-4 h-4 text-destructive" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold">{slaStats.totalBreached}</p>
-                      <p className="text-[10px] text-muted-foreground">SLA Breaches</p>
+                      <p className="text-2xl font-bold leading-none">{slaStats.totalBreached}</p>
+                      <p className="text-xs text-muted-foreground mt-1">SLA Breaches</p>
                     </div>
                   </div>
                 </CardContent>
@@ -450,194 +444,194 @@ export default function LiveOpsPage() {
           )}
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
-          {/* Conversations List */}
-          <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-            {/* Chat Category Tabs */}
-            <div className="flex gap-1 mb-3 flex-shrink-0 overflow-x-auto pb-1">
-              {tabs.map(tab => (
-                <Button
-                  key={tab.key}
-                  variant={activeTab === tab.key ? 'default' : 'outline'}
-                  size="sm"
-                  className="gap-1.5 shrink-0"
-                  onClick={() => setActiveTab(tab.key)}
-                >
-                  {tab.label}
-                  <Badge
-                    variant={activeTab === tab.key ? 'secondary' : 'outline'}
-                    className="text-[10px] px-1.5 py-0 h-4 min-w-[1.25rem] flex items-center justify-center"
-                  >
-                    {tab.count}
+        {canViewAll && (
+          <Card className="gradient-card mb-6">
+            <CardHeader
+              className="pb-2 pt-4 px-5 cursor-pointer"
+              onClick={() => setAgentPanelOpen(!agentPanelOpen)}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Agent Status
+                  <Badge variant="secondary" className="text-[10px] ml-1">
+                    {agents.filter(a => a.status === 'available').length}/{agents.length} available
                   </Badge>
-                </Button>
-              ))}
-            </div>
-
-            {/* Filters */}
-            <Card className="gradient-card mb-4 flex-shrink-0">
-              <CardContent className="pt-3 pb-3">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search conversations..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <Select value={channelFilter} onValueChange={(v) => setChannelFilter(v as ConversationChannel | 'all')}>
-                      <SelectTrigger className="w-[110px]">
-                        <SelectValue placeholder="Channel" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Channels</SelectItem>
-                        <SelectItem value="voice">Voice</SelectItem>
-                        <SelectItem value="chat">Chat</SelectItem>
-                        <SelectItem value="email">Email</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={sentimentFilter} onValueChange={(v) => setSentimentFilter(v as SentimentType | 'all')}>
-                      <SelectTrigger className="w-[120px]">
-                        <SelectValue placeholder="Sentiment" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Sentiment</SelectItem>
-                        <SelectItem value="positive">Positive</SelectItem>
-                        <SelectItem value="neutral">Neutral</SelectItem>
-                        <SelectItem value="negative">Negative</SelectItem>
-                        <SelectItem value="escalated">Escalated</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Conversations */}
-            <ScrollArea className="flex-1 min-h-0 h-full">
-              <div className="space-y-3 pr-2">
-                {filteredConversations.length === 0 ? (
-                  <Card className="gradient-card">
-                    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                      <Headphones className="w-12 h-12 text-muted-foreground mb-4" />
-                      <h3 className="font-semibold mb-1">
-                        {!canViewAll ? 'No assigned conversations' : 'No conversations found'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {!canViewAll 
-                          ? 'You will see conversations assigned to you here'
-                          : searchQuery || channelFilter !== 'all' || activeTab !== 'all'
-                            ? 'Try adjusting your filters'
-                            : 'Conversations will appear here when customers connect'
-                        }
-                      </p>
-                    </CardContent>
-                  </Card>
+                </CardTitle>
+                {agentPanelOpen ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
                 ) : (
-                  filteredConversations.map(conv => (
-                    <ConversationCard
-                      key={conv.id}
-                      conversation={conv}
-                      isSelected={selectedConversation?.id === conv.id}
-                      onClick={() => setSelectedConversation(conv)}
-                    />
-                  ))
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 )}
               </div>
-            </ScrollArea>
-
-            <p className="text-xs text-muted-foreground mt-3 flex-shrink-0">
-              Showing {filteredConversations.length} of {roleFilteredConversations.length} conversations
-              {!canViewAll && ' (assigned to you)'}
-            </p>
-          </div>
-
-          {/* Agent Status Panel */}
-          {canViewAll && (
-            <div className="w-[260px] flex-shrink-0 flex flex-col min-h-0 overflow-hidden">
-              <Card className="gradient-card flex flex-col min-h-0 overflow-hidden">
-                <CardHeader
-                  className="pb-2 pt-3 px-4 cursor-pointer flex-shrink-0"
-                  onClick={() => setAgentPanelOpen(!agentPanelOpen)}
-                >
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      Agent Status
-                    </CardTitle>
-                    {agentPanelOpen ? (
-                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </div>
-                </CardHeader>
-                {agentPanelOpen && (
-                  <CardContent className="pt-0 px-4 pb-3 flex-1 min-h-0 overflow-y-auto">
-                    <div className="space-y-3">
-                      {agents.map(agent => (
-                        <div key={agent.id} className="p-2 rounded-lg border bg-muted/30">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <div className={cn('w-2 h-2 rounded-full', getAgentStatusColor(agent.status))} />
-                            <span className="text-sm font-medium truncate flex-1">{agent.name}</span>
-                            <Badge variant="outline" className="text-[10px] shrink-0">
-                              {getAgentStatusLabel(agent.status)}
+            </CardHeader>
+            {agentPanelOpen && (
+              <CardContent className="pt-0 px-5 pb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {agents.map(agent => (
+                    <div key={agent.id} className="p-3 rounded-lg border bg-card hover:bg-muted/40 transition-colors">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={cn('w-2.5 h-2.5 rounded-full', getAgentStatusColor(agent.status))} />
+                        <span className="text-sm font-medium truncate flex-1">{agent.name}</span>
+                        <Badge variant="outline" className="text-[10px] shrink-0">
+                          {getAgentStatusLabel(agent.status)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Progress
+                          value={(agent.currentConversations / agent.maxConversations) * 100}
+                          className="h-1.5 flex-1"
+                        />
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                          {agent.currentConversations}/{agent.maxConversations}
+                        </span>
+                      </div>
+                      {agent.skills.length > 0 && (
+                        <div className="flex gap-1 mt-2 flex-wrap">
+                          {agent.skills.map(skill => (
+                            <Badge key={skill} variant="secondary" className="text-[9px] px-1.5 py-0">
+                              {skill}
                             </Badge>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={(agent.currentConversations / agent.maxConversations) * 100}
-                              className="h-1.5 flex-1"
-                            />
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                              {agent.currentConversations}/{agent.maxConversations}
-                            </span>
-                          </div>
-                          {agent.skills.length > 0 && (
-                            <div className="flex gap-1 mt-1.5 flex-wrap">
-                              {agent.skills.map(skill => (
-                                <Badge key={skill} variant="secondary" className="text-[9px] px-1 py-0">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </CardContent>
+                  ))}
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        )}
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            {tabs.map(tab => (
+              <Button
+                key={tab.key}
+                variant={activeTab === tab.key ? 'default' : 'ghost'}
+                size="sm"
+                className={cn(
+                  "gap-1.5 shrink-0 rounded-full px-4",
+                  activeTab !== tab.key && "text-muted-foreground hover:text-foreground"
                 )}
-              </Card>
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+                <Badge
+                  variant={activeTab === tab.key ? 'secondary' : 'outline'}
+                  className="text-[10px] px-1.5 py-0 h-4 min-w-[1.25rem] flex items-center justify-center rounded-full"
+                >
+                  {tab.count}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground shrink-0">
+            Showing {filteredConversations.length} of {roleFilteredConversations.length} conversations
+            {!canViewAll && ' (assigned to you)'}
+          </p>
+        </div>
+
+        <Card className="gradient-card mb-4">
+          <CardContent className="p-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name or topic..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-background"
+                />
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Select value={channelFilter} onValueChange={(v) => setChannelFilter(v as ConversationChannel | 'all')}>
+                  <SelectTrigger className="w-[130px] bg-background">
+                    <SelectValue placeholder="Channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Channels</SelectItem>
+                    <SelectItem value="voice">Voice</SelectItem>
+                    <SelectItem value="chat">Chat</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sentimentFilter} onValueChange={(v) => setSentimentFilter(v as SentimentType | 'all')}>
+                  <SelectTrigger className="w-[140px] bg-background">
+                    <SelectValue placeholder="Sentiment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sentiment</SelectItem>
+                    <SelectItem value="positive">Positive</SelectItem>
+                    <SelectItem value="neutral">Neutral</SelectItem>
+                    <SelectItem value="negative">Negative</SelectItem>
+                    <SelectItem value="escalated">Escalated</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="gradient-card overflow-hidden">
+          {filteredConversations.length === 0 ? (
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <Headphones className="w-12 h-12 text-muted-foreground mb-4" />
+              <h3 className="font-semibold mb-1">
+                {!canViewAll ? 'No assigned conversations' : 'No conversations found'}
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                {!canViewAll 
+                  ? 'You will see conversations assigned to you here'
+                  : searchQuery || channelFilter !== 'all' || activeTab !== 'all'
+                    ? 'Try adjusting your filters'
+                    : 'Conversations will appear here when customers connect'
+                }
+              </p>
+            </CardContent>
+          ) : (
+            <div className="divide-y divide-border">
+              <div className="hidden md:grid grid-cols-[2fr_1.2fr_0.8fr_0.8fr_0.8fr_0.6fr] gap-4 px-5 py-2.5 bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <span>Customer</span>
+                <span>Agent</span>
+                <span>Channel</span>
+                <span>Sentiment</span>
+                <span>Duration</span>
+                <span className="text-right">Status</span>
+              </div>
+              {filteredConversations.map(conv => (
+                <ConversationCard
+                  key={conv.id}
+                  conversation={conv}
+                  isSelected={selectedConversation?.id === conv.id}
+                  onClick={() => setSelectedConversation(conv)}
+                />
+              ))}
             </div>
           )}
+        </Card>
 
-          {/* Detail Panel */}
-          {selectedConversation && (
-            <>
-              <div 
-                className="fixed inset-0 bg-black/40 z-40"
-                onClick={() => setSelectedConversation(null)}
-              />
-              <ConversationDetailPanel
-                conversation={selectedConversation}
-                agents={agents}
-                onClose={() => setSelectedConversation(null)}
-                onMonitor={handleMonitor}
-                onWhisper={handleWhisper}
-                onBargeIn={handleBargeInClick}
-                onTransfer={handleTransfer}
-                onStopSupervision={handleStopSupervision}
-                onEndConversation={handleEndConversation}
-                onResolveConversation={handleResolveConversation}
-                onReport={() => setReportModalOpen(true)}
-              />
-            </>
-          )}
-        </div>
+        {selectedConversation && (
+          <>
+            <div 
+              className="fixed inset-0 bg-black/40 z-40"
+              onClick={() => setSelectedConversation(null)}
+            />
+            <ConversationDetailPanel
+              conversation={selectedConversation}
+              agents={agents}
+              onClose={() => setSelectedConversation(null)}
+              onMonitor={handleMonitor}
+              onWhisper={handleWhisper}
+              onBargeIn={handleBargeInClick}
+              onTransfer={handleTransfer}
+              onStopSupervision={handleStopSupervision}
+              onEndConversation={handleEndConversation}
+              onResolveConversation={handleResolveConversation}
+              onReport={() => setReportModalOpen(true)}
+            />
+          </>
+        )}
       </div>
 
       <BargeInModal
