@@ -17,6 +17,8 @@ The application is a frontend-only prototype built with React 18 and TypeScript,
 - **Component Library**: `shadcn/ui` based on Radix UI, styled with Tailwind CSS and CSS variables for theming, adhering to atomic design principles.
 - **Theming**: Supports light/dark/system modes with customizable UI elements.
 - **Sidebar Navigation**: Grouped, collapsible navigation with role-based filtering.
+- **User Profile**: Redesigned account settings with tabs for Profile, Sessions, Security (including 2FA and security questions), and general Settings.
+- **Dashboard**: Features a Credit Usage Widget and improved layout for deep-dive dialogs.
 
 ### Technical Implementations
 - **State Management**: Primarily in-memory using React hooks. `@tanstack/react-query` is available for async state.
@@ -30,43 +32,32 @@ The application is a frontend-only prototype built with React 18 and TypeScript,
 Supports diverse data ingestion methods including file uploads (PDF, DOCX, TXT, MD, CSV, XLSX), URL scraping, sitemap discovery, and integrations with services like Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, and databases. Features auto-sync capabilities and a unified `AddSourceModal`.
 
 #### AI Agents (Super Agent + Agent Architecture)
-Implements a Super Agent (orchestrator) and specialized Agents (specialists) model. The Super Agent handles routing, welcome messages, and context, while specialized Agents manage domain-specific functions (sales, support, knowledge base). Agents are highly configurable with sections for Persona, Intent Understanding, Prompt Logic, Routing, and Guardrails.
+Implements a Super Agent (orchestrator) and specialized Agents (specialists) model. Agents are highly configurable with sections for Persona, Intent Understanding, Prompt Logic, Routing, and Guardrails, including enhanced voice profile settings.
 
 #### Flow Builder (Flows & Workflows)
 A visual drag-and-drop canvas for designing conversational flows (`flow`) and backend workflow automations (`workflow`).
-- **Flow Nodes**: Include Prompt (Text, Name, Email, Phone, Date, Quick Reply), Message (Message, Carousel), Logic (Condition), Action (Execute Flow, Raise Ticket, AI Assistant, Transfer, DTMF, Delay, End), and Safety & Risk (Safety Check).
-- **Workflow Nodes**: Include Actions (API Call, Database, Function, Variable, Notification, Event Trigger), Logic (Condition, Delay), Integrations (WhatsApp, Slack, Telegram, Teams, Zendesk, Freshdesk, Zoho CRM, Salesforce, HubSpot), and Safety & Risk (Safety Check).
-- **Safety Check Node**: A comprehensive risk assessment node with configurable settings for Bot Type, Sentiment Analysis, PII Detection (8 types), Policy Violation (7 categories), Profanity Filter, Topic Guardrails, and Custom Rules. It offers various Risk Actions (Warn Then Escalate, Transfer, Mask, Block) and Audit Logging.
-- Features an environment selector (Staging, Sandbox, Production) and a category sidebar for organization. A Test Panel supports Chat and Voice modes.
+- **Separated Builders**: Distinct interfaces for Flow Builder and Workflow Builder.
+- **Flow Nodes**: Includes Prompt, Message, Logic, Action, and Safety & Risk (Safety Check).
+- **Workflow Nodes**: Includes Actions, Logic, Integrations (Messaging, Ticketing, CRM), and Safety & Risk (Safety Check).
+- **Safety Check Node**: Comprehensive risk assessment with configurable settings for Bot Type, Sentiment Analysis, PII Detection, Policy Violation, Profanity Filter, Topic Guardrails, and Custom Rules, offering various Risk Actions and Audit Logging.
+- Features an environment selector (Staging, Sandbox, Production) and a category sidebar. A Test Panel supports Chat and Voice modes.
 
 #### Integrations & Channels (Merged Module)
-A unified page for managing 27 integrations across 7 categories: CRM, Voice, Messaging, Email, Chat Widget, LiveChat, Payments. All channel connectors (Voice, Messaging, Email) are now integrated as integration cards. A dedicated Chat Widget integration offers a 5-tab configuration panel. Each integration provides configuration fields and setup instructions.
+A unified page for managing 27 integrations across 7 categories: CRM, Voice, Messaging, Email, Chat Widget, LiveChat, Payments. Includes a dedicated Chat Widget integration with a 5-tab configuration panel.
 
 #### Outbound Campaigns
-Manages outbound calling campaigns (Voice, WhatsApp, SMS, Email) with a dashboard, filterable table, and a 3-step creation wizard (Basic Info → Flow & Workflow Selection → Review & Launch). Campaign details include status controls, progress stats, and tabs for Lead Management (upload, status, sentiment, escalation) and Analytics.
+Manages outbound calling campaigns (Voice, WhatsApp, SMS, Email) with a dashboard, filterable table, and a 3-step creation wizard (Basic Info → Flow & Workflow Selection → Review & Launch). Features enhanced lead upload with CSV mapping and refined voice settings modal.
 
 #### Analytics Module
-Provides 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns. Tracks Outcome KPIs (Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score) with sparkline charts and detailed analytics across various aspects of the platform.
+Provides 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns. Tracks Outcome KPIs (Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score) with sparkline charts and detailed analytics.
 
 #### Live Operations (Enhanced with Voice Agent Inbox + Role-Based Views)
-Real-time monitoring of conversations with auto-updating durations and simulated messages. Features chat categorization tabs (All, Active, Queued, Resolved, Missed), configurable SLA monitoring with breach alerts, stats cards, and an Agent Status Panel.
-
-**Role-Based UI Separation:**
-- **Supervisors/Client Admins**: See all team conversations ("Live Operations"), Agent Status Panel, SLA breach alerts, and full supervisor controls (Monitor, Whisper, Barge In, Transfer). CustomerInfoSidebar is read-only until supervisor joins/takes over.
-- **Agents**: See only their assigned conversations ("My Conversations" / "My Chats"), with simplified controls (Respond, Take Over from AI, Escalate, Resolve, End). No monitor/whisper/barge/transfer buttons. Co-pilot suggestions are interactive, notes are editable.
-- Transfer restrictions: After transferring, the current user loses all interaction capabilities and sees a transfer banner.
-- Conversations are filtered by `currentUser.id` for agents; supervisors see the full team view.
-
-**Voice Agent Inbox Features:**
-- **Customer Info Sidebar**: Expandable right panel showing customer profile (phone, email, company, tier, LTV), interaction history, AI co-pilot suggestions (intent detection, reply suggestions, action recommendations, knowledge base tips), and editable notes. Toggle via panel button in header.
-- **AI Co-Pilot Panel**: Real-time AI suggestions with confidence scores, organized by type (Intent, Reply, Action, Knowledge). Click to apply suggestions.
-- **Post-Call Disposition**: Modal triggered on call end with outcome selection (Resolved, Follow Up, Escalated, Callback, Voicemail), call summary, tags, and optional follow-up date. Disposition data persisted in conversation state.
-- **VoiceCallControls Component**: Unified voice control bar with Mute, Hold, Speaker, End Call buttons plus network quality indicator (Excellent/Good/Fair/Poor) and recording/transcript download buttons.
-- **Enhanced Voice Data**: Conversations enriched with CustomerInfo, RecordingInfo, NetworkQuality, CoPilotSuggestions, and CallDisposition types.
-- **Reusable Components**: CustomerInfoSidebar, PostCallDispositionModal, VoiceCallControls are standalone components used in both ConversationDetailPanel (Live Ops) and ActiveChatDetailPanel (Active Chats).
+Real-time monitoring of conversations with auto-updating durations and simulated messages. Features chat categorization tabs, configurable SLA monitoring with breach alerts, stats cards, and an Agent Status Panel.
+- **Role-Based UI Separation**: Supervisors/Client Admins have full team visibility and controls (Monitor, Whisper, Barge In, Transfer); Agents see only their assigned conversations with simplified controls.
+- **Voice Agent Inbox Features**: Customer Info Sidebar (customer profile, interaction history, AI co-pilot suggestions, notes), AI Co-Pilot Panel (real-time AI suggestions with confidence scores, including an interactive Co-Pilot Chat), Post-Call Disposition, and VoiceCallControls (mute, hold, speaker, end call, network quality, recording/transcript download).
 
 #### Users & Team Management (Enhanced with Groups)
-Offers tabbed views for Users and Groups. The Users tab provides CRUD operations for user accounts, role management, agent status workflow (Available, Busy, Away, Offline), and concurrency control (`maxConcurrentChats`). The Groups tab enables creation and management of agent groups with supervisor assignment, agent members, working hours, and auto-assignment settings.
+Offers tabbed views for Users and Groups. The Users tab provides CRUD operations for user accounts, role management, agent status workflow, and concurrency control. The Groups tab enables creation and management of agent groups with supervisor assignment, agent members, working hours, and auto-assignment settings.
 
 #### Security & Compliance Module
 Organized into 5 tabs: Compliance (PII Protection, Zero Retention, Consent, GDPR, Data Masking, Retention), SSO (SAML, OIDC, Azure AD, Okta, Google), RBAC (MFA, password policies, session policies, IP restrictions), Moderation (content rules), and Audit Logs.
@@ -87,6 +78,7 @@ Enables agents to report/escalate conversations to Client Admins with comments. 
 - **cmdk**: Command palette.
 - **react-day-picker**: Date picker.
 - **date-fns**: Date utility library.
+- **react-phone-number-input**: International phone number input.
 
 ### Form & Validation
 - **React Hook Form**: Form handling.
@@ -105,49 +97,3 @@ Enables agents to report/escalate conversations to Client Admins with comments. 
 - **Vite**: Build tool.
 - **TypeScript**: Type checking.
 - **ESLint**: Linting.
-
-## Recent Changes
-
-### User Profile Redesign (Feb 2026)
-- Redesigned Account Settings page with 4-tab layout: Profile, Sessions, Security, Settings
-- **Profile tab**: Personal info with international phone number input (react-phone-number-input with auto country detection via browser locale + IP geolocation), avatar upload, editable name
-- **Sessions tab**: Active sessions list with individual session termination confirmation modal (shows device details, location, IP, and warnings)
-- **Security tab**: Password management, Two-Factor Authentication (2FA) with dual methods (Authenticator App with QR code, Security Questions), standalone Security Questions management (3 customizable questions)
-- **Settings tab**: Language, timezone, theme preferences, notification settings (SLA Breaches and Security Alerts only)
-- Removed weekly reports, system updates, and agent offline from notification preferences
-- Types: Added TwoFactorState, SecurityQuestion to userProfile.ts; SECURITY_QUESTIONS_LIST constant
-- Hook: useUserProfileData now manages 2FA state and security questions with enable/disable/save methods
-
-### Dashboard Enhancements (Feb 2026)
-- **Credit Usage Widget**: New CreditUsageWidget showing available/used/pending credits with progress bar, usage breakdown by category (Voice, AI Agents, Chat, Email), expiring credits warning, and deep-dive dialog with upgrade CTA
-- **DeepDive Dialog Overflow Fix**: Converted raw div footers to proper DialogFooter components across ActiveCallsWidget, ActiveChatsWidget, ActiveEmailsWidget, AlertsWidget for correct dialog layout pinning
-- Removed fixed h-[400px] from ScrollArea in dialog deep-dives, letting dialog's built-in flex layout handle scroll overflow
-- Types: Added CreditData interface to types/dashboard.ts
-- Hook: useDashboardData now provides creditData with mock credit balance information
-- Dashboard second row grid updated from 3-col to 4-col layout to accommodate Credit Usage widget
-
-### Outbound Campaigns Rename & Enhancements (Feb 2026)
-- Renamed "Outbound Calls" to "Outbound Campaigns" in sidebar navigation and roles/permissions labels
-- Route path remains `/outbound-calls` for backward compatibility; only display labels changed
-- **Lead Upload CSV Mapping**: Enhanced LeadUploadModal with a 3-step flow (Upload → Map Columns → Validate)
-  - Step 1: File upload with drag-and-drop (CSV, Excel, PDF)
-  - Step 2: Auto-detected CSV columns with field mapping (Name*, Phone*, Email, Company, Notes), data preview table, prevents duplicate column assignments
-  - Step 3: Validation summary (total/valid/invalid/duplicate counts), error and warning display, mapped fields review
-  - Non-CSV files skip mapping and go directly to upload
-- **Voice Settings Modal Enhancement**: Redesigned with 3-tab layout (Tone & Style, Voice Profile, Audio Controls)
-  - Tone & Style tab: Existing primary tone, adaptability slider, voice style description
-  - Voice Profile tab: Gender selection (Male/Female/Neutral), Age (Young/Middle Aged/Mature), Accent (American/British/Australian/Indian/Neutral), voice preview button with audio visualizer
-  - Audio Controls tab: 7 fine-tunable sliders (Pitch, Speed, Stability, Clarity, Expressiveness, Breathiness, Warmth) with low/high labels and reset to defaults
-  - Types: Added VoiceProfile, VoiceGender, VoiceAge, VoiceAccent to aiAgents.ts with labels and DEFAULT_VOICE_PROFILE constant
-  - Persona interface extended with optional `voiceProfile` field
-
-### Flow Builder Separation & Node Bifurcation (Feb 2026)
-- **Separate Builders**: Split Flow Builder page into two distinct builder sections (Flow Builder and Workflow Builder) with prominent selection cards at the top
-  - Each builder shows only its own items, categories, stats, and create button
-  - Removed the combined All/Flows/Workflows toggle filter and the flow-type selection modal
-  - Table no longer shows Type column since active builder determines the type
-  - Breadcrumb updated to "Builders"
-- **Node Category Bifurcation**: Split WORKFLOW_NODE_CATEGORIES single "Integrations" section into three separate categories:
-  - Messaging: WhatsApp, Slack, Telegram, Teams
-  - Ticketing: Zendesk, Freshdesk
-  - CRM: Zoho CRM, Salesforce, HubSpot

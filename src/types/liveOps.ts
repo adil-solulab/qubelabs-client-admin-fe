@@ -59,6 +59,26 @@ export interface CoPilotSuggestion {
   confidence: number;
 }
 
+export interface CoPilotChatMessage {
+  id: string;
+  role: 'agent' | 'copilot';
+  content: string;
+  timestamp: string;
+}
+
+export interface CoPilotConversationContext {
+  conversationId: string;
+  customerName: string;
+  topic: string;
+  channel: ConversationChannel;
+  sentiment: SentimentType;
+  messages: ConversationMessage[];
+  customerInfo?: CustomerInfo;
+  coPilotSuggestions?: CoPilotSuggestion[];
+  isAiHandled: boolean;
+  agentName: string;
+}
+
 export type NetworkQuality = 'excellent' | 'good' | 'fair' | 'poor';
 
 export type DispositionOutcome = 'resolved' | 'follow_up' | 'escalated' | 'callback_scheduled' | 'voicemail';

@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { LiveConversation, Agent, CallDisposition, CoPilotSuggestion } from '@/types/liveOps';
+import type { LiveConversation, Agent, CallDisposition, CoPilotSuggestion, CoPilotChatMessage, CoPilotConversationContext } from '@/types/liveOps';
 import { SENTIMENT_CONFIG, CHANNEL_CONFIG, STATUS_CONFIG } from '@/types/liveOps';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -86,7 +86,39 @@ export function ConversationDetailPanel({
   const [voiceSpeaker, setVoiceSpeaker] = useState(false);
   const [showCustomerInfo, setShowCustomerInfo] = useState(false);
   const [dispositionOpen, setDispositionOpen] = useState(false);
+  const [coPilotChatMessages, setCoPilotChatMessages] = useState<CoPilotChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const conversationContext: CoPilotConversationContext = {
+    conversationId: conversation.id,
+    customerName: conversation.customerName,
+    topic: conversation.topic,
+    channel: conversation.channel,
+    sentiment: conversation.sentiment,
+    messages: conversation.messages,
+    customerInfo: conversation.customerInfo,
+    coPilotSuggestions: conversation.coPilotSuggestions,
+    isAiHandled: conversation.isAiHandled,
+    agentName: conversation.agentName,
+  };
+
+  const handleCoPilotUserMessage = (message: string) => {
+    setCoPilotChatMessages(prev => [...prev, {
+      id: `agent-${Date.now()}`,
+      role: 'agent',
+      content: message,
+      timestamp: new Date().toISOString(),
+    }]);
+  };
+
+  const handleCoPilotBotMessage = (message: string) => {
+    setCoPilotChatMessages(prev => [...prev, {
+      id: `copilot-${Date.now()}`,
+      role: 'copilot',
+      content: message,
+      timestamp: new Date().toISOString(),
+    }]);
+  };
   
   const { currentRole, isClientAdmin, isSupervisor, isAgent } = useAuth();
   const roleName = currentRole?.name || 'Client Admin';
@@ -263,6 +295,10 @@ export function ConversationDetailPanel({
             onUseSuggestion={handleUseSuggestion}
             onClose={() => setShowCustomerInfo(false)}
             readOnly={isSupervisorView && !conversation.supervisorJoined}
+            conversationContext={conversationContext}
+            coPilotMessages={coPilotChatMessages}
+            onCoPilotUserMessage={handleCoPilotUserMessage}
+            onCoPilotBotMessage={handleCoPilotBotMessage}
           />
         </div>
       )}

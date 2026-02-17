@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Phone, Mail, Building2, MapPin, Crown, DollarSign, Tag, Clock,
-  Plus, X, Sparkles, Bot, MessageSquare, Zap, BookOpen, ChevronDown, ChevronUp, User
+  Plus, X, Sparkles, Bot, MessageSquare, Zap, BookOpen, ChevronDown, ChevronUp, User,
+  Send, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { CustomerInfo, CoPilotSuggestion, PreviousInteraction } from '@/types/liveOps';
+import type { CustomerInfo, CoPilotSuggestion, PreviousInteraction, CoPilotChatMessage, CoPilotConversationContext } from '@/types/liveOps';
 import { CHANNEL_CONFIG } from '@/types/liveOps';
+import { generateCoPilotResponse } from '@/lib/copilotMock';
 
 interface CustomerInfoSidebarProps {
   customerName: string;
@@ -20,6 +23,10 @@ interface CustomerInfoSidebarProps {
   onUseSuggestion?: (suggestion: CoPilotSuggestion) => void;
   onClose: () => void;
   readOnly?: boolean;
+  conversationContext?: CoPilotConversationContext;
+  coPilotMessages?: CoPilotChatMessage[];
+  onCoPilotUserMessage?: (message: string) => void;
+  onCoPilotBotMessage?: (message: string) => void;
 }
 
 const TIER_CONFIG = {
@@ -48,6 +55,14 @@ const SUGGESTION_COLOR = {
   knowledge: 'border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950',
 };
 
+const QUICK_QUESTIONS = [
+  'Summarize this conversation',
+  'Customer details',
+  'What should I do next?',
+  'Sentiment analysis',
+  'Interaction history',
+];
+
 export function CustomerInfoSidebar({
   customerName,
   customerInfo,
@@ -57,17 +72,62 @@ export function CustomerInfoSidebar({
   onUseSuggestion,
   onClose,
   readOnly = false,
+  conversationContext,
+  coPilotMessages = [],
+  onCoPilotUserMessage,
+  onCoPilotBotMessage,
 }: CustomerInfoSidebarProps) {
   const [newNote, setNewNote] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(true);
   const [copilotExpanded, setCopilotExpanded] = useState(true);
   const [notesExpanded, setNotesExpanded] = useState(true);
+  const [copilotChatExpanded, setCopilotChatExpanded] = useState(true);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (copilotChatExpanded) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [coPilotMessages, copilotChatExpanded, isTyping]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleAddNote = () => {
     if (newNote.trim() && onAddNote) {
       onAddNote(newNote.trim());
       setNewNote('');
     }
+  };
+
+  const canChat = !!conversationContext && !!onCoPilotUserMessage && !!onCoPilotBotMessage;
+
+  const handleCoPilotSend = (message: string) => {
+    if (!message.trim() || !canChat) return;
+    onCoPilotUserMessage!(message.trim());
+    setChatInput('');
+    setIsTyping(true);
+    const response = generateCoPilotResponse(message.trim(), conversationContext!);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      onCoPilotBotMessage!(response);
+      typingTimeoutRef.current = null;
+    }, 800 + Math.random() * 700);
+  };
+
+  const formatChatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -152,6 +212,163 @@ export function CustomerInfoSidebar({
           )}
         </div>
 
+        {conversationContext && (
+          <div className="border-b">
+            <button
+              onClick={() => setCopilotChatExpanded(!copilotChatExpanded)}
+              className="w-full p-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Bot className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-semibold">Co-Pilot Chat</span>
+                {coPilotMessages.length > 0 && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{coPilotMessages.length}</Badge>
+                )}
+              </div>
+              {copilotChatExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+            {copilotChatExpanded && (
+              <div className="px-3 pb-3">
+                <div className="rounded-lg border bg-muted/20 overflow-hidden">
+                  <div className="max-h-[280px] overflow-y-auto p-3 space-y-3">
+                    {coPilotMessages.length === 0 && !isTyping && (
+                      <div className="text-center py-4">
+                        <Bot className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                        <p className="text-[11px] text-muted-foreground mb-3">
+                          Ask me anything about this conversation
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {QUICK_QUESTIONS.map((q) => (
+                            <button
+                              key={q}
+                              onClick={() => !readOnly && handleCoPilotSend(q)}
+                              disabled={readOnly}
+                              className={cn(
+                                'text-[10px] px-2 py-1 rounded-full border bg-background transition-colors',
+                                readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/5 hover:border-primary/30 cursor-pointer'
+                              )}
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {coPilotMessages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={cn(
+                          'flex gap-2',
+                          msg.role === 'agent' ? 'justify-end' : 'justify-start'
+                        )}
+                      >
+                        {msg.role === 'copilot' && (
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Bot className="w-3 h-3 text-primary" />
+                          </div>
+                        )}
+                        <div
+                          className={cn(
+                            'max-w-[85%] px-3 py-2 rounded-xl text-[11px] leading-relaxed',
+                            msg.role === 'agent'
+                              ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                              : 'bg-background border rounded-tl-sm'
+                          )}
+                        >
+                          <p className="whitespace-pre-line">{msg.content}</p>
+                          <p className={cn(
+                            'text-[9px] mt-1',
+                            msg.role === 'agent' ? 'text-primary-foreground/60' : 'text-muted-foreground'
+                          )}>
+                            {formatChatTime(msg.timestamp)}
+                          </p>
+                        </div>
+                        {msg.role === 'agent' && (
+                          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <User className="w-3 h-3 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {isTyping && (
+                      <div className="flex gap-2 items-start">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-3 h-3 text-primary" />
+                        </div>
+                        <div className="bg-background border rounded-xl rounded-tl-sm px-3 py-2">
+                          <div className="flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {!readOnly && canChat && (
+                    <div className="p-2 border-t bg-background">
+                      <div className="flex gap-1.5">
+                        <Input
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          placeholder="Ask Co-Pilot..."
+                          className="text-xs h-8"
+                          disabled={isTyping}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && chatInput.trim() && !isTyping) {
+                              e.preventDefault();
+                              handleCoPilotSend(chatInput);
+                            }
+                          }}
+                        />
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          onClick={() => handleCoPilotSend(chatInput)}
+                          disabled={!chatInput.trim() || isTyping}
+                        >
+                          {isTyping ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Send className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
+                      {coPilotMessages.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {QUICK_QUESTIONS.slice(0, 3).map((q) => (
+                            <button
+                              key={q}
+                              onClick={() => handleCoPilotSend(q)}
+                              disabled={isTyping}
+                              className="text-[9px] px-1.5 py-0.5 rounded-full border text-muted-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {readOnly && (
+                    <div className="p-2 border-t bg-muted/30">
+                      <p className="text-[10px] text-muted-foreground italic text-center">
+                        Take over the conversation to chat with Co-Pilot
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {coPilotSuggestions && coPilotSuggestions.length > 0 && (
           <div className="border-b">
             <button
@@ -160,7 +377,7 @@ export function CustomerInfoSidebar({
             >
               <div className="flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-semibold">AI Co-Pilot</span>
+                <span className="text-xs font-semibold">AI Suggestions</span>
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{coPilotSuggestions.length}</Badge>
               </div>
               {copilotExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}

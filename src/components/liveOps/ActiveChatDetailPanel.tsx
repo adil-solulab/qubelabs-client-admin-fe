@@ -32,7 +32,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import type { LiveConversation, Agent, CallDisposition, CoPilotSuggestion } from '@/types/liveOps';
+import type { LiveConversation, Agent, CallDisposition, CoPilotSuggestion, CoPilotChatMessage, CoPilotConversationContext } from '@/types/liveOps';
 import { SENTIMENT_CONFIG, CHANNEL_CONFIG, STATUS_CONFIG } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
 import { TransferPanel } from '@/components/liveOps/TransferPanel';
@@ -80,7 +80,39 @@ export function ActiveChatDetailPanel({
   const [voiceSpeaker, setVoiceSpeaker] = useState(false);
   const [showCustomerInfo, setShowCustomerInfo] = useState(false);
   const [dispositionOpen, setDispositionOpen] = useState(false);
+  const [coPilotChatMessages, setCoPilotChatMessages] = useState<CoPilotChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const conversationContext: CoPilotConversationContext = {
+    conversationId: conversation.id,
+    customerName: conversation.customerName,
+    topic: conversation.topic,
+    channel: conversation.channel,
+    sentiment: conversation.sentiment,
+    messages: conversation.messages,
+    customerInfo: conversation.customerInfo,
+    coPilotSuggestions: conversation.coPilotSuggestions,
+    isAiHandled: conversation.isAiHandled,
+    agentName: conversation.agentName,
+  };
+
+  const handleCoPilotUserMessage = (message: string) => {
+    setCoPilotChatMessages(prev => [...prev, {
+      id: `agent-${Date.now()}`,
+      role: 'agent',
+      content: message,
+      timestamp: new Date().toISOString(),
+    }]);
+  };
+
+  const handleCoPilotBotMessage = (message: string) => {
+    setCoPilotChatMessages(prev => [...prev, {
+      id: `copilot-${Date.now()}`,
+      role: 'copilot',
+      content: message,
+      timestamp: new Date().toISOString(),
+    }]);
+  };
 
   const sentiment = SENTIMENT_CONFIG[conversation.sentiment];
   const channel = CHANNEL_CONFIG[conversation.channel];
@@ -174,6 +206,10 @@ export function ActiveChatDetailPanel({
               onUseSuggestion={handleUseSuggestion}
               onClose={() => setShowCustomerInfo(false)}
               readOnly={isSupervisorView && !conversation.supervisorJoined}
+              conversationContext={conversationContext}
+              coPilotMessages={coPilotChatMessages}
+              onCoPilotUserMessage={handleCoPilotUserMessage}
+              onCoPilotBotMessage={handleCoPilotBotMessage}
             />
           </div>
         )}
