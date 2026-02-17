@@ -452,6 +452,74 @@ export function useLiveOpsData() {
     }
   }, [selectedConversation]);
 
+  const takeOverConversation = useCallback(async (conversationId: string, agentId: string, agentName: string) => {
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const takeOverMessage: ConversationMessage = {
+      id: `takeover-${Date.now()}`,
+      role: 'system',
+      content: `${agentName} has taken over this conversation`,
+      timestamp: new Date().toISOString(),
+    };
+
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? {
+            ...conv,
+            agentId,
+            agentName,
+            isAiHandled: false,
+            status: 'active' as const,
+            supervisorMode: null,
+            messages: [...conv.messages, takeOverMessage]
+          }
+        : conv
+    ));
+
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        agentId,
+        agentName,
+        isAiHandled: false,
+        status: 'active',
+        supervisorMode: null,
+        messages: [...prev.messages, takeOverMessage]
+      } : null);
+    }
+  }, [selectedConversation]);
+
+  const escalateConversation = useCallback(async (conversationId: string, reason: string) => {
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const escalateMessage: ConversationMessage = {
+      id: `escalate-${Date.now()}`,
+      role: 'system',
+      content: `Conversation escalated: ${reason}`,
+      timestamp: new Date().toISOString(),
+    };
+
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? {
+            ...conv,
+            sentiment: 'escalated' as SentimentType,
+            priority: 'urgent' as const,
+            messages: [...conv.messages, escalateMessage]
+          }
+        : conv
+    ));
+
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        sentiment: 'escalated',
+        priority: 'urgent',
+        messages: [...prev.messages, escalateMessage]
+      } : null);
+    }
+  }, [selectedConversation]);
+
   const resolveConversation = useCallback(async (conversationId: string) => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -498,6 +566,8 @@ export function useLiveOpsData() {
     stopSupervision,
     endConversation,
     resolveConversation,
+    takeOverConversation,
+    escalateConversation,
     chatCategoryStats,
     slaStats,
   };

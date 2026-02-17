@@ -10,6 +10,7 @@ import {
   Headphones,
   PhoneOutgoing,
   PhoneCall,
+  MessageSquare,
   BarChart3,
   Puzzle,
   CreditCard,
@@ -70,6 +71,7 @@ const navGroups: NavGroup[] = [
     label: 'Operations',
     items: [
       { icon: Headphones, label: 'Live Ops', path: '/live-ops', screenId: 'live-ops', badge: '12' },
+      { icon: MessageSquare, label: 'Active Chats', path: '/active-chats', screenId: 'live-ops' },
       { icon: PhoneCall, label: 'Callbacks', path: '/callbacks', screenId: 'live-ops', badge: '3' },
       { icon: PhoneOutgoing, label: 'Outbound Calls', path: '/outbound-calls', screenId: 'outbound-calls' },
       { icon: Flag, label: 'Report Tickets', path: '/report-tickets', screenId: 'report-tickets' },

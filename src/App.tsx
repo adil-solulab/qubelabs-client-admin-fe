@@ -28,6 +28,7 @@ import RolesPage from "./pages/RolesPage";
 import AIEnginePage from "./pages/AIEnginePage";
 import TranscriptsPage from "./pages/TranscriptsPage";
 import ReportTicketsPage from "./pages/ReportTicketsPage";
+import ActiveChatsPage from "./pages/ActiveChatsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
@@ -151,6 +152,11 @@ const App = () => (
               <Route path="/report-tickets" element={
                 <ProtectedRoute screenId="report-tickets">
                   <ReportTicketsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/active-chats" element={
+                <ProtectedRoute screenId="live-ops">
+                  <ActiveChatsPage />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
