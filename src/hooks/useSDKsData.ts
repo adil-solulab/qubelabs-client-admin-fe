@@ -1,17 +1,102 @@
 import { useState, useCallback } from 'react';
-import type { SDK, EmbedWidget, ProjectKey, SDKPlatform } from '@/types/sdks';
+import type { SDK, EmbedWidget, ProjectKey } from '@/types/sdks';
 
 const mockSDKs: SDK[] = [
   {
-    id: 'sdk-web',
+    id: 'chat-web',
     platform: 'web',
-    name: 'Web SDK',
-    description: 'JavaScript/TypeScript SDK for web applications',
+    category: 'chat',
+    name: 'Chat SDK for Web',
+    description: 'JavaScript/TypeScript SDK for embedding AI chat in web applications',
     version: '2.4.1',
-    installCommand: 'npm install @conx/ai-sdk',
-    documentationUrl: 'https://docs.conx.ai/sdk/web',
+    installCommand: 'npm install @conx/chat-sdk',
+    documentationUrl: 'https://docs.conx.ai/sdk/chat/web',
     icon: 'web',
-    language: 'JavaScript/TypeScript',
+    language: 'JavaScript / TypeScript',
+  },
+  {
+    id: 'chat-ios',
+    platform: 'ios',
+    category: 'chat',
+    name: 'Chat SDK for iOS',
+    description: 'Swift SDK for embedding AI chat in iOS applications',
+    version: '1.8.0',
+    installCommand: 'pod install ConXChatSDK',
+    documentationUrl: 'https://docs.conx.ai/sdk/chat/ios',
+    icon: 'ios',
+    language: 'Swift',
+  },
+  {
+    id: 'chat-android',
+    platform: 'android',
+    category: 'chat',
+    name: 'Chat SDK for Android',
+    description: 'Kotlin SDK for embedding AI chat in Android applications',
+    version: '1.6.2',
+    installCommand: "implementation 'ai.conx:chat-sdk:1.6.2'",
+    documentationUrl: 'https://docs.conx.ai/sdk/chat/android',
+    icon: 'android',
+    language: 'Kotlin',
+  },
+  {
+    id: 'chat-react-native',
+    platform: 'react-native',
+    category: 'chat',
+    name: 'Chat SDK for React Native',
+    description: 'React Native SDK for embedding AI chat in cross-platform mobile apps',
+    version: '1.5.0',
+    installCommand: 'npm install @conx/chat-sdk-react-native',
+    documentationUrl: 'https://docs.conx.ai/sdk/chat/react-native',
+    icon: 'react-native',
+    language: 'React Native (JS/TS)',
+  },
+  {
+    id: 'webrtc-web',
+    platform: 'web',
+    category: 'voice-webrtc',
+    name: 'Voice WebRTC SDK for Web',
+    description: 'JavaScript/TypeScript SDK for browser-based voice calls to AI agents',
+    version: '1.2.0',
+    installCommand: 'npm install @conx/webrtc-sdk',
+    documentationUrl: 'https://docs.conx.ai/sdk/webrtc/web',
+    icon: 'web',
+    language: 'JavaScript / TypeScript',
+  },
+  {
+    id: 'webrtc-ios',
+    platform: 'ios',
+    category: 'voice-webrtc',
+    name: 'Voice WebRTC SDK for iOS',
+    description: 'Swift SDK for in-app voice calls to AI agents on iOS',
+    version: '1.1.0',
+    installCommand: 'pod install ConXWebRTCSDK',
+    documentationUrl: 'https://docs.conx.ai/sdk/webrtc/ios',
+    icon: 'ios',
+    language: 'Swift',
+  },
+  {
+    id: 'webrtc-android',
+    platform: 'android',
+    category: 'voice-webrtc',
+    name: 'Voice WebRTC SDK for Android',
+    description: 'Kotlin SDK for in-app voice calls to AI agents on Android',
+    version: '1.0.3',
+    installCommand: "implementation 'ai.conx:webrtc-sdk:1.0.3'",
+    documentationUrl: 'https://docs.conx.ai/sdk/webrtc/android',
+    icon: 'android',
+    language: 'Kotlin',
+  },
+  {
+    id: 'webrtc-react-native',
+    platform: 'react-native',
+    category: 'voice-webrtc',
+    name: 'Voice WebRTC SDK for React Native',
+    description: 'React Native SDK for in-app voice calls to AI agents',
+    version: '1.0.1',
+    installCommand: 'npm install @conx/webrtc-sdk-react-native',
+    documentationUrl: 'https://docs.conx.ai/sdk/webrtc/react-native',
+    icon: 'react-native',
+    language: 'React Native (JS/TS)',
   },
 ];
 
@@ -41,7 +126,7 @@ const mockEmbedWidgets: EmbedWidget[] = [
     id: 'widget-webrtc',
     name: 'WebRTC Calling Widget',
     type: 'webrtc',
-    description: 'Voice and video calling widget with WebRTC',
+    description: 'Voice calling widget with WebRTC',
     embedCode: `<!-- ConX WebRTC Calling Widget -->
 <script>
   (function(w,d,s,o,f,js,fjs){
@@ -52,8 +137,7 @@ const mockEmbedWidgets: EmbedWidget[] = [
   }(window,document,'script','aicall','https://cdn.conx.ai/call.js'));
   aicall('init', { 
     projectKey: 'YOUR_PROJECT_KEY',
-    enableVideo: true,
-    enableScreenShare: true
+    enableVoice: true
   });
 </script>`,
     customizable: true,

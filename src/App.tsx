@@ -24,7 +24,6 @@ import BillingPage from "./pages/BillingPage";
 import IntegrationsPage from "./pages/IntegrationsPage";
 import SecurityPage from "./pages/SecurityPage";
 import SDKsPage from "./pages/SDKsPage";
-import InboundWebRTCSDKPage from "./pages/InboundWebRTCSDKPage";
 import ThemeSettingsPage from "./pages/ThemeSettingsPage";
 import RolesPage from "./pages/RolesPage";
 import AIEnginePage from "./pages/AIEnginePage";
@@ -130,11 +129,6 @@ const App = () => (
               <Route path="/sdks" element={
                 <ProtectedRoute screenId="sdks">
                   <SDKsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/inbound-webrtc-sdk" element={
-                <ProtectedRoute screenId="inbound-webrtc-sdk">
-                  <InboundWebRTCSDKPage />
                 </ProtectedRoute>
               } />
               <Route path="/theme" element={

@@ -19,7 +19,7 @@ export type ScreenId =
   | 'ai-engine'
   | 'transcripts'
   | 'report-tickets'
-  | 'inbound-webrtc-sdk';
+;
 
 // Action types for granular permissions
 export type ActionType = 'view' | 'create' | 'edit' | 'delete' | 'export' | 'publish';
@@ -66,7 +66,6 @@ export const AVAILABLE_SCREENS: ScreenMeta[] = [
   { id: 'billing', label: 'Billing', path: '/billing', category: 'settings' },
   { id: 'security', label: 'Security', path: '/security', category: 'settings' },
   { id: 'sdks', label: 'SDKs', path: '/sdks', category: 'settings' },
-  { id: 'inbound-webrtc-sdk', label: 'WebRTC SDK', path: '/inbound-webrtc-sdk', category: 'settings' },
   { id: 'theme', label: 'Theme', path: '/theme', category: 'settings' },
   { id: 'roles', label: 'Roles & Permissions', path: '/roles', category: 'settings' },
   { id: 'transcripts', label: 'Transcripts', path: '/transcripts', category: 'operations' },

@@ -7,12 +7,14 @@ import {
   Key,
   RefreshCw,
   MessageSquare,
-  Video,
+  Phone,
   Download,
-  Terminal,
   Eye,
   EyeOff,
   Sparkles,
+  Settings2,
+  ChevronRight,
+  Video,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -31,9 +33,22 @@ import { useSDKsData } from '@/hooks/useSDKsData';
 import { notify } from '@/hooks/useNotification';
 import { GenerateCodeModal } from '@/components/sdks/GenerateCodeModal';
 import { RegenerateKeyModal } from '@/components/sdks/RegenerateKeyModal';
-import type { EmbedWidget, ProjectKey } from '@/types/sdks';
-import { SDK_ICONS } from '@/types/sdks';
+import { WebRTCConfigurator } from '@/components/sdks/WebRTCConfigurator';
+import type { EmbedWidget, ProjectKey, SDKCategory } from '@/types/sdks';
+import { SDK_ICONS, SDK_CATEGORY_LABELS, SDK_CATEGORY_DESCRIPTIONS } from '@/types/sdks';
 import { cn } from '@/lib/utils';
+
+type ViewMode = 'listing' | 'webrtc-config';
+
+const CATEGORY_ICONS: Record<SDKCategory, React.ElementType> = {
+  chat: MessageSquare,
+  'voice-webrtc': Phone,
+};
+
+const CATEGORY_COLORS: Record<SDKCategory, string> = {
+  chat: 'from-blue-500 to-cyan-500',
+  'voice-webrtc': 'from-indigo-500 to-purple-500',
+};
 
 export default function SDKsPage() {
   const {
@@ -43,6 +58,7 @@ export default function SDKsPage() {
     regenerateKey,
   } = useSDKsData();
 
+  const [viewMode, setViewMode] = useState<ViewMode>('listing');
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [regenerateModalOpen, setRegenerateModalOpen] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<EmbedWidget | null>(null);
@@ -106,21 +122,35 @@ export default function SDKsPage() {
     });
   };
 
+  const categories: SDKCategory[] = ['chat', 'voice-webrtc'];
+
+  if (viewMode === 'webrtc-config') {
+    return (
+      <AppLayout>
+        <WebRTCConfigurator onBack={() => setViewMode('listing')} />
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">SDKs & Deployment</h1>
             <p className="text-sm text-muted-foreground">
-              Integrate AI capabilities into your applications
+              Integrate AI capabilities into your applications across all platforms
             </p>
           </div>
-          <Badge variant="outline" className="w-fit">
-            <Sparkles className="w-3 h-3 mr-1" />
-            Web SDK
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1">
+              <Sparkles className="w-3 h-3" />
+              {sdks.length} SDKs
+            </Badge>
+            <Badge variant="secondary" className="gap-1 text-xs">
+              4 Platforms
+            </Badge>
+          </div>
         </div>
 
         <Tabs defaultValue="sdks" className="space-y-6">
@@ -130,135 +160,104 @@ export default function SDKsPage() {
             <TabsTrigger value="keys">API Keys</TabsTrigger>
           </TabsList>
 
-          {/* SDKs Tab */}
-          <TabsContent value="sdks" className="space-y-6">
-            <div className="grid sm:grid-cols-2 gap-4">
-              {sdks.map((sdk) => {
-                const icon = SDK_ICONS[sdk.platform];
+          <TabsContent value="sdks" className="space-y-8">
+            {categories.map(category => {
+              const CategoryIcon = CATEGORY_ICONS[category];
+              const categorySdks = sdks.filter(s => s.category === category);
 
-                return (
-                  <Card key={sdk.id} className="gradient-card hover:shadow-md transition-all">
-                    <CardContent className="pt-5">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
-                          {icon}
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          v{sdk.version}
-                        </Badge>
+              return (
+                <div key={category}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center",
+                        CATEGORY_COLORS[category]
+                      )}>
+                        <CategoryIcon className="w-5 h-5 text-white" />
                       </div>
-
-                      <h3 className="font-semibold mb-1">{sdk.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {sdk.description}
-                      </p>
-
-                      <Badge variant="secondary" className="text-[10px] mb-4">
-                        {sdk.language}
-                      </Badge>
-
-                      {/* Install Command */}
-                      <div className="p-3 rounded-lg bg-muted/50 mb-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <code className="text-xs flex-1 truncate">{sdk.installCommand}</code>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 flex-shrink-0"
-                            onClick={() => handleCopy(sdk.installCommand, sdk.id)}
-                          >
-                            {copiedId === sdk.id ? (
-                              <Check className="w-3 h-3 text-success" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="flex-1" asChild>
-                          <a href={sdk.documentationUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                            Docs
-                          </a>
-                        </Button>
-                        <Button size="sm" className="flex-1">
-                          <Download className="w-3.5 h-3.5 mr-1" />
-                          Install
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {/* Quick Start Guide */}
-            <Card className="gradient-card">
-              <CardHeader>
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Terminal className="w-5 h-5 text-primary" />
-                  Quick Start Guide
-                </CardTitle>
-                <CardDescription>
-                  Get started with the Web SDK in 3 steps
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      1
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Install the SDK</p>
-                      <div className="mt-2 p-3 rounded-lg bg-muted/50">
-                        <code className="text-xs">npm install @conx/ai-sdk</code>
+                      <div>
+                        <h2 className="text-base font-semibold">{SDK_CATEGORY_LABELS[category]}</h2>
+                        <p className="text-xs text-muted-foreground">{SDK_CATEGORY_DESCRIPTIONS[category]}</p>
                       </div>
                     </div>
+                    {category === 'voice-webrtc' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setViewMode('webrtc-config')}
+                        className="gap-1.5"
+                      >
+                        <Settings2 className="w-3.5 h-3.5" />
+                        Configure Widget
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      2
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Initialize with your API key</p>
-                      <div className="mt-2 p-3 rounded-lg bg-muted/50">
-                        <pre className="text-xs">
-{`import { AIClient } from '@conx/ai-sdk';
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {categorySdks.map(sdk => {
+                      const icon = SDK_ICONS[sdk.platform];
+                      return (
+                        <Card key={sdk.id} className="gradient-card hover:shadow-md transition-all group">
+                          <CardContent className="pt-5 pb-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="w-11 h-11 rounded-xl bg-muted/50 border flex items-center justify-center text-xl">
+                                {icon}
+                              </div>
+                              <Badge variant="outline" className="text-[10px]">
+                                v{sdk.version}
+                              </Badge>
+                            </div>
 
-const client = new AIClient({
-  apiKey: '${productionPublishableKey || 'YOUR_API_KEY'}'
-});`}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
+                            <h3 className="font-semibold text-sm mb-1">{sdk.name}</h3>
+                            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                              {sdk.description}
+                            </p>
 
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      3
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Start a conversation</p>
-                      <div className="mt-2 p-3 rounded-lg bg-muted/50">
-                        <pre className="text-xs">
-{`const response = await client.chat({
-  message: 'Hello, how can I help?',
-  agentId: 'your-agent-id'
-});`}
-                        </pre>
-                      </div>
-                    </div>
+                            <Badge variant="secondary" className="text-[10px] mb-3">
+                              {sdk.language}
+                            </Badge>
+
+                            <div className="p-2.5 rounded-lg bg-muted/50 mb-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <code className="text-[10px] flex-1 truncate">{sdk.installCommand}</code>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 flex-shrink-0"
+                                  onClick={() => handleCopy(sdk.installCommand, sdk.id)}
+                                >
+                                  {copiedId === sdk.id ? (
+                                    <Check className="w-2.5 h-2.5 text-success" />
+                                  ) : (
+                                    <Copy className="w-2.5 h-2.5" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="flex-1 text-xs" asChild>
+                                <a href={sdk.documentationUrl} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  Docs
+                                </a>
+                              </Button>
+                              <Button size="sm" className="flex-1 text-xs">
+                                <Download className="w-3 h-3 mr-1" />
+                                Install
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              );
+            })}
           </TabsContent>
 
-          {/* Embed Widgets Tab */}
           <TabsContent value="embed" className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-6">
               {embedWidgets.map((widget) => (
@@ -271,9 +270,9 @@ const client = new AIClient({
                           widget.type === 'chat' ? 'bg-primary/10' : 'bg-purple-500/10'
                         )}>
                           {widget.type === 'chat' ? (
-                            <MessageSquare className={cn('w-6 h-6', widget.type === 'chat' ? 'text-primary' : 'text-purple-500')} />
+                            <MessageSquare className="w-6 h-6 text-primary" />
                           ) : (
-                            <Video className="w-6 h-6 text-purple-500" />
+                            <Phone className="w-6 h-6 text-purple-500" />
                           )}
                         </div>
                         <div>
@@ -287,7 +286,6 @@ const client = new AIClient({
                     </div>
                   </CardHeader>
                   <CardContent>
-                    {/* Preview Code */}
                     <div className="relative mb-4">
                       <pre className="p-4 rounded-xl bg-muted/50 border text-xs overflow-x-auto max-h-[150px]">
                         <code>{widget.embedCode.substring(0, 200)}...</code>
@@ -320,7 +318,6 @@ const client = new AIClient({
               ))}
             </div>
 
-            {/* Integration Tips */}
             <Card className="gradient-card">
               <CardHeader>
                 <CardTitle className="text-base font-medium">Integration Tips</CardTitle>
@@ -335,7 +332,7 @@ const client = new AIClient({
                     </p>
                   </div>
                   <div className="p-4 rounded-xl border bg-muted/30">
-                    <Video className="w-8 h-8 text-purple-500 mb-3" />
+                    <Phone className="w-8 h-8 text-purple-500 mb-3" />
                     <h4 className="font-medium mb-1">WebRTC Widget</h4>
                     <p className="text-sm text-muted-foreground">
                       Ensure HTTPS is enabled. WebRTC requires secure contexts for media access.
@@ -346,7 +343,6 @@ const client = new AIClient({
             </Card>
           </TabsContent>
 
-          {/* API Keys Tab */}
           <TabsContent value="keys" className="space-y-6">
             <Card className="gradient-card">
               <CardHeader>
@@ -443,7 +439,6 @@ const client = new AIClient({
                   </TableBody>
                 </Table>
 
-                {/* Key Usage Notes */}
                 <div className="mt-6 grid sm:grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl border bg-muted/30">
                     <Badge variant="secondary" className="mb-2">Publishable Keys</Badge>
@@ -464,13 +459,12 @@ const client = new AIClient({
         </Tabs>
       </div>
 
-      {/* Modals */}
       <GenerateCodeModal
         widget={selectedWidget}
         publishableKey={productionPublishableKey}
         open={generateModalOpen}
         onOpenChange={setGenerateModalOpen}
-        onCopy={() => notify.copied()}
+        onCopy={(_code: string) => notify.copied()}
       />
 
       <RegenerateKeyModal
