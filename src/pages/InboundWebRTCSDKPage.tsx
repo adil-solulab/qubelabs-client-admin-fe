@@ -35,7 +35,6 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -65,10 +64,6 @@ interface WidgetConfig {
   borderRadius: number;
   fontFamily: string;
   allowedDomains: string;
-  requireConsent: boolean;
-  consentText: string;
-  recordingDisclosure: boolean;
-  gdprCompliant: boolean;
 }
 
 const DEFAULT_CONFIG: WidgetConfig = {
@@ -90,10 +85,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   borderRadius: 16,
   fontFamily: 'Inter, system-ui, sans-serif',
   allowedDomains: '*',
-  requireConsent: true,
-  consentText: 'This call may be recorded for quality assurance purposes.',
-  recordingDisclosure: true,
-  gdprCompliant: true,
 };
 
 const COLOR_PRESETS = [
@@ -209,11 +200,7 @@ export default function InboundWebRTCSDKPage() {
       maxCallDuration: ${config.maxCallDuration}
     },
     security: {
-      allowedDomains: ${jsStr(config.allowedDomains)},
-      requireConsent: ${config.requireConsent},
-      consentText: ${jsStr(config.consentText)},
-      recordingDisclosure: ${config.recordingDisclosure},
-      gdprCompliant: ${config.gdprCompliant}
+      allowedDomains: ${jsStr(config.allowedDomains)}
     }
   });
 </script>`;
@@ -536,46 +523,6 @@ function App() {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Consent & Compliance</CardTitle>
-                    <CardDescription className="text-xs">Legal and privacy settings</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-2 rounded-lg border bg-muted/20">
-                      <div>
-                        <Label className="text-xs">Require User Consent</Label>
-                        <p className="text-[10px] text-muted-foreground">Show consent dialog before connecting</p>
-                      </div>
-                      <Switch checked={config.requireConsent} onCheckedChange={v => updateConfig('requireConsent', v)} />
-                    </div>
-                    {config.requireConsent && (
-                      <div className="space-y-2">
-                        <Label className="text-xs">Consent Text</Label>
-                        <Textarea
-                          value={config.consentText}
-                          onChange={e => updateConfig('consentText', e.target.value)}
-                          className="text-sm resize-none"
-                          rows={2}
-                        />
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between p-2 rounded-lg border bg-muted/20">
-                      <div>
-                        <Label className="text-xs">Recording Disclosure</Label>
-                        <p className="text-[10px] text-muted-foreground">Notify users that calls may be recorded</p>
-                      </div>
-                      <Switch checked={config.recordingDisclosure} onCheckedChange={v => updateConfig('recordingDisclosure', v)} />
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg border bg-muted/20">
-                      <div>
-                        <Label className="text-xs">GDPR Compliant Mode</Label>
-                        <p className="text-[10px] text-muted-foreground">Enable data handling per GDPR requirements</p>
-                      </div>
-                      <Switch checked={config.gdprCompliant} onCheckedChange={v => updateConfig('gdprCompliant', v)} />
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
               <TabsContent value="code" className="space-y-4">
