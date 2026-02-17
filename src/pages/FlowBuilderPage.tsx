@@ -240,7 +240,7 @@ export default function FlowBuilderPage() {
                 className="hover:text-primary transition-colors cursor-pointer"
                 onClick={handleBackToList}
               >
-                Flows & Workflows
+                Builders
               </button>
               <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-foreground font-semibold truncate">{flow.name}</span>

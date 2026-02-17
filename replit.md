@@ -140,3 +140,14 @@ Enables agents to report/escalate conversations to Client Admins with comments. 
   - Audio Controls tab: 7 fine-tunable sliders (Pitch, Speed, Stability, Clarity, Expressiveness, Breathiness, Warmth) with low/high labels and reset to defaults
   - Types: Added VoiceProfile, VoiceGender, VoiceAge, VoiceAccent to aiAgents.ts with labels and DEFAULT_VOICE_PROFILE constant
   - Persona interface extended with optional `voiceProfile` field
+
+### Flow Builder Separation & Node Bifurcation (Feb 2026)
+- **Separate Builders**: Split Flow Builder page into two distinct builder sections (Flow Builder and Workflow Builder) with prominent selection cards at the top
+  - Each builder shows only its own items, categories, stats, and create button
+  - Removed the combined All/Flows/Workflows toggle filter and the flow-type selection modal
+  - Table no longer shows Type column since active builder determines the type
+  - Breadcrumb updated to "Builders"
+- **Node Category Bifurcation**: Split WORKFLOW_NODE_CATEGORIES single "Integrations" section into three separate categories:
+  - Messaging: WhatsApp, Slack, Telegram, Teams
+  - Ticketing: Zendesk, Freshdesk
+  - CRM: Zoho CRM, Salesforce, HubSpot

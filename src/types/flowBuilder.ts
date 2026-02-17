@@ -260,9 +260,17 @@ export const WORKFLOW_NODE_CATEGORIES: Record<string, { label: string; types: No
     label: 'Logic',
     types: ['condition', 'delay'],
   },
-  integrations: {
-    label: 'Integrations',
-    types: ['whatsapp', 'slack', 'telegram', 'teams', 'zendesk', 'freshdesk', 'zoho_crm', 'salesforce', 'hubspot'],
+  messaging: {
+    label: 'Messaging',
+    types: ['whatsapp', 'slack', 'telegram', 'teams'],
+  },
+  ticketing: {
+    label: 'Ticketing',
+    types: ['zendesk', 'freshdesk'],
+  },
+  crm: {
+    label: 'CRM',
+    types: ['zoho_crm', 'salesforce', 'hubspot'],
   },
   safety: {
     label: 'Safety & Risk',
