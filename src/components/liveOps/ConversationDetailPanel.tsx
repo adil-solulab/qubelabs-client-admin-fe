@@ -88,7 +88,7 @@ export function ConversationDetailPanel({
   const [dispositionOpen, setDispositionOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { currentRole, isClientAdmin } = useAuth();
+  const { currentRole, isClientAdmin, isSupervisor, isAgent } = useAuth();
   const roleName = currentRole?.name || 'Client Admin';
 
   // Translation hook
@@ -108,10 +108,11 @@ export function ConversationDetailPanel({
   } = useTranslation();
 
   // Permission checks based on role
-  const canWhisper = isClientAdmin || roleName === 'Supervisor';
-  const canBargeIn = isClientAdmin || roleName === 'Supervisor';
-  const canTransfer = isClientAdmin || roleName === 'Supervisor';
-  const canMonitor = isClientAdmin || roleName === 'Supervisor';
+  const canWhisper = isClientAdmin || isSupervisor;
+  const canBargeIn = isClientAdmin || isSupervisor;
+  const canTransfer = isClientAdmin || isSupervisor;
+  const canMonitor = isClientAdmin || isSupervisor;
+  const isSupervisorView = isClientAdmin || isSupervisor;
 
   const sentiment = SENTIMENT_CONFIG[conversation.sentiment];
   const channel = CHANNEL_CONFIG[conversation.channel];
@@ -261,6 +262,7 @@ export function ConversationDetailPanel({
             onAddNote={onAddNote}
             onUseSuggestion={handleUseSuggestion}
             onClose={() => setShowCustomerInfo(false)}
+            readOnly={isSupervisorView && !conversation.supervisorJoined}
           />
         </div>
       )}
@@ -358,70 +360,53 @@ export function ConversationDetailPanel({
       {!isTransferred && (
       <div className="p-3 border-b flex-shrink-0">
         <div className="flex items-center gap-2 flex-wrap">
-          {conversation.supervisorMode ? (
+          {isSupervisorView && (
             <>
-              <Badge className={cn(
-                conversation.supervisorMode === 'monitoring' && 'bg-secondary text-secondary-foreground',
-                conversation.supervisorMode === 'whispering' && 'bg-accent text-accent-foreground',
-                conversation.supervisorMode === 'barged_in' && 'bg-warning text-warning-foreground'
-              )}>
-                {conversation.supervisorMode === 'monitoring' && '👁️ Monitoring'}
-                {conversation.supervisorMode === 'whispering' && '🔇 Whispering'}
-                {conversation.supervisorMode === 'barged_in' && '🎙️ Barged In'}
-              </Badge>
-              {canMonitor ? (
-                <Button variant="outline" size="sm" onClick={onStopSupervision}>
-                  <EyeOff className="w-3 h-3 mr-1" />
-                  Stop
-                </Button>
+              {conversation.supervisorMode ? (
+                <>
+                  <Badge className={cn(
+                    conversation.supervisorMode === 'monitoring' && 'bg-secondary text-secondary-foreground',
+                    conversation.supervisorMode === 'whispering' && 'bg-accent text-accent-foreground',
+                    conversation.supervisorMode === 'barged_in' && 'bg-warning text-warning-foreground'
+                  )}>
+                    {conversation.supervisorMode === 'monitoring' && '👁️ Monitoring'}
+                    {conversation.supervisorMode === 'whispering' && '🔇 Whispering'}
+                    {conversation.supervisorMode === 'barged_in' && '🎙️ Barged In'}
+                  </Badge>
+                  <Button variant="outline" size="sm" onClick={onStopSupervision}>
+                    <EyeOff className="w-3 h-3 mr-1" />
+                    Stop
+                  </Button>
+                </>
               ) : (
-                <LockedButton tooltip="Supervisor access required">Stop</LockedButton>
+                <Button variant="outline" size="sm" onClick={handleMonitor}>
+                  <Eye className="w-3 h-3 mr-1" />
+                  Monitor
+                </Button>
               )}
-            </>
-          ) : (
-            canMonitor ? (
-              <Button variant="outline" size="sm" onClick={handleMonitor}>
-                <Eye className="w-3 h-3 mr-1" />
-                Monitor
+
+              {conversation.supervisorMode === 'monitoring' && (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => {}}>
+                    <MessageSquare className="w-3 h-3 mr-1" />
+                    Whisper
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={handleBargeIn}>
+                    <Mic className="w-3 h-3 mr-1" />
+                    Barge In
+                  </Button>
+                </>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTransfer(!showTransfer)}
+              >
+                <UserPlus className="w-3 h-3 mr-1" />
+                Transfer
               </Button>
-            ) : (
-              <LockedButton tooltip="Supervisor access required">Monitor</LockedButton>
-            )
-          )}
-
-          {conversation.supervisorMode === 'monitoring' && (
-            <>
-              {canWhisper ? (
-                <Button variant="outline" size="sm" onClick={() => {}}>
-                  <MessageSquare className="w-3 h-3 mr-1" />
-                  Whisper
-                </Button>
-              ) : (
-                <LockedButton tooltip="Supervisor access required">Whisper</LockedButton>
-              )}
-
-              {canBargeIn ? (
-                <Button variant="secondary" size="sm" onClick={handleBargeIn}>
-                  <Mic className="w-3 h-3 mr-1" />
-                  Barge In
-                </Button>
-              ) : (
-                <LockedButton tooltip="Supervisor access required">Barge In</LockedButton>
-              )}
             </>
-          )}
-
-          {canTransfer ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowTransfer(!showTransfer)}
-            >
-              <UserPlus className="w-3 h-3 mr-1" />
-              Transfer
-            </Button>
-          ) : (
-            <LockedButton tooltip="Supervisor access required">Transfer</LockedButton>
           )}
 
           {onReport && (
@@ -473,7 +458,7 @@ export function ConversationDetailPanel({
           )}
         </div>
 
-        {showTransfer && canTransfer && (
+        {showTransfer && isSupervisorView && (
           <div className="mt-3">
             <TransferPanel
               agents={agents}

@@ -46,18 +46,24 @@ export default function ActiveChatsPage() {
     setDisposition,
   } = useLiveOpsData();
 
-  const { currentUser, currentRole, isClientAdmin } = useAuth();
+  const { currentUser, currentRole, isClientAdmin, isSupervisor, isAgent } = useAuth();
   const roleName = currentRole?.name || 'Client Admin';
+  const canViewAll = isClientAdmin || isSupervisor;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<ConversationChannel | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const activeConversations = useMemo(() => {
-    return conversations.filter(c =>
+    const active = conversations.filter(c =>
       c.status === 'active' || c.status === 'waiting' || c.status === 'on_hold'
     );
-  }, [conversations]);
+    if (canViewAll) return active;
+    return active.filter(conv =>
+      conv.agentId === (currentUser?.id || 'agent-1') ||
+      conv.agentName === (currentUser?.name || 'John Smith')
+    );
+  }, [conversations, canViewAll, currentUser]);
 
   const filteredConversations = useMemo(() => {
     return activeConversations.filter(conv => {
@@ -131,10 +137,13 @@ export default function ActiveChatsPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <MessageSquare className="w-6 h-6 text-primary" />
-              Active Chats
+              {canViewAll ? 'Active Chats' : 'My Chats'}
             </h1>
             <p className="text-sm text-muted-foreground">
-              View and manage all ongoing chat conversations
+              {canViewAll
+                ? 'View and manage all ongoing chat conversations'
+                : 'View and respond to your assigned conversations'
+              }
             </p>
           </div>
         </div>
@@ -365,6 +374,7 @@ export default function ActiveChatsPage() {
 
         <p className="text-xs text-muted-foreground mt-3">
           Showing {filteredConversations.length} of {activeConversations.length} active conversations
+          {!canViewAll && ' (assigned to you)'}
         </p>
 
         {selectedConversation && (
@@ -388,6 +398,7 @@ export default function ActiveChatsPage() {
                 notify.success('Disposition Saved', `Call with ${selectedConversation.customerName} has been documented.`);
               }}
               onAddNote={(note) => addNote(selectedConversation.id, note)}
+              isSupervisorView={canViewAll}
             />
           </>
         )}

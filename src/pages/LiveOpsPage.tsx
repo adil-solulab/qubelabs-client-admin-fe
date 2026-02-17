@@ -46,8 +46,6 @@ import { SurveyModal } from '@/components/surveys/SurveyModal';
 import type { ConversationChannel, SentimentType, ConversationStatus, LiveConversation } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
 
-const CURRENT_AGENT_ID = 'agent-1';
-
 type ChatTab = 'all' | 'active' | 'queued' | 'resolved' | 'missed';
 
 export default function LiveOpsPage() {
@@ -71,7 +69,7 @@ export default function LiveOpsPage() {
     setDisposition,
   } = useLiveOpsData();
 
-  const { currentRole, isClientAdmin, currentUser } = useAuth();
+  const { currentRole, isClientAdmin, isSupervisor, isAgent, currentUser } = useAuth();
   const roleName = currentRole?.name || 'Client Admin';
   const { createTicket } = useReportTickets();
 
@@ -97,19 +95,21 @@ export default function LiveOpsPage() {
     notify.success('Data refreshed', 'Live operations data has been updated.');
   }, []);
 
-  const canViewAll = isClientAdmin || roleName === 'Supervisor';
-  const canWhisper = isClientAdmin || roleName === 'Supervisor';
-  const canBargeIn = isClientAdmin || roleName === 'Supervisor';
+  const canViewAll = isClientAdmin || isSupervisor;
+  const canWhisper = isClientAdmin || isSupervisor;
+  const canBargeIn = isClientAdmin || isSupervisor;
 
   const roleFilteredConversations = useMemo(() => {
     if (canViewAll) {
       return conversations;
     }
+    const agentId = currentUser?.id || 'agent-1';
+    const agentName = currentUser?.name || 'John Smith';
     return conversations.filter(conv => 
-      conv.agentId === CURRENT_AGENT_ID || 
-      conv.agentName === 'John Smith'
+      conv.agentId === agentId || 
+      conv.agentName === agentName
     );
-  }, [conversations, canViewAll]);
+  }, [conversations, canViewAll, currentUser]);
 
   const tabFilteredConversations = useMemo(() => {
     return roleFilteredConversations.filter(conv => {
@@ -304,11 +304,13 @@ export default function LiveOpsPage() {
       <div className="animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Live Operations</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {canViewAll ? 'Live Operations' : 'My Conversations'}
+            </h1>
             <p className="text-sm text-muted-foreground">
               {canViewAll 
                 ? 'Monitor and manage real-time conversations'
-                : 'View your assigned conversations'
+                : 'View and respond to your assigned conversations'
               }
             </p>
           </div>

@@ -19,6 +19,7 @@ interface CustomerInfoSidebarProps {
   onAddNote?: (note: string) => void;
   onUseSuggestion?: (suggestion: CoPilotSuggestion) => void;
   onClose: () => void;
+  readOnly?: boolean;
 }
 
 const TIER_CONFIG = {
@@ -55,6 +56,7 @@ export function CustomerInfoSidebar({
   onAddNote,
   onUseSuggestion,
   onClose,
+  readOnly = false,
 }: CustomerInfoSidebarProps) {
   const [newNote, setNewNote] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(true);
@@ -170,8 +172,8 @@ export function CustomerInfoSidebar({
                   return (
                     <div
                       key={suggestion.id}
-                      className={cn('p-2.5 rounded-lg border text-xs cursor-pointer transition-all hover:shadow-sm', SUGGESTION_COLOR[suggestion.type])}
-                      onClick={() => onUseSuggestion?.(suggestion)}
+                      className={cn('p-2.5 rounded-lg border text-xs transition-all', SUGGESTION_COLOR[suggestion.type], !readOnly && 'cursor-pointer hover:shadow-sm')}
+                      onClick={() => !readOnly && onUseSuggestion?.(suggestion)}
                     >
                       <div className="flex items-start gap-2">
                         <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
@@ -239,7 +241,7 @@ export function CustomerInfoSidebar({
                   {note}
                 </div>
               ))}
-              {onAddNote && (
+              {onAddNote && !readOnly && (
                 <div className="space-y-1.5">
                   <Textarea
                     value={newNote}
@@ -258,6 +260,11 @@ export function CustomerInfoSidebar({
                     Add Note
                   </Button>
                 </div>
+              )}
+              {readOnly && (
+                <p className="text-[10px] text-muted-foreground italic">
+                  Take over the conversation to add notes
+                </p>
               )}
             </div>
           )}

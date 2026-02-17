@@ -48,8 +48,14 @@ Manages outbound calling campaigns (Voice, WhatsApp, SMS, Email) with a dashboar
 #### Analytics Module
 Provides 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns. Tracks Outcome KPIs (Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score) with sparkline charts and detailed analytics across various aspects of the platform.
 
-#### Live Operations (Enhanced with Voice Agent Inbox)
-Real-time monitoring of conversations with auto-updating durations and simulated messages. Features chat categorization tabs (All, Active, Queued, Resolved, Missed), configurable SLA monitoring with breach alerts, stats cards, and an Agent Status Panel. Supervisors can monitor, whisper, barge-in, transfer, and resolve conversations.
+#### Live Operations (Enhanced with Voice Agent Inbox + Role-Based Views)
+Real-time monitoring of conversations with auto-updating durations and simulated messages. Features chat categorization tabs (All, Active, Queued, Resolved, Missed), configurable SLA monitoring with breach alerts, stats cards, and an Agent Status Panel.
+
+**Role-Based UI Separation:**
+- **Supervisors/Client Admins**: See all team conversations ("Live Operations"), Agent Status Panel, SLA breach alerts, and full supervisor controls (Monitor, Whisper, Barge In, Transfer). CustomerInfoSidebar is read-only until supervisor joins/takes over.
+- **Agents**: See only their assigned conversations ("My Conversations" / "My Chats"), with simplified controls (Respond, Take Over from AI, Escalate, Resolve, End). No monitor/whisper/barge/transfer buttons. Co-pilot suggestions are interactive, notes are editable.
+- Transfer restrictions: After transferring, the current user loses all interaction capabilities and sees a transfer banner.
+- Conversations are filtered by `currentUser.id` for agents; supervisors see the full team view.
 
 **Voice Agent Inbox Features:**
 - **Customer Info Sidebar**: Expandable right panel showing customer profile (phone, email, company, tier, LTV), interaction history, AI co-pilot suggestions (intent detection, reply suggestions, action recommendations, knowledge base tips), and editable notes. Toggle via panel button in header.

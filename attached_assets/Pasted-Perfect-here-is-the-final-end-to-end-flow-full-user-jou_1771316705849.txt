@@ -1,0 +1,183 @@
+Perfect — here is the final, end-to-end flow + full user journey for your platform, fully aligned with everything we discussed:
+Role-based access (Admin, Supervisor, Agent, Custom Roles)
+Supervisor optional
+Admin inherits supervisor capabilities but is not in operational routing
+AI → Agent → Supervisor escalation logic
+Live Ops, Voice, WebRTC, Co-Pilot
+Outbound calls + Transcripts + KB
+This is the clean, production-grade flow you can give to design, product, and engineering.
+🟦 1. USER ROLES & WHAT THEY SEE
+Client Admin
+Full platform owner
+Sees All screens, All settings
+Has ALL Supervisor capabilities (monitor, whisper, barge)
+Not included in routing or agent queues
+Supervisor (Optional Role)
+Team manager
+Handles team monitoring, dashboards, outbound, KB
+Receives escalations only if configured, otherwise escalations go to Agents
+Agent
+Only sees their assigned conversations
+Can handle voice & chat
+Uses Co-Pilot
+Cannot monitor or see others
+Custom Roles
+Sales Agent
+Support Agent
+Permission-based filtered views.
+🟦 2. SYSTEM ENTRY FLOW
+Step 1: Login
+User logs in → system reads their roleId → loads permissions into session.
+Step 2: Sidebar Auto-Config
+Sidebar only shows screens with View permission.
+Examples:
+Agent does NOT see Analytics, Flow Builder, Integrations, Outbound
+Supervisor DOES see Outbound, Analytics, KB edit
+Admin sees EVERYTHING
+Step 3: Role Switcher (for internal testing)
+Admin can test any role by switching roles → session is rebuilt.
+🟦 3. LIVE OPS (VOICE + CHAT) — MAIN USER JOURNEY
+This is the core of your platform.
+🎯 Customer starts a conversation
+Customer initiates:
+Chat widget
+WebRTC call
+Phone number (PSTN → SIP → WebRTC)
+WhatsApp
+Instagram
+Facebook
+Email
+AI Agent takes over first
+AI handles as long as:
+Model confidence is high
+User not frustrated
+No escalation trigger
+🟦 4. AI → HUMAN ESCALATION FLOW
+AI decides escalation is needed → triggers routing:
+Routing Logic:
+If Supervisor exists & is enabled for this queue → send to Agent (preferred).
+Escalation ALWAYS goes to Agent unless explicitly configured otherwise.
+If agent unavailable → round-robin to another agent.
+If no agents → wait queue.
+Admin is NEVER added to routing automatically.
+🟦 5. AGENT JOURNEY (assigned a conversation)
+Agent receives a new conversation:
+Agent UI:
+Middle: Live Chat / Voice Call
+Left: My Conversations
+Right: AI Co-Pilot
+Bottom: Message composer or voice controls
+Agent can:
+✔ Respond
+✔ View transcript
+✔ View customer history
+✔ Trigger actions (refund, booking, ticket creation)
+✔ Put AI back in control (handover back to bot)
+✔ End conversation
+Agent CANNOT:
+❌ See other agents
+❌ Transfer to other agents
+❌ Monitor anyone
+❌ Whisper or barge
+❌ Export analytics
+🟦 6. SUPERVISOR JOURNEY (team manager)
+If a Supervisor exists:
+Supervisor Live Ops Screen:
+Agent list with status (Online, Busy, Break)
+Active conversations overview
+SLA monitoring
+Queue monitoring
+Escalation queue
+Whisper
+Barge in
+Take over
+Transfer conversation
+Supervisor handles:
+✔ Team management
+✔ Real-time operations
+✔ Outbound campaigns
+✔ KB (create/edit)
+✔ Analytics exports
+Supervisor CANNOT:
+❌ Change billing
+❌ Change role permissions
+❌ Manage integrations
+❌ Change channel settings
+🟦 7. ADMIN JOURNEY (platform owner)
+Admin can:
+✔ Do everything a Supervisor can
+✔ Manage roles
+✔ Manage billing
+✔ Manage integrations
+✔ Manage security
+✔ Manage SDKs
+✔ Manage channels
+✔ Publish flows
+✔ Create AI agents
+✔ Create supervisors & agents
+Admin DOES NOT:
+❌ Receive escalations
+❌ Get added to agent queues
+Admin only monitors or intervenes manually.
+🟦 8. VOICE CALL FLOW (WEBRTC)
+Customer calls (through web or phone)
+Call hits voice connector
+Forwarded to AI Voice Agent
+AI handles intent
+If escalation:
+WebRTC panel rings for Agent
+Agent answers on web browser
+Supervisor can silently monitor
+Admin can also monitor
+Voice Controls:
+Mute (Agent)
+Mute (Customer) — AI can
+Hold
+End Call
+Transfer (supervisor only)
+Whisper/Barge (supervisor/admin only)
+🟦 9. TRANSCRIPTS & REPORTING JOURNEY
+Every conversation produces:
+Transcript
+Summary (AI Co-Pilot generated)
+Sentiment timeline
+Intent mapping
+Agent actions
+Access:
+Agent (view)
+Supervisor (view/export)
+Admin (view/export/delete)
+🟦 10. OUTBOUND CALLS JOURNEY
+Supervisor or Admin can create outbound campaigns
+Agents only handle calls assigned to them
+Outbound Campaign Creation:
+Upload list
+Choose AI / human routing
+Schedule
+Monitor real-time results
+🟦 11. KNOWLEDGE BASE JOURNEY
+Agent → View only
+Supervisor → View + Create + Edit
+Admin → Full access
+🟦 12. COMPLETE USER JOURNEY (CONCISE SUMMARY)
+Here is the holistic flow:
+Customer → AI → (Escalate) → Agent → Supervisor (optional) → Admin (backup only)
+Customer
+→ interacts
+AI
+→ handles first
+→ summarizes context
+→ triggers escalation only when needed
+Agent
+→ receives assigned task
+→ uses co-pilot
+→ handles end-to-end
+Supervisor (if exists)
+→ oversees team
+→ monitors calls
+→ manages queue
+→ supports agents
+Admin
+→ system owner
+→ not in routing
+→ monitors when needed

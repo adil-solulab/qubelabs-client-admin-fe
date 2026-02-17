@@ -52,6 +52,7 @@ interface ActiveChatDetailPanelProps {
   onSendMessage?: (content: string) => void;
   onDisposition?: (disposition: CallDisposition) => void;
   onAddNote?: (note: string) => void;
+  isSupervisorView?: boolean;
 }
 
 export function ActiveChatDetailPanel({
@@ -66,6 +67,7 @@ export function ActiveChatDetailPanel({
   onSendMessage,
   onDisposition,
   onAddNote,
+  isSupervisorView = true,
 }: ActiveChatDetailPanelProps) {
   const [isTakingOver, setIsTakingOver] = useState(false);
   const [escalateOpen, setEscalateOpen] = useState(false);
@@ -171,6 +173,7 @@ export function ActiveChatDetailPanel({
               onAddNote={onAddNote}
               onUseSuggestion={handleUseSuggestion}
               onClose={() => setShowCustomerInfo(false)}
+              readOnly={isSupervisorView && !conversation.supervisorJoined}
             />
           </div>
         )}
@@ -373,7 +376,7 @@ export function ActiveChatDetailPanel({
 
         {!isTransferred && (
         <div className="p-4 border-t flex-shrink-0 space-y-3">
-          {showTransfer && (
+          {isSupervisorView && showTransfer && (
             <div className="mb-2">
               <TransferPanel
                 agents={agents}
@@ -408,15 +411,17 @@ export function ActiveChatDetailPanel({
           </div>
 
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => setShowTransfer(!showTransfer)}
-            >
-              <UserPlus className="w-3.5 h-3.5 mr-1.5" />
-              Transfer
-            </Button>
+            {isSupervisorView && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => setShowTransfer(!showTransfer)}
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                Transfer
+              </Button>
+            )}
             {conversation.status === 'active' && (
               <Button
                 variant="outline"
