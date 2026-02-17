@@ -8,6 +8,7 @@ import { ReportTicketsProvider } from "@/hooks/useReportTicketsContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import UsersPage from "./pages/UsersPage";
@@ -46,6 +47,7 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               
               {/* Protected routes */}

@@ -236,8 +236,19 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Demo Credentials Hint */}
-          <div className="mt-6 p-3 rounded-lg bg-muted/50 border border-border/50">
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link
+                to="/signup"
+                className="font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
+
+          <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border/50">
             <p className="text-xs text-muted-foreground text-center">
               <span className="font-medium">Demo:</span> admin@example.com / password123
             </p>
