@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,6 +16,9 @@ import {
   Search,
   Plus,
   X,
+  Upload,
+  FileSpreadsheet,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +38,7 @@ import type {
   CampaignTemplate,
   CampaignSegment,
   CreateCampaignData,
+  LeadSourceType,
 } from '@/types/outboundCalling';
 import { CHANNEL_CONFIG } from '@/types/outboundCalling';
 import type { FlowSummary, FlowType, FlowChannel, Flow } from '@/types/flowBuilder';
@@ -102,6 +106,10 @@ export function CreateCampaignWizard({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [channel, setChannel] = useState<CampaignChannel>('voice');
+  const [leadSource, setLeadSource] = useState<LeadSourceType>('csv');
+  const [leadFile, setLeadFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [flowId, setFlowId] = useState('');
   const [workflowId, setWorkflowId] = useState('');
   const [flowSearch, setFlowSearch] = useState('');
@@ -147,14 +155,38 @@ export function CreateCampaignWizard({
 
   const STEPS = [
     { id: 1, label: 'Basic Info' },
-    { id: 2, label: 'Flow & Workflow' },
+    { id: 2, label: leadSource === 'csv' ? 'Upload Leads' : 'Flow & Workflow' },
     { id: 3, label: 'Review' },
   ];
+
+  const isValidFileType = (file: File) => {
+    const ext = file.name.toLowerCase();
+    return ext.endsWith('.csv') || ext.endsWith('.xls');
+  };
+
+  const handleFileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && isValidFileType(file)) {
+      setLeadFile(file);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && isValidFileType(file)) {
+      setLeadFile(file);
+    }
+    if (e.target) e.target.value = '';
+  };
 
   const canProceed = () => {
     switch (currentStep) {
       case 1: return name.trim().length > 0;
-      case 2: return true;
+      case 2:
+        if (leadSource === 'csv') return !!leadFile;
+        return true;
       case 3: return true;
       default: return false;
     }
@@ -174,10 +206,13 @@ export function CreateCampaignWizard({
       name,
       description,
       channel,
-      flowId: flowId || undefined,
-      flowName: selectedFlow?.name || undefined,
-      workflowId: workflowId || undefined,
-      workflowName: selectedWorkflow?.name || undefined,
+      leadSource,
+      leadFile: leadFile || undefined,
+      leadFileName: leadFile?.name || undefined,
+      flowId: leadSource === 'flow' ? (flowId || undefined) : undefined,
+      flowName: leadSource === 'flow' ? (selectedFlow?.name || undefined) : undefined,
+      workflowId: leadSource === 'flow' ? (workflowId || undefined) : undefined,
+      workflowName: leadSource === 'flow' ? (selectedWorkflow?.name || undefined) : undefined,
     });
     setIsSubmitting(false);
   };
@@ -188,8 +223,10 @@ export function CreateCampaignWizard({
       name: name || undefined,
       description: description || undefined,
       channel,
-      flowId: flowId || undefined,
-      workflowId: workflowId || undefined,
+      leadSource,
+      leadFileName: leadFile?.name || undefined,
+      flowId: leadSource === 'flow' ? (flowId || undefined) : undefined,
+      workflowId: leadSource === 'flow' ? (workflowId || undefined) : undefined,
     });
     setIsSavingDraft(false);
   };
@@ -291,12 +328,156 @@ export function CreateCampaignWizard({
                     ))}
                   </div>
                 </div>
+
+                <div className="space-y-3">
+                  <Label>Lead Source *</Label>
+                  <p className="text-xs text-muted-foreground -mt-1">
+                    Choose where to get your campaign leads from
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setLeadSource('csv')}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all',
+                        leadSource === 'csv'
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border hover:border-primary/30 hover:bg-muted/50'
+                      )}
+                    >
+                      <div className={cn(
+                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        leadSource === 'csv' ? 'bg-green-100 dark:bg-green-950/40' : 'bg-muted'
+                      )}>
+                        <FileSpreadsheet className={cn(
+                          'w-6 h-6',
+                          leadSource === 'csv' ? 'text-green-600' : 'text-muted-foreground'
+                        )} />
+                      </div>
+                      <span className="text-sm font-medium">CSV / Excel File</span>
+                      <span className="text-[10px] text-muted-foreground text-center">
+                        Upload a .csv or .xls file with your leads
+                      </span>
+                      {leadSource === 'csv' && (
+                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setLeadSource('flow')}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all',
+                        leadSource === 'flow'
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border hover:border-primary/30 hover:bg-muted/50'
+                      )}
+                    >
+                      <div className={cn(
+                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        leadSource === 'flow' ? 'bg-blue-100 dark:bg-blue-950/40' : 'bg-muted'
+                      )}>
+                        <GitBranch className={cn(
+                          'w-6 h-6',
+                          leadSource === 'flow' ? 'text-blue-600' : 'text-muted-foreground'
+                        )} />
+                      </div>
+                      <span className="text-sm font-medium">Flow / Workflow</span>
+                      <span className="text-[10px] text-muted-foreground text-center">
+                        Use a conversational flow or automation workflow
+                      </span>
+                      {leadSource === 'flow' && (
+                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {currentStep === 2 && (
+        {currentStep === 2 && leadSource === 'csv' && (
+          <Card className="gradient-card">
+            <CardContent className="p-6 space-y-5">
+              <div>
+                <h2 className="text-base font-semibold mb-0.5">Upload Lead File</h2>
+                <p className="text-sm text-muted-foreground">
+                  Upload a CSV or Excel file containing your campaign leads
+                </p>
+              </div>
+
+              <div
+                className={cn(
+                  'border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer',
+                  dragOver && 'border-primary bg-primary/5',
+                  leadFile ? 'border-green-500 bg-green-500/5' : 'border-border hover:border-primary/50'
+                )}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
+                onDrop={handleFileDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xls"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+
+                {leadFile ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <FileSpreadsheet className="w-8 h-8 text-green-600" />
+                    <div>
+                      <p className="font-medium">{leadFile.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(leadFile.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLeadFile(null);
+                      }}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Upload className="w-7 h-7 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Drop your file here</p>
+                      <p className="text-sm text-muted-foreground">or click to browse</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> CSV (.csv)
+                </span>
+                <span className="flex items-center gap-1">
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xls)
+                </span>
+              </div>
+
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
+                Your file should include columns for lead name, phone number, and optionally email, company, and notes.
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {currentStep === 2 && leadSource === 'flow' && (
           <div className="space-y-4">
             <Card className="gradient-card">
               <CardContent className="p-6 space-y-4">
@@ -546,30 +727,60 @@ export function CreateCampaignWizard({
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Conversational Flow</span>
-                  {selectedFlow ? (
-                    <div className="flex items-center gap-1.5">
-                      <GitBranch className="w-3.5 h-3.5 text-blue-500" />
-                      <span className="font-medium text-sm">{selectedFlow.name}</span>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground italic">Not assigned</span>
-                  )}
+                  <span className="text-sm text-muted-foreground">Lead Source</span>
+                  <div className="flex items-center gap-1.5">
+                    {leadSource === 'csv' ? (
+                      <>
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-green-600" />
+                        <span className="font-medium text-sm">CSV / Excel File</span>
+                      </>
+                    ) : (
+                      <>
+                        <GitBranch className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="font-medium text-sm">Flow / Workflow</span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Automation Workflow</span>
-                  {selectedWorkflow ? (
+                {leadSource === 'csv' && leadFile && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Lead File</span>
                     <div className="flex items-center gap-1.5">
-                      <Zap className="w-3.5 h-3.5 text-purple-500" />
-                      <span className="font-medium text-sm">{selectedWorkflow.name}</span>
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-green-500" />
+                      <span className="font-medium text-sm">{leadFile.name}</span>
+                      <span className="text-xs text-muted-foreground">({(leadFile.size / 1024).toFixed(1)} KB)</span>
                     </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground italic">Not assigned</span>
-                  )}
-                </div>
+                  </div>
+                )}
+                {leadSource === 'flow' && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Conversational Flow</span>
+                      {selectedFlow ? (
+                        <div className="flex items-center gap-1.5">
+                          <GitBranch className="w-3.5 h-3.5 text-blue-500" />
+                          <span className="font-medium text-sm">{selectedFlow.name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">Not assigned</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Automation Workflow</span>
+                      {selectedWorkflow ? (
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-purple-500" />
+                          <span className="font-medium text-sm">{selectedWorkflow.name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">Not assigned</span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
-              {!selectedFlow && !selectedWorkflow && (
+              {leadSource === 'flow' && !selectedFlow && !selectedWorkflow && (
                 <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
                   <p className="text-xs text-warning">
                     No flow or workflow is assigned. You can add them later from the campaign detail view.

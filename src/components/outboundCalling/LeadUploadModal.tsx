@@ -232,7 +232,13 @@ export function LeadUploadModal({
   const [mappings, setMappings] = useState<Record<string, FieldMapping>>({});
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isParsing, setIsParsing] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isValidFileType = (file: File) => {
+    const name = file.name.toLowerCase();
+    return name.endsWith('.csv') || name.endsWith('.xls');
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -248,12 +254,27 @@ export function LeadUploadModal({
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file) setSelectedFile(file);
+    if (file) {
+      if (isValidFileType(file)) {
+        setSelectedFile(file);
+        setFileError(null);
+      } else {
+        setFileError('Only .csv and .xls files are supported.');
+      }
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (file) {
+      if (isValidFileType(file)) {
+        setSelectedFile(file);
+        setFileError(null);
+      } else {
+        setFileError('Only .csv and .xls files are supported.');
+      }
+    }
+    if (e.target) e.target.value = '';
   };
 
   const handleProceedToMapping = async () => {
@@ -303,6 +324,7 @@ export function LeadUploadModal({
       setMappings({});
       setValidationResult(null);
       setRowCount(0);
+      setFileError(null);
       onClearProgress();
       onOpenChange(false);
     }
@@ -328,8 +350,7 @@ export function LeadUploadModal({
 
   const hasBlockingErrors = validationResult?.errors.some(e => e.row === 0) ?? false;
 
-  const getFileIcon = (fileName: string) => {
-    if (fileName.endsWith('.pdf')) return <FileText className="w-8 h-8 text-destructive" />;
+  const getFileIcon = (_fileName: string) => {
     return <FileSpreadsheet className="w-8 h-8 text-success" />;
   };
 
@@ -405,7 +426,7 @@ export function LeadUploadModal({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.xlsx,.xls,.pdf"
+                  accept=".csv,.xls"
                   className="hidden"
                   onChange={handleFileSelect}
                 />
@@ -446,19 +467,23 @@ export function LeadUploadModal({
 
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xlsx, .xls)
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> CSV (.csv)
                 </span>
                 <span className="flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5" /> CSV
-                </span>
-                <span className="flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5" /> PDF
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xls)
                 </span>
               </div>
 
+              {fileError && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-xs text-destructive flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{fileError}</span>
+                </div>
+              )}
+
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground flex items-start gap-2">
                 <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <span>CSV files will go through column mapping and validation. Other formats are imported directly.</span>
+                <span>CSV files will go through column mapping and validation. Excel files are imported directly.</span>
               </div>
             </>
           )}

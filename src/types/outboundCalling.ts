@@ -5,6 +5,7 @@ export type SentimentType = 'positive' | 'neutral' | 'negative' | 'escalated';
 export type CampaignChannel = 'voice' | 'whatsapp' | 'sms' | 'email';
 export type ScheduleType = 'now' | 'later' | 'recurring';
 export type GoalType = 'delivery' | 'conversion' | 'response';
+export type LeadSourceType = 'csv' | 'flow';
 
 export interface Lead {
   id: string;
@@ -119,6 +120,9 @@ export interface CreateCampaignData {
   name: string;
   description: string;
   channel: CampaignChannel;
+  leadSource: LeadSourceType;
+  leadFile?: File;
+  leadFileName?: string;
   flowId?: string;
   flowName?: string;
   workflowId?: string;
