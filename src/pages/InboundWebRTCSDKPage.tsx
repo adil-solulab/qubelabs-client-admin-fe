@@ -20,7 +20,6 @@ import {
   PhoneOff,
   Wifi,
   WifiOff,
-  User,
   Clock,
   MessageSquare,
   X,
@@ -56,20 +55,12 @@ interface WidgetConfig {
   buttonStyle: 'pill' | 'rounded' | 'circle';
   showIcon: boolean;
   showPulse: boolean;
-  agentId: string;
-  agentName: string;
-  greeting: string;
-  waitingMessage: string;
-  endCallMessage: string;
   enableMute: boolean;
   enableSpeaker: boolean;
   enableHold: boolean;
   showCallDuration: boolean;
   showNetworkQuality: boolean;
-  autoAnswer: boolean;
   maxCallDuration: number;
-  noiseReduction: boolean;
-  echoCancellation: boolean;
   theme: 'light' | 'dark' | 'auto';
   borderRadius: number;
   fontFamily: string;
@@ -89,20 +80,12 @@ const DEFAULT_CONFIG: WidgetConfig = {
   buttonStyle: 'pill',
   showIcon: true,
   showPulse: true,
-  agentId: 'agent-sales',
-  agentName: 'Sales Agent',
-  greeting: 'Hi! You are now connected to our AI assistant. How can I help you today?',
-  waitingMessage: 'Connecting you to an AI agent...',
-  endCallMessage: 'Thank you for calling. Have a great day!',
   enableMute: true,
   enableSpeaker: true,
   enableHold: true,
   showCallDuration: true,
   showNetworkQuality: true,
-  autoAnswer: false,
   maxCallDuration: 30,
-  noiseReduction: true,
-  echoCancellation: true,
   theme: 'light',
   borderRadius: 16,
   fontFamily: 'Inter, system-ui, sans-serif',
@@ -112,14 +95,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   recordingDisclosure: true,
   gdprCompliant: true,
 };
-
-const MOCK_AGENTS = [
-  { id: 'agent-sales', name: 'Sales Agent' },
-  { id: 'agent-support', name: 'Support Agent' },
-  { id: 'agent-tech', name: 'Technical Advisor' },
-  { id: 'agent-billing', name: 'Billing Assistant' },
-  { id: 'agent-onboard', name: 'Onboarding Agent' },
-];
 
 const COLOR_PRESETS = [
   { name: 'Blue', value: '#3B82F6' },
@@ -210,7 +185,6 @@ export default function InboundWebRTCSDKPage() {
   }(window,document,'script','conxcall','https://cdn.conx.ai/webrtc-sdk.js'));
   conxcall('init', {
     projectKey: 'pk_live_xxxxxxxxxxxxxxxxxxxxxxxx',
-    agentId: ${jsStr(config.agentId)},
     button: {
       text: ${jsStr(config.buttonText)},
       position: ${jsStr(config.buttonPosition)},
@@ -224,10 +198,7 @@ export default function InboundWebRTCSDKPage() {
     ui: {
       theme: ${jsStr(config.theme)},
       borderRadius: ${config.borderRadius},
-      fontFamily: ${jsStr(config.fontFamily)},
-      greeting: ${jsStr(config.greeting)},
-      waitingMessage: ${jsStr(config.waitingMessage)},
-      endCallMessage: ${jsStr(config.endCallMessage)}
+      fontFamily: ${jsStr(config.fontFamily)}
     },
     features: {
       enableMute: ${config.enableMute},
@@ -235,12 +206,7 @@ export default function InboundWebRTCSDKPage() {
       enableHold: ${config.enableHold},
       showCallDuration: ${config.showCallDuration},
       showNetworkQuality: ${config.showNetworkQuality},
-      autoAnswer: ${config.autoAnswer},
       maxCallDuration: ${config.maxCallDuration}
-    },
-    audio: {
-      noiseReduction: ${config.noiseReduction},
-      echoCancellation: ${config.echoCancellation}
     },
     security: {
       allowedDomains: ${jsStr(config.allowedDomains)},
@@ -263,7 +229,6 @@ function App() {
   return (
     <ConXCallButton
       projectKey="pk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
-      agentId="${esc(config.agentId)}"
       buttonText="${esc(config.buttonText)}"
       position="${esc(config.buttonPosition)}"
       color="${esc(config.buttonColor)}"
@@ -326,14 +291,10 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="appearance" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="appearance" className="text-xs">
                   <Palette className="w-3.5 h-3.5 mr-1" />
                   Appearance
-                </TabsTrigger>
-                <TabsTrigger value="agent" className="text-xs">
-                  <User className="w-3.5 h-3.5 mr-1" />
-                  Agent
                 </TabsTrigger>
                 <TabsTrigger value="behavior" className="text-xs">
                   <Settings className="w-3.5 h-3.5 mr-1" />
@@ -509,66 +470,6 @@ function App() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="agent" className="space-y-4">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">AI Agent Configuration</CardTitle>
-                    <CardDescription className="text-xs">Select which AI agent handles incoming calls</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs">Target Agent</Label>
-                      <Select
-                        value={config.agentId}
-                        onValueChange={v => {
-                          const agent = MOCK_AGENTS.find(a => a.id === v);
-                          updateConfig('agentId', v);
-                          if (agent) updateConfig('agentName', agent.name);
-                        }}
-                      >
-                        <SelectTrigger className="text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MOCK_AGENTS.map(a => (
-                            <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs">Greeting Message</Label>
-                      <Textarea
-                        value={config.greeting}
-                        onChange={e => updateConfig('greeting', e.target.value)}
-                        className="text-sm resize-none"
-                        rows={2}
-                      />
-                      <p className="text-[10px] text-muted-foreground">Spoken by the AI agent when the call connects</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs">Waiting Message</Label>
-                      <Input
-                        value={config.waitingMessage}
-                        onChange={e => updateConfig('waitingMessage', e.target.value)}
-                        className="text-sm"
-                      />
-                      <p className="text-[10px] text-muted-foreground">Displayed while the call is being established</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs">End Call Message</Label>
-                      <Input
-                        value={config.endCallMessage}
-                        onChange={e => updateConfig('endCallMessage', e.target.value)}
-                        className="text-sm"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               <TabsContent value="behavior" className="space-y-4">
                 <Card>
@@ -584,7 +485,6 @@ function App() {
                         { key: 'enableHold' as const, label: 'Hold Button', desc: 'Allow users to place call on hold' },
                         { key: 'showCallDuration' as const, label: 'Call Duration', desc: 'Display elapsed call time' },
                         { key: 'showNetworkQuality' as const, label: 'Network Quality', desc: 'Show connection quality indicator' },
-                        { key: 'autoAnswer' as const, label: 'Auto Answer', desc: 'Connect call immediately on click' },
                       ].map(item => (
                         <div key={item.key} className="flex items-center justify-between p-2 rounded-lg border bg-muted/20">
                           <div>
@@ -614,28 +514,6 @@ function App() {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Audio Processing</CardTitle>
-                    <CardDescription className="text-xs">WebRTC audio quality settings</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between p-2 rounded-lg border bg-muted/20">
-                      <div>
-                        <Label className="text-xs">Noise Reduction</Label>
-                        <p className="text-[10px] text-muted-foreground">AI-powered background noise suppression</p>
-                      </div>
-                      <Switch checked={config.noiseReduction} onCheckedChange={v => updateConfig('noiseReduction', v)} />
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg border bg-muted/20">
-                      <div>
-                        <Label className="text-xs">Echo Cancellation</Label>
-                        <p className="text-[10px] text-muted-foreground">Prevent audio feedback loops</p>
-                      </div>
-                      <Switch checked={config.echoCancellation} onCheckedChange={v => updateConfig('echoCancellation', v)} />
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
               <TabsContent value="security" className="space-y-4">
@@ -910,7 +788,7 @@ function App() {
                               <PhoneCall className="w-3.5 h-3.5 text-white" />
                             </div>
                             <div>
-                              <p className="text-[10px] font-semibold text-white">{config.agentName}</p>
+                              <p className="text-[10px] font-semibold text-white">AI Agent</p>
                               <p className="text-[8px] text-white/70">
                                 {previewState === 'connecting' && 'Connecting...'}
                                 {previewState === 'active' && 'In Call'}
@@ -984,7 +862,7 @@ function App() {
 
                           {previewState === 'ended' && (
                             <div className="text-center py-2">
-                              <p className="text-[10px] text-muted-foreground">{config.endCallMessage}</p>
+                              <p className="text-[10px] text-muted-foreground">Thank you for calling. Have a great day!</p>
                             </div>
                           )}
                         </div>
