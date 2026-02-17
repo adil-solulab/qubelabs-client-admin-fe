@@ -56,6 +56,22 @@ export interface Alert {
   acknowledged: boolean;
 }
 
+export interface CreditData {
+  available: number;
+  used: number;
+  total: number;
+  pending: number;
+  expiring: number;
+  expiryDate: string;
+  resetDate: string;
+  breakdown: {
+    category: string;
+    used: number;
+    allocated: number;
+    icon: string;
+  }[];
+}
+
 export type Environment = 'production' | 'test';
 
 export interface Notification {

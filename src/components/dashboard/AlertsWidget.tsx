@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -160,7 +161,7 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
             </DialogDescription>
           </DialogHeader>
           
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="pr-4">
             {alerts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full py-12 text-muted-foreground">
                 <CheckCircle className="w-12 h-12 mb-4 text-success" />
@@ -246,12 +247,12 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
             )}
           </ScrollArea>
 
-          <div className="flex justify-end pt-2 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => { navigate('/live-ops'); setIsOpen(false); }}>
               View Live Ops
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

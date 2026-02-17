@@ -6,7 +6,8 @@ import type {
   SentimentData, 
   UsageData, 
   ChannelUtilization, 
-  Alert 
+  Alert,
+  CreditData,
 } from '@/types/dashboard';
 
 // Mock data generators
@@ -56,6 +57,22 @@ const generateChannelUtilization = (): ChannelUtilization => ({
   email: 17,
 });
 
+const generateCreditData = (): CreditData => ({
+  available: 7250,
+  used: 12750,
+  total: 20000,
+  pending: 340,
+  expiring: 1500,
+  expiryDate: '2026-03-15',
+  resetDate: '2026-03-01',
+  breakdown: [
+    { category: 'Voice Calls', used: 5200, allocated: 8000, icon: '📞' },
+    { category: 'AI Agent Sessions', used: 3800, allocated: 5000, icon: '🤖' },
+    { category: 'Chat Messages', used: 2450, allocated: 4000, icon: '💬' },
+    { category: 'Email Processing', used: 1300, allocated: 3000, icon: '📧' },
+  ],
+});
+
 const generateAlerts = (): Alert[] => [
   { id: '1', type: 'sla-breach', severity: 'critical', title: 'SLA Breach Imminent', description: 'Customer wait time exceeding 5 minutes on 3 chats', timestamp: '2 min ago', acknowledged: false },
   { id: '2', type: 'sentiment-drop', severity: 'warning', title: 'Sentiment Drop Detected', description: 'Voice channel sentiment dropped 12% in last hour', timestamp: '8 min ago', acknowledged: false },
@@ -73,6 +90,7 @@ export function useDashboardData() {
   const [usageData, setUsageData] = useState<UsageData[]>(generateUsageData());
   const [channelUtilization, setChannelUtilization] = useState<ChannelUtilization>(generateChannelUtilization());
   const [alerts, setAlerts] = useState<Alert[]>(generateAlerts());
+  const [creditData, setCreditData] = useState<CreditData>(generateCreditData());
 
   const refreshData = useCallback(async () => {
     setIsLoading(true);
@@ -86,6 +104,7 @@ export function useDashboardData() {
     setUsageData(generateUsageData());
     setChannelUtilization(generateChannelUtilization());
     setAlerts(generateAlerts());
+    setCreditData(generateCreditData());
     
     setIsLoading(false);
   }, []);
@@ -107,6 +126,7 @@ export function useDashboardData() {
     usageData,
     channelUtilization,
     alerts,
+    creditData,
     refreshData,
     acknowledgeAlert,
   };

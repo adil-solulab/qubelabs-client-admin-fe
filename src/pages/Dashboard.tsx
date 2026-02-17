@@ -15,6 +15,7 @@ import { SentimentWidget } from '@/components/dashboard/SentimentWidget';
 import { UsageLimitsWidget } from '@/components/dashboard/UsageLimitsWidget';
 import { ChannelUtilizationWidget } from '@/components/dashboard/ChannelUtilizationWidget';
 import { AlertsWidget } from '@/components/dashboard/AlertsWidget';
+import { CreditUsageWidget } from '@/components/dashboard/CreditUsageWidget';
 
 import { TeamConversationsWidget } from '@/components/dashboard/TeamConversationsWidget';
 import { SLABreachWidget } from '@/components/dashboard/SLABreachWidget';
@@ -63,6 +64,7 @@ export default function Dashboard() {
     usageData,
     channelUtilization,
     alerts,
+    creditData,
     refreshData,
     acknowledgeAlert,
   } = useDashboardData();
@@ -138,6 +140,7 @@ export default function Dashboard() {
           usageData={usageData}
           channelUtilization={channelUtilization}
           alerts={alerts}
+          creditData={creditData}
           onAcknowledgeAlert={handleAcknowledgeAlert}
         />
       ) : roleName === 'Supervisor' ? (
@@ -248,6 +251,7 @@ interface ClientAdminDashboardProps {
   usageData: any[];
   channelUtilization: any;
   alerts: any[];
+  creditData: any;
   onAcknowledgeAlert: (id: string) => void;
 }
 
@@ -260,6 +264,7 @@ function ClientAdminDashboard({
   usageData,
   channelUtilization,
   alerts,
+  creditData,
   onAcknowledgeAlert,
 }: ClientAdminDashboardProps) {
   return (
@@ -271,7 +276,8 @@ function ClientAdminDashboard({
         <SentimentWidget sentiment={sentimentData} isLoading={isLoading} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CreditUsageWidget creditData={creditData} isLoading={isLoading} />
         <UsageLimitsWidget usage={usageData} isLoading={isLoading} />
         <ChannelUtilizationWidget utilization={channelUtilization} isLoading={isLoading} />
         <AlertsWidget

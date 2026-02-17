@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -140,7 +141,7 @@ export function ActiveChatsWidget({ chats: initialChats, isLoading }: ActiveChat
             </DialogDescription>
           </DialogHeader>
           
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="pr-4">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -193,12 +194,12 @@ export function ActiveChatsWidget({ chats: initialChats, isLoading }: ActiveChat
             </Table>
           </ScrollArea>
 
-          <div className="flex justify-end pt-2 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => { navigate('/active-chats'); setIsOpen(false); }}>
               View All in Active Chats
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

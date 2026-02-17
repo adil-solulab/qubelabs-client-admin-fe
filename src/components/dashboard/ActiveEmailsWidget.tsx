@@ -166,7 +166,7 @@ export function ActiveEmailsWidget({ emails: initialEmails, isLoading }: ActiveE
             </DialogDescription>
           </DialogHeader>
           
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="pr-4">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -200,12 +200,12 @@ export function ActiveEmailsWidget({ emails: initialEmails, isLoading }: ActiveE
             </Table>
           </ScrollArea>
 
-          <div className="flex justify-end pt-2 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => { navigate('/live-ops'); setIsOpen(false); }}>
               View All in Live Ops
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

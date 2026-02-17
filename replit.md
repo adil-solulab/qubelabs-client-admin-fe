@@ -117,3 +117,11 @@ Enables agents to report/escalate conversations to Client Admins with comments. 
 - Removed weekly reports, system updates, and agent offline from notification preferences
 - Types: Added TwoFactorState, SecurityQuestion to userProfile.ts; SECURITY_QUESTIONS_LIST constant
 - Hook: useUserProfileData now manages 2FA state and security questions with enable/disable/save methods
+
+### Dashboard Enhancements (Feb 2026)
+- **Credit Usage Widget**: New CreditUsageWidget showing available/used/pending credits with progress bar, usage breakdown by category (Voice, AI Agents, Chat, Email), expiring credits warning, and deep-dive dialog with upgrade CTA
+- **DeepDive Dialog Overflow Fix**: Converted raw div footers to proper DialogFooter components across ActiveCallsWidget, ActiveChatsWidget, ActiveEmailsWidget, AlertsWidget for correct dialog layout pinning
+- Removed fixed h-[400px] from ScrollArea in dialog deep-dives, letting dialog's built-in flex layout handle scroll overflow
+- Types: Added CreditData interface to types/dashboard.ts
+- Hook: useDashboardData now provides creditData with mock credit balance information
+- Dashboard second row grid updated from 3-col to 4-col layout to accommodate Credit Usage widget

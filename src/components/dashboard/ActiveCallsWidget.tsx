@@ -230,7 +230,7 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
             </DialogDescription>
           </DialogHeader>
           
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="pr-4">
             {calls.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Phone className="w-12 h-12 mb-4 opacity-50" />
@@ -325,12 +325,12 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
             )}
           </ScrollArea>
 
-          <div className="flex justify-end pt-2 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => { navigate('/live-ops'); setIsOpen(false); }}>
               View All in Live Ops
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
