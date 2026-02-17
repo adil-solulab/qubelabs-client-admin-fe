@@ -202,6 +202,12 @@ const generateMockAgents = (): Agent[] => [
   { id: 'agent-2', name: 'Emma Wilson', status: 'available', currentConversations: 1, maxConversations: 5, skills: ['Technical', 'Support'] },
   { id: 'agent-3', name: 'Mike Brown', status: 'away', currentConversations: 0, maxConversations: 5, skills: ['Billing', 'Support'] },
   { id: 'agent-4', name: 'Sarah Davis', status: 'busy', currentConversations: 4, maxConversations: 5, skills: ['Sales', 'Technical'] },
+  { id: 'agent-5', name: 'Rachel Green', status: 'available', currentConversations: 2, maxConversations: 5, skills: ['Support', 'Billing'] },
+  { id: 'agent-6', name: 'David Kim', status: 'available', currentConversations: 0, maxConversations: 5, skills: ['Technical', 'Escalation'] },
+  { id: 'agent-7', name: 'Priya Sharma', status: 'busy', currentConversations: 3, maxConversations: 5, skills: ['Sales', 'VIP Support'] },
+  { id: 'agent-8', name: 'Carlos Mendez', status: 'available', currentConversations: 1, maxConversations: 5, skills: ['Support', 'Escalation'] },
+  { id: 'agent-9', name: 'Lisa Park', status: 'busy', currentConversations: 4, maxConversations: 5, skills: ['VIP Support', 'Technical'] },
+  { id: 'agent-10', name: 'James O\'Connor', status: 'available', currentConversations: 2, maxConversations: 5, skills: ['Sales', 'Support'] },
 ];
 
 export function useLiveOpsData() {

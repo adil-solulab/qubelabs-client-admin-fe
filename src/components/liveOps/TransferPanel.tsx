@@ -12,10 +12,12 @@ interface TeamGroup {
 }
 
 const TEAMS: TeamGroup[] = [
-  { id: 'grp-1', name: 'Customer Support', agentIds: ['3', '5'] },
-  { id: 'grp-2', name: 'Escalation', agentIds: ['7'] },
-  { id: 'grp-3', name: 'Sales', agentIds: ['4'] },
-  { id: 'grp-4', name: 'VIP Support', agentIds: ['7', '8'] },
+  { id: 'grp-1', name: 'Customer Support', agentIds: ['agent-1', 'agent-2', 'agent-5', 'agent-8'] },
+  { id: 'grp-2', name: 'Escalation', agentIds: ['agent-6', 'agent-8'] },
+  { id: 'grp-3', name: 'Sales', agentIds: ['agent-1', 'agent-4', 'agent-7', 'agent-10'] },
+  { id: 'grp-4', name: 'VIP Support', agentIds: ['agent-7', 'agent-9'] },
+  { id: 'grp-5', name: 'Technical Support', agentIds: ['agent-2', 'agent-4', 'agent-6', 'agent-9'] },
+  { id: 'grp-6', name: 'Billing & Finance', agentIds: ['agent-3', 'agent-5', 'agent-10'] },
 ];
 
 interface TransferPanelProps {

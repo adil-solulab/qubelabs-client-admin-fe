@@ -46,18 +46,25 @@ interface CallWithState extends ActiveCall {
 }
 
 const TEAMS = [
-  { id: 'grp-1', name: 'Customer Support', agentIds: ['1', '3', '5'] },
-  { id: 'grp-2', name: 'Escalation', agentIds: ['2'] },
-  { id: 'grp-3', name: 'Sales', agentIds: ['4'] },
-  { id: 'grp-4', name: 'VIP Support', agentIds: ['2', '5'] },
+  { id: 'grp-1', name: 'Customer Support', agentIds: ['1', '2', '5', '8'] },
+  { id: 'grp-2', name: 'Escalation', agentIds: ['6', '8'] },
+  { id: 'grp-3', name: 'Sales', agentIds: ['1', '4', '7', '10'] },
+  { id: 'grp-4', name: 'VIP Support', agentIds: ['7', '9'] },
+  { id: 'grp-5', name: 'Technical Support', agentIds: ['2', '4', '6', '9'] },
+  { id: 'grp-6', name: 'Billing & Finance', agentIds: ['3', '5', '10'] },
 ];
 
 const AVAILABLE_AGENTS = [
-  { id: '1', name: 'Sarah Johnson', status: 'available' as const },
-  { id: '2', name: 'Mike Chen', status: 'available' as const },
-  { id: '3', name: 'Emma Wilson', status: 'busy' as const },
-  { id: '4', name: 'Tom Hardy', status: 'available' as const },
-  { id: '5', name: 'Lisa Park', status: 'available' as const },
+  { id: '1', name: 'John Smith', status: 'busy' as const },
+  { id: '2', name: 'Emma Wilson', status: 'available' as const },
+  { id: '3', name: 'Mike Brown', status: 'available' as const },
+  { id: '4', name: 'Sarah Davis', status: 'busy' as const },
+  { id: '5', name: 'Rachel Green', status: 'available' as const },
+  { id: '6', name: 'David Kim', status: 'available' as const },
+  { id: '7', name: 'Priya Sharma', status: 'busy' as const },
+  { id: '8', name: 'Carlos Mendez', status: 'available' as const },
+  { id: '9', name: 'Lisa Park', status: 'busy' as const },
+  { id: '10', name: 'James O\'Connor', status: 'available' as const },
 ];
 
 export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCallsWidgetProps) {
