@@ -84,6 +84,12 @@ function getDefaultNodeData(type: NodeType): NodeData {
       targetFlowName: '',
       returnAfter: true,
     };
+  } else if (type === 'run_workflow') {
+    base.runWorkflowConfig = {
+      targetWorkflowId: '',
+      targetWorkflowName: '',
+      outputs: [],
+    };
   } else if (type === 'raise_ticket') {
     base.raiseTicketConfig = {
       priority: 'medium',

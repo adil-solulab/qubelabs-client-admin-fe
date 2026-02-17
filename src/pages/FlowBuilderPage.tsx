@@ -31,6 +31,7 @@ import { TestPanel } from '@/components/flowBuilder/TestPanel';
 import { UnsavedChangesModal } from '@/components/flowBuilder/UnsavedChangesModal';
 import { FlowListView } from '@/components/flowBuilder/FlowListView';
 import { NodeToolsSidebar } from '@/components/flowBuilder/NodeToolsSidebar';
+import { WorkflowSelectionModal } from '@/components/flowBuilder/WorkflowSelectionModal';
 import { NODE_TYPE_CONFIG, type NodeType } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 import { notify } from '@/hooks/useNotification';
@@ -77,6 +78,10 @@ export default function FlowBuilderPage() {
   const [rollbackModalOpen, setRollbackModalOpen] = useState(false);
   const [unsavedChangesModalOpen, setUnsavedChangesModalOpen] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  const [workflowModalOpen, setWorkflowModalOpen] = useState(false);
+  const [workflowModalMode, setWorkflowModalMode] = useState<'add' | 'change'>('add');
+  const [editingRunWorkflowNodeId, setEditingRunWorkflowNodeId] = useState<string | null>(null);
+  const [returnToFlowId, setReturnToFlowId] = useState<string | null>(null);
   const hasHandledOpenFlow = useRef(false);
 
   useEffect(() => {
@@ -108,11 +113,67 @@ export default function FlowBuilderPage() {
 
   const handleAddNode = (type: NodeType) => {
     withPermission('edit', () => {
+      if (type === 'run_workflow') {
+        setWorkflowModalMode('add');
+        setEditingRunWorkflowNodeId(null);
+        setWorkflowModalOpen(true);
+        return;
+      }
       const position = { x: 400 + Math.random() * 200, y: 300 + Math.random() * 100 };
       addNode(type, position);
       notify.created(`${NODE_TYPE_CONFIG[type].label} node added`);
     });
   };
+
+  const handleOpenChangeWorkflow = (nodeId: string) => {
+    setWorkflowModalMode('change');
+    setEditingRunWorkflowNodeId(nodeId);
+    setWorkflowModalOpen(true);
+  };
+
+  const handleSelectWorkflow = (workflow: { id: string; name: string }, outputs: { name: string; type: string }[]) => {
+    const configUpdate = {
+      label: `Run: ${workflow.name}`,
+      runWorkflowConfig: {
+        targetWorkflowId: workflow.id,
+        targetWorkflowName: workflow.name,
+        outputs,
+      },
+    };
+
+    if (workflowModalMode === 'change' && editingRunWorkflowNodeId) {
+      updateNodeData(editingRunWorkflowNodeId, configUpdate);
+      notify.success(`Workflow changed to: ${workflow.name}`);
+    } else {
+      const position = { x: 400 + Math.random() * 200, y: 300 + Math.random() * 100 };
+      const newNode = addNode('run_workflow', position);
+      updateNodeData(newNode.id, configUpdate);
+      notify.created(`Run Workflow node added: ${workflow.name}`);
+    }
+
+    setWorkflowModalOpen(false);
+    setEditingRunWorkflowNodeId(null);
+  };
+
+  const handleCreateNewWorkflow = () => {
+    if (flow) {
+      setReturnToFlowId(flow.id);
+    }
+    const newWorkflow = createFlow('New Workflow', 'Backend automation workflow', 'Operations', 'chat', 'workflow');
+    setWorkflowModalOpen(false);
+    selectFlow(newWorkflow.id);
+    notify.created('New workflow created — you can return to your flow after publishing');
+  };
+
+  const handleReturnToFlow = () => {
+    if (returnToFlowId) {
+      selectFlow(returnToFlowId);
+      setReturnToFlowId(null);
+      notify.success('Returned to flow');
+    }
+  };
+
+  const workflowSummaries = getFlowSummaries().filter(f => f.flowType === 'workflow');
 
   const handleStartConnect = (nodeId: string, handleType: 'output' | 'yes' | 'no') => {
     startConnect(nodeId, handleType);
@@ -367,6 +428,8 @@ export default function FlowBuilderPage() {
               onUpdate={(updates) => updateNodeData(selectedNode.id, updates)}
               onDelete={() => deleteNode(selectedNode.id)}
               onClose={() => setSelectedNode(null)}
+              onOpenWorkflowModal={() => handleOpenChangeWorkflow(selectedNode.id)}
+              flowNodes={flow.nodes}
             />
           )}
 
@@ -376,11 +439,21 @@ export default function FlowBuilderPage() {
         </div>
       </div>
 
+      <WorkflowSelectionModal
+        open={workflowModalOpen}
+        onOpenChange={setWorkflowModalOpen}
+        workflows={workflowSummaries}
+        onSelectWorkflow={handleSelectWorkflow}
+        onCreateWorkflow={handleCreateNewWorkflow}
+      />
+
       <PublishFlowModal
         flow={flow}
         open={publishModalOpen}
         onOpenChange={setPublishModalOpen}
         onPublish={handlePublish}
+        returnToFlowId={returnToFlowId}
+        onReturnToFlow={handleReturnToFlow}
       />
 
       <RollbackModal

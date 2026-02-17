@@ -38,7 +38,8 @@ Implements a Super Agent (orchestrator) and specialized Agents (specialists) mod
 #### Flow Builder (Flows & Workflows)
 A visual drag-and-drop canvas for designing conversational flows (`flow`) and backend workflow automations (`workflow`).
 - **Separated Builders**: Distinct interfaces for Flow Builder and Workflow Builder.
-- **Flow Nodes**: Includes Prompt, Message, Logic, Action, and Safety & Risk (Safety Check).
+- **Flow Nodes**: Includes Prompt, Message, Logic, Action (including Run Workflow), and Safety & Risk (Safety Check).
+- **Run Workflow Node**: Allows flows to call backend workflows. Features WorkflowSelectionModal for selecting existing workflows or creating new ones, displays workflow output variables (e.g., `{{workflow.booking_id}}`), supports "Change Workflow" from properties panel. Output variables are available as clickable tokens in downstream Message node editors. Creating a new workflow from within a flow stores a return target; after publishing the workflow, a "Return to Flow" prompt appears.
 - **Workflow Nodes**: Includes Actions, Logic, Integrations (Messaging, Ticketing, CRM), and Safety & Risk (Safety Check).
 - **Safety Check Node**: Comprehensive risk assessment with configurable settings for Bot Type, Sentiment Analysis, PII Detection, Policy Violation, Profanity Filter, Topic Guardrails, and Custom Rules, offering various Risk Actions and Audit Logging.
 - Features an environment selector (Staging, Sandbox, Production) and a category sidebar. A Test Panel supports Chat and Voice modes.

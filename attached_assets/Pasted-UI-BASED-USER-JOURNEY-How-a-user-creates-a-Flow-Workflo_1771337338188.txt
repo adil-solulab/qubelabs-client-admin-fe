@@ -1,0 +1,131 @@
+UI-BASED USER JOURNEY
+How a user creates a Flow + Workflow using your interface
+🔵 1. Navigate to Flow Builder
+UI:
+Sidebar → Flow Builder
+Screen displayed:
+Two tabs/cards:
+Flow Builder
+Workflow Builder
+Button: Create Flow
+List of existing flows
+User Action:
+Click → Create Flow
+🔵 2. Create Flow Modal
+UI:
+A modal appears:
+Flow Name
+Description
+Channel: Chat / Voice
+Create
+Cancel
+User Action:
+Fill details → Create Flow
+Result:
+User is redirected to Flow Builder Canvas.
+🔵 3. Flow Builder Canvas
+UI elements:
+Left Panel → Nodes panel:
+Message
+Condition
+Ask user input
+Run Workflow (special node)
+End Flow
+Canvas:
+Start Node
+Blank canvas for connecting nodes
+Right Panel:
+Settings of the selected node
+User begins building conversation logic:
+Add a welcome message
+Ask user questions
+Branch logic
+Everything is still purely conversational.
+🔵 4. User Reaches a Step Where Backend Automation is Needed
+UI action:
+User drags the node → Run Workflow
+Result:
+A modal appears.
+🔵 5. Workflow Selection Modal
+UI Modal:
+Run Workflow
+---------------------
+Choose an existing workflow:
+• Fetch Order Status
+• Create Ticket
+• Send OTP
+OR
+Create new workflow
+[Cancel] [Continue]
+User chooses one of two paths:
+OPTION A — Select Existing Workflow
+If user selects existing workflow:
+User clicks "Continue"
+Workflow name appears inside Flow Node
+Node becomes Run Workflow: FetchOrderStatus
+System shows outputs available on the right panel:
+delivery_status
+expected_date
+item_count
+User can use these in next messages.
+OPTION B — Create NEW Workflow
+If user clicks Create new workflow:
+UI → Workflow Builder Screen Loads
+Sidebar highlight switches to:
+➡️ Workflow Builder
+Screen shows:
+Name field
+Category dropdown
+Canvas for actions (API call, DB call, conditions)
+User Action:
+Build the automation workflow.
+🔵 6. User Builds Workflow (Inside Workflow Builder UI)
+UI Elements:
+Left panel:
+API Call
+Database Query
+JSON Transform
+Delay
+Trigger
+Canvas:
+Start workflow node
+User adds actions
+When done → user clicks:
+👉 Publish Workflow
+🔵 7. Auto Return to Flow Builder
+After publishing:
+UI popup appears:
+Workflow created successfully.
+Return to Flow?
+[Return]
+[Stay Here]
+User clicks → Return
+UI switches back to Flow Builder and:
+The workflow node is now attached
+Workflow name appears inside the Flow node
+Right panel shows the workflow outputs
+🔵 8. Flow Continues Using Workflow Data
+User continues:
+UI action:
+Drag a "Message Node" after the workflow node.
+In message editor UI:
+The user sees autocomplete like:
+{{workflow.delivery_status}}
+{{workflow.expected_date}}
+These values are populated dynamically.
+🔵 9. Flow Summary
+UI shows:
+Start → Ask Order ID → Run Workflow: FetchOrderStatus → Message → End
+User clicks:
+👉 Publish Flow
+Flow is now ready for bot.
+🔵 10. Where User Sees Combined Output
+Back in the list page:
+Flow Builder screen now shows:
+3 Flows
+3 Workflows
+Each Flow shows:
+Name
+Description
+Channel
+Status: “Published”

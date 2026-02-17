@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Rocket, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Rocket, Loader2, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ interface PublishFlowModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPublish: (changelog: string) => Promise<void>;
+  returnToFlowId?: string | null;
+  onReturnToFlow?: () => void;
 }
 
 export function PublishFlowModal({
@@ -26,9 +28,12 @@ export function PublishFlowModal({
   open,
   onOpenChange,
   onPublish,
+  returnToFlowId,
+  onReturnToFlow,
 }: PublishFlowModalProps) {
   const [changelog, setChangelog] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showReturnPrompt, setShowReturnPrompt] = useState(false);
 
   const handlePublish = async () => {
     if (!changelog.trim()) return;
@@ -37,6 +42,22 @@ export function PublishFlowModal({
     await onPublish(changelog);
     setIsPublishing(false);
     setChangelog('');
+
+    if (returnToFlowId && onReturnToFlow) {
+      setShowReturnPrompt(true);
+    } else {
+      onOpenChange(false);
+    }
+  };
+
+  const handleReturnToFlow = () => {
+    setShowReturnPrompt(false);
+    onOpenChange(false);
+    onReturnToFlow?.();
+  };
+
+  const handleStayHere = () => {
+    setShowReturnPrompt(false);
     onOpenChange(false);
   };
 
@@ -104,19 +125,38 @@ export function PublishFlowModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPublishing}>
-            Cancel
-          </Button>
-          <Button onClick={handlePublish} disabled={!changelog.trim() || isPublishing}>
-            {isPublishing ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Rocket className="w-4 h-4 mr-2" />
-            )}
-            Publish to Production
-          </Button>
-        </DialogFooter>
+        {showReturnPrompt ? (
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl border bg-success/10 border-success/30 text-center">
+              <CheckCircle className="w-8 h-8 text-success mx-auto mb-2" />
+              <p className="text-sm font-medium">Workflow Published Successfully!</p>
+              <p className="text-xs text-muted-foreground mt-1">You can now use it in your flow.</p>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={handleStayHere}>
+                Stay Here
+              </Button>
+              <Button onClick={handleReturnToFlow}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Return to Flow
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPublishing}>
+              Cancel
+            </Button>
+            <Button onClick={handlePublish} disabled={!changelog.trim() || isPublishing}>
+              {isPublishing ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Rocket className="w-4 h-4 mr-2" />
+              )}
+              Publish to Production
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

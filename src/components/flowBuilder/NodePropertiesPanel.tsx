@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { X, Trash2, Save, Check, Plus, Minus } from 'lucide-react';
+import { X, Trash2, Save, Check, Plus, Minus, Zap, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,8 @@ interface NodePropertiesPanelProps {
   onUpdate: (updates: Partial<NodeData>) => void;
   onDelete: () => void;
   onClose: () => void;
+  onOpenWorkflowModal?: () => void;
+  flowNodes?: FlowNode[];
 }
 
 export function NodePropertiesPanel({
@@ -31,6 +33,8 @@ export function NodePropertiesPanel({
   onUpdate,
   onDelete,
   onClose,
+  onOpenWorkflowModal,
+  flowNodes,
 }: NodePropertiesPanelProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -93,17 +97,46 @@ export function NodePropertiesPanel({
             />
           </div>
 
-          {node.type === 'message' && (
-            <div className="space-y-2">
-              <Label>Message Content</Label>
-              <Textarea
-                value={node.data.content || ''}
-                onChange={(e) => handleUpdate({ content: e.target.value })}
-                placeholder="Enter message..."
-                rows={4}
-              />
-            </div>
-          )}
+          {node.type === 'message' && (() => {
+            const workflowOutputs = (flowNodes || [])
+              .filter(n => n.type === 'run_workflow' && n.data.runWorkflowConfig?.outputs?.length)
+              .flatMap(n => (n.data.runWorkflowConfig!.outputs).map(o => ({
+                token: `{{workflow.${o.name}}}`,
+                type: o.type,
+                workflowName: n.data.runWorkflowConfig!.targetWorkflowName,
+              })));
+            return (
+              <div className="space-y-2">
+                <Label>Message Content</Label>
+                <Textarea
+                  value={node.data.content || ''}
+                  onChange={(e) => handleUpdate({ content: e.target.value })}
+                  placeholder="Enter message..."
+                  rows={4}
+                />
+                {workflowOutputs.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Available workflow variables:</Label>
+                    <div className="flex flex-wrap gap-1">
+                      {workflowOutputs.map(({ token, type, workflowName }) => (
+                        <button
+                          key={token}
+                          onClick={() => {
+                            const current = node.data.content || '';
+                            handleUpdate({ content: current + token });
+                          }}
+                          className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-colors"
+                          title={`${workflowName} — ${type}`}
+                        >
+                          {token}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {node.type === 'condition' && (
             <>
@@ -931,6 +964,66 @@ export function NodePropertiesPanel({
                 />
               </div>
             </>
+          )}
+
+          {node.type === 'run_workflow' && (
+            <div className="space-y-3">
+              {node.data.runWorkflowConfig?.targetWorkflowId ? (
+                <>
+                  <div className="p-3 rounded-lg border bg-purple-500/5 border-purple-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm font-medium">{node.data.runWorkflowConfig.targetWorkflowName}</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">
+                      ID: {node.data.runWorkflowConfig.targetWorkflowId}
+                    </Badge>
+                  </div>
+
+                  {node.data.runWorkflowConfig.outputs.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold">Output Variables</Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        These variables are available in downstream nodes as {'{{workflow.variable_name}}'}
+                      </p>
+                      <div className="space-y-1.5">
+                        {node.data.runWorkflowConfig.outputs.map((output) => (
+                          <div key={output.name} className="flex items-center justify-between p-2 rounded border bg-muted/30">
+                            <code className="text-xs font-mono text-purple-600 dark:text-purple-400">
+                              {`{{workflow.${output.name}}}`}
+                            </code>
+                            <Badge variant="outline" className="text-[10px]">{output.type}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-purple-600 border-purple-500/30 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                    onClick={onOpenWorkflowModal}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                    Change Workflow
+                  </Button>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <Zap className="w-8 h-8 mx-auto mb-2 text-purple-500/50" />
+                  <p className="text-sm text-muted-foreground mb-3">No workflow selected</p>
+                  <Button
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700"
+                    onClick={onOpenWorkflowModal}
+                  >
+                    <Zap className="w-3.5 h-3.5 mr-1.5" />
+                    Select Workflow
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
 
           {node.type === 'safety_check' && (() => {

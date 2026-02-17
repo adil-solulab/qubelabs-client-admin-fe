@@ -6,7 +6,7 @@ export type NodeType =
   // Flow-specific (Prompt Nodes)
   | 'message' | 'text_input' | 'quick_reply' | 'carousel' | 'name_input' | 'email_input' | 'phone_input' | 'date_input'
   // Flow-specific (Action Nodes)  
-  | 'dtmf' | 'assistant' | 'transfer' | 'execute_flow' | 'raise_ticket'
+  | 'dtmf' | 'assistant' | 'transfer' | 'execute_flow' | 'raise_ticket' | 'run_workflow'
   // Safety & Risk
   | 'safety_check'
   // Workflow-specific
@@ -135,6 +135,11 @@ export interface NodeData {
     eventName: string;
     payload?: string;
   };
+  runWorkflowConfig?: {
+    targetWorkflowId: string;
+    targetWorkflowName: string;
+    outputs: { name: string; type: string }[];
+  };
   safetyConfig?: {
     botType: 'voice' | 'chat' | 'both';
     checks: {
@@ -243,7 +248,7 @@ export const FLOW_NODE_CATEGORIES: Record<string, { label: string; types: NodeTy
   },
   actions: {
     label: 'Actions',
-    types: ['execute_flow', 'raise_ticket', 'assistant', 'transfer', 'dtmf', 'delay', 'end'],
+    types: ['run_workflow', 'execute_flow', 'raise_ticket', 'assistant', 'transfer', 'dtmf', 'delay', 'end'],
   },
   safety: {
     label: 'Safety & Risk',
@@ -459,6 +464,13 @@ export const NODE_TYPE_CONFIG: Record<NodeType, {
     color: 'text-blue-600',
     bgColor: 'bg-blue-600/10',
     borderColor: 'border-blue-600/30'
+  },
+  run_workflow: {
+    label: 'Run Workflow',
+    icon: '⚡',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-600/10',
+    borderColor: 'border-purple-600/30'
   },
   raise_ticket: {
     label: 'Raise Ticket',
