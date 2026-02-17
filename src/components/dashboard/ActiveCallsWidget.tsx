@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Phone, PhoneOff, MicOff, Mic, ArrowRightLeft, Users, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Phone, PhoneOff, MicOff, Mic, ArrowRightLeft, Users, X, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,7 @@ const AVAILABLE_AGENTS = [
 ];
 
 export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCallsWidgetProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [calls, setCalls] = useState<CallWithState[]>(initialCalls.map(c => ({ ...c, isMuted: false })));
   const [selectedCall, setSelectedCall] = useState<CallWithState | null>(null);
@@ -279,6 +281,13 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
               </Table>
             )}
           </ScrollArea>
+
+          <div className="flex justify-end pt-2 border-t">
+            <Button variant="outline" onClick={() => { navigate('/live-ops'); setIsOpen(false); }}>
+              View All in Live Ops
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

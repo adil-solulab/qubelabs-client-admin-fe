@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Inbox, MessageSquare, Phone, Mail, Clock, X, Loader2 } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +47,7 @@ const priorityColors = {
 };
 
 export function PersonalQueueWidget({ isLoading }: PersonalQueueWidgetProps) {
+  const navigate = useNavigate();
   const [queue, setQueue] = useState<QueueItem[]>(initialQueue);
   const [selectedItem, setSelectedItem] = useState<QueueItem | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
@@ -66,6 +68,7 @@ export function PersonalQueueWidget({ isLoading }: PersonalQueueWidgetProps) {
     setDetailModalOpen(false);
     setSelectedItem(null);
     setIsAccepting(false);
+    navigate('/active-chats');
   };
 
   const handleSkip = async () => {

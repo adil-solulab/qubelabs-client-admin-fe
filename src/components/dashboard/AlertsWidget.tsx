@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, Bell, CheckCircle, Clock, ShieldAlert, Users, Server, X, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Bell, CheckCircle, Clock, ShieldAlert, Users, Server, X, Loader2, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ interface AlertsWidgetProps {
 }
 
 export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [isDismissingAll, setIsDismissingAll] = useState(false);
@@ -243,6 +245,13 @@ export function AlertsWidget({ alerts, onAcknowledge, isLoading }: AlertsWidgetP
               </div>
             )}
           </ScrollArea>
+
+          <div className="flex justify-end pt-2 border-t">
+            <Button variant="outline" onClick={() => { navigate('/live-ops'); setIsOpen(false); }}>
+              View Live Ops
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

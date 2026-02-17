@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +24,7 @@ const mockSLAData: SLAMetric[] = [
 ];
 
 export function SLABreachWidget({ isLoading }: SLABreachWidgetProps) {
+  const navigate = useNavigate();
   const totalBreaches = mockSLAData.reduce((sum, m) => sum + m.breaches, 0);
 
   return (
@@ -31,6 +33,7 @@ export function SLABreachWidget({ isLoading }: SLABreachWidgetProps) {
       icon={AlertTriangle}
       iconColor="text-amber-500"
       isLoading={isLoading}
+      onClick={() => navigate('/live-ops')}
     >
       <div className="space-y-4">
         <div className="flex items-baseline gap-2">

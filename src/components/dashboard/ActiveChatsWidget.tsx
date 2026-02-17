@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Bot, User, Clock, ExternalLink, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MessageSquare, Bot, User, Clock, ExternalLink, Loader2, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ interface ActiveChatsWidgetProps {
 }
 
 export function ActiveChatsWidget({ chats: initialChats, isLoading }: ActiveChatsWidgetProps) {
+  const navigate = useNavigate();
   const [chatList, setChatList] = useState<ActiveChat[]>(initialChats);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState<ActiveChat | null>(null);
@@ -190,6 +192,13 @@ export function ActiveChatsWidget({ chats: initialChats, isLoading }: ActiveChat
               </TableBody>
             </Table>
           </ScrollArea>
+
+          <div className="flex justify-end pt-2 border-t">
+            <Button variant="outline" onClick={() => { navigate('/active-chats'); setIsOpen(false); }}>
+              View All in Active Chats
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Mail, AlertTriangle, Clock, CheckCircle, Send, Trash2, ArrowUpRight, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, AlertTriangle, Clock, CheckCircle, Send, Trash2, ArrowUpRight, Loader2, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ interface ActiveEmailsWidgetProps {
 }
 
 export function ActiveEmailsWidget({ emails: initialEmails, isLoading }: ActiveEmailsWidgetProps) {
+  const navigate = useNavigate();
   const [emailList, setEmailList] = useState<ActiveEmail[]>(initialEmails);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState<ActiveEmail | null>(null);
@@ -197,6 +199,13 @@ export function ActiveEmailsWidget({ emails: initialEmails, isLoading }: ActiveE
               </TableBody>
             </Table>
           </ScrollArea>
+
+          <div className="flex justify-end pt-2 border-t">
+            <Button variant="outline" onClick={() => { navigate('/live-ops'); setIsOpen(false); }}>
+              View All in Live Ops
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

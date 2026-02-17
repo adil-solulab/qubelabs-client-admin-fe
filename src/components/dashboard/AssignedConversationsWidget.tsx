@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Phone, Mail, MessageSquare, ArrowRight, Pause, Play } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +47,7 @@ const sentimentColors = {
 };
 
 export function AssignedConversationsWidget({ isLoading }: AssignedConversationsWidgetProps) {
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -59,8 +61,8 @@ export function AssignedConversationsWidget({ isLoading }: AssignedConversations
 
   const handleOpenConversation = () => {
     if (!selectedConversation) return;
-    notify.success('Opening Conversation', `Navigating to conversation with ${selectedConversation.customer}...`);
     setDetailModalOpen(false);
+    navigate('/active-chats');
   };
 
   const handleToggleHold = () => {

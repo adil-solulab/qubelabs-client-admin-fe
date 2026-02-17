@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { Smile, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Smile, TrendingUp, TrendingDown, Minus, Info, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -18,6 +21,7 @@ interface SentimentWidgetProps {
 }
 
 export function SentimentWidget({ sentiment, isLoading }: SentimentWidgetProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const getTrendIcon = () => {
@@ -181,6 +185,13 @@ export function SentimentWidget({ sentiment, isLoading }: SentimentWidgetProps) 
               </p>
             </div>
           </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { navigate('/analytics'); setIsOpen(false); }}>
+              View Detailed Analytics
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

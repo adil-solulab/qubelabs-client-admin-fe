@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AlertOctagon, ArrowUpRight, Clock, User, CheckCircle, Star, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertOctagon, ArrowUpRight, Clock, User, CheckCircle, Star, TrendingUp, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ const priorityStyles = {
 };
 
 export function EscalationAlertsWidget({ isLoading }: EscalationAlertsWidgetProps) {
+  const navigate = useNavigate();
   const { pendingEscalations, acknowledgeEscalation } = useSurveyData();
   
   // Convert survey escalations to display format
@@ -160,6 +162,15 @@ export function EscalationAlertsWidget({ isLoading }: EscalationAlertsWidgetProp
             ))}
           </div>
         )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full mt-2 text-muted-foreground hover:text-foreground"
+          onClick={(e) => { e.stopPropagation(); navigate('/live-ops'); }}
+        >
+          View All
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </DashboardWidget>
 
       {/* Escalation Detail Modal */}

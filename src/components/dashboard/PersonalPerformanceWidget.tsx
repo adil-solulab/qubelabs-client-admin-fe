@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { TrendingUp, MessageSquare, Clock, ThumbsUp, Award } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Progress } from '@/components/ui/progress';
@@ -25,12 +26,14 @@ const mockMetrics: PerformanceMetric[] = [
 ];
 
 export function PersonalPerformanceWidget({ isLoading }: PersonalPerformanceWidgetProps) {
+  const navigate = useNavigate();
   return (
     <DashboardWidget
       title="My Performance"
       icon={TrendingUp}
       iconColor="text-emerald-500"
       isLoading={isLoading}
+      onClick={() => navigate('/analytics')}
     >
       <div className="space-y-4">
         {mockMetrics.map((metric) => {

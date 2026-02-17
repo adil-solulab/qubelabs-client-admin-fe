@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Gauge, AlertTriangle, TrendingUp, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Gauge, AlertTriangle, TrendingUp, Info, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,7 @@ interface UsageLimitsWidgetProps {
 }
 
 export function UsageLimitsWidget({ usage, isLoading }: UsageLimitsWidgetProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
@@ -161,9 +163,10 @@ export function UsageLimitsWidget({ usage, isLoading }: UsageLimitsWidgetProps) 
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Close
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { navigate('/billing'); setIsOpen(false); }}>
+              View Billing
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             <Button onClick={handleUpgrade}>
               Upgrade Plan

@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { PieChart, Phone, MessageSquare, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { PieChart, Phone, MessageSquare, Mail, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -17,6 +20,7 @@ interface ChannelUtilizationWidgetProps {
 }
 
 export function ChannelUtilizationWidget({ utilization, isLoading }: ChannelUtilizationWidgetProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const channels = [
@@ -174,6 +178,13 @@ export function ChannelUtilizationWidget({ utilization, isLoading }: ChannelUtil
               </div>
             </div>
           </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { navigate('/analytics'); setIsOpen(false); }}>
+              View Analytics
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

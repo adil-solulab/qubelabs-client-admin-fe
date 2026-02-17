@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { UserCheck, UserX, Coffee, Headphones } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ const mockAvailability: AvailabilityData = {
 };
 
 export function AgentAvailabilityWidget({ isLoading }: AgentAvailabilityWidgetProps) {
+  const navigate = useNavigate();
   const total = Object.values(mockAvailability).reduce((a, b) => a + b, 0);
 
   const stats = [
@@ -36,6 +38,7 @@ export function AgentAvailabilityWidget({ isLoading }: AgentAvailabilityWidgetPr
       icon={UserCheck}
       iconColor="text-emerald-500"
       isLoading={isLoading}
+      onClick={() => navigate('/users')}
     >
       <div className="space-y-4">
         <div className="flex items-baseline gap-2">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Users, MessageSquare, Phone, Mail, Eye, Send, Clock, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, MessageSquare, Phone, Mail, Eye, Send, Clock, Loader2, ArrowRight } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -97,6 +98,7 @@ const conversationStatusColors = {
 };
 
 export function TeamConversationsWidget({ isLoading }: TeamConversationsWidgetProps) {
+  const navigate = useNavigate();
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [conversationsModalOpen, setConversationsModalOpen] = useState(false);
@@ -184,6 +186,16 @@ export function TeamConversationsWidget({ isLoading }: TeamConversationsWidgetPr
               );
             })}
           </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full mt-2 text-muted-foreground hover:text-foreground"
+            onClick={(e) => { e.stopPropagation(); navigate('/live-ops'); }}
+          >
+            View All in Live Ops
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </DashboardWidget>
 
