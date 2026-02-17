@@ -935,13 +935,20 @@ export function NodePropertiesPanel({
 
           {node.type === 'safety_check' && (() => {
             const sc = node.data.safetyConfig || {
+              botType: 'chat' as const,
               checks: { sentimentAnalysis: true, piiDetection: true, policyViolation: true, profanityFilter: true, topicGuardrail: false },
               sentimentThreshold: 'medium' as const,
-              piiTypes: ['credit_card', 'ssn'] as ('credit_card' | 'ssn' | 'phone' | 'email' | 'address')[],
+              sentimentEscalateOnRepeated: false,
+              sentimentRepeatCount: 3,
+              piiTypes: ['credit_card', 'ssn', 'phone', 'email', 'address'] as ('credit_card' | 'ssn' | 'phone' | 'email' | 'address' | 'name' | 'government_id' | 'date_of_birth')[],
+              policyCategories: ['harassment', 'threats', 'abuse'] as ('harassment' | 'threats' | 'abuse' | 'fraud' | 'scams' | 'data_leakage' | 'confidential_content')[],
+              profanitySeverity: 'moderate' as const,
+              profanityGraceCount: 1,
               blockedTopics: '',
               onHighRisk: 'escalate_supervisor' as const,
               onMediumRisk: 'continue_with_warning' as const,
               onPiiDetected: 'mask_and_continue' as const,
+              onSensitiveTopic: 'safe_fallback' as const,
               customRules: '',
               enableLogging: true,
             };
@@ -951,13 +958,50 @@ export function NodePropertiesPanel({
             const toggleCheck = (key: keyof typeof sc.checks) => {
               updateSafety({ checks: { ...sc.checks, [key]: !sc.checks[key] } });
             };
-            const togglePiiType = (type: 'credit_card' | 'ssn' | 'phone' | 'email' | 'address') => {
-              const current = sc.piiTypes || [];
+            type PiiType = 'credit_card' | 'ssn' | 'phone' | 'email' | 'address' | 'name' | 'government_id' | 'date_of_birth';
+            const togglePiiType = (type: PiiType) => {
+              const current = (sc.piiTypes || []) as PiiType[];
               const next = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
               updateSafety({ piiTypes: next });
             };
+            type PolicyCat = 'harassment' | 'threats' | 'abuse' | 'fraud' | 'scams' | 'data_leakage' | 'confidential_content';
+            const togglePolicyCat = (cat: PolicyCat) => {
+              const current = (sc.policyCategories || []) as PolicyCat[];
+              const next = current.includes(cat) ? current.filter(c => c !== cat) : [...current, cat];
+              updateSafety({ policyCategories: next });
+            };
+            const isVoice = sc.botType === 'voice' || sc.botType === 'both';
+            const suggestedThreshold = sc.botType === 'voice' ? 'Low (recommended for voice)' : sc.botType === 'chat' ? 'Medium (recommended for chat)' : 'Low for voice, Medium for chat';
+            const customRuleTemplates = [
+              'If user mentions refund + anger → escalate immediately',
+              'If user mentions cancel account + negative sentiment → route to retention agent',
+              'If user mentions competitor → route to sales agent',
+              'If user asks a forbidden topic → predefined response + block',
+              'If bot detects hallucination risk → fallback to safe scripted message',
+            ];
+            const addRuleTemplate = (rule: string) => {
+              const current = sc.customRules || '';
+              const newRules = current ? `${current}\n${rule}` : rule;
+              updateSafety({ customRules: newRules });
+            };
             return (
               <>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🤖</span>
+                    <Label className="text-sm font-semibold">Bot Type</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Select your bot type to get optimized safety recommendations</p>
+                  <Select value={sc.botType || 'chat'} onValueChange={(v) => updateSafety({ botType: v as 'voice' | 'chat' | 'both' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="chat">Chat Bot</SelectItem>
+                      <SelectItem value="voice">Voice Bot</SelectItem>
+                      <SelectItem value="both">Both (Voice + Chat)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🛡️</span>
@@ -966,16 +1010,21 @@ export function NodePropertiesPanel({
                   <p className="text-xs text-muted-foreground">Enable the safety checks this node performs on each message</p>
                   <div className="space-y-2.5">
                     {[
-                      { key: 'sentimentAnalysis' as const, label: 'Sentiment Analysis', desc: 'Detect anger, frustration, or negative tone' },
-                      { key: 'piiDetection' as const, label: 'PII Detection', desc: 'Detect credit cards, SSN, personal data' },
-                      { key: 'policyViolation' as const, label: 'Policy Violation', desc: 'Check against company response rules' },
-                      { key: 'profanityFilter' as const, label: 'Profanity Filter', desc: 'Detect and flag offensive language' },
-                      { key: 'topicGuardrail' as const, label: 'Topic Guardrail', desc: 'Block off-topic or restricted subjects' },
+                      { key: 'sentimentAnalysis' as const, label: 'Sentiment Analysis', desc: isVoice ? 'Detect anger via tone + content analysis' : 'Detect anger, frustration, or negative tone' },
+                      { key: 'piiDetection' as const, label: 'PII Detection', desc: 'Detect credit cards, SSN, personal data, gov IDs' },
+                      { key: 'policyViolation' as const, label: 'Policy Violation', desc: 'Check for harassment, threats, fraud, abuse' },
+                      { key: 'profanityFilter' as const, label: 'Profanity Filter', desc: 'Detect and handle offensive language with grace count' },
+                      { key: 'topicGuardrail' as const, label: 'Topic Guardrail', desc: 'Block restricted subjects (medical, legal, etc.)' },
                     ].map(({ key, label, desc }) => (
                       <div key={key} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                         <Switch checked={sc.checks[key]} onCheckedChange={() => toggleCheck(key)} className="mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">{label}</p>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium">{label}</p>
+                            {key === 'topicGuardrail' && !sc.checks[key] && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Recommended</span>
+                            )}
+                          </div>
                           <p className="text-[11px] text-muted-foreground">{desc}</p>
                         </div>
                       </div>
@@ -984,36 +1033,97 @@ export function NodePropertiesPanel({
                 </div>
 
                 {sc.checks.sentimentAnalysis && (
-                  <div className="space-y-2">
-                    <Label>Anger/Frustration Threshold</Label>
-                    <Select value={sc.sentimentThreshold} onValueChange={(v) => updateSafety({ sentimentThreshold: v as 'low' | 'medium' | 'high' })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low — Flag mild frustration</SelectItem>
-                        <SelectItem value="medium">Medium — Flag clear anger</SelectItem>
-                        <SelectItem value="high">High — Only flag extreme hostility</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-3 p-3 rounded-lg bg-muted/30 border">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sentiment Settings</Label>
+                    <div className="space-y-2">
+                      <Label>Anger/Frustration Threshold</Label>
+                      <Select value={sc.sentimentThreshold} onValueChange={(v) => updateSafety({ sentimentThreshold: v as 'low' | 'medium' | 'high' })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low — Flag mild frustration</SelectItem>
+                          <SelectItem value="medium">Medium — Flag clear anger</SelectItem>
+                          <SelectItem value="high">High — Only flag extreme hostility</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[11px] text-muted-foreground">Tip: {suggestedThreshold}</p>
+                    </div>
+                    <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <Switch checked={sc.sentimentEscalateOnRepeated ?? false} onCheckedChange={(v) => updateSafety({ sentimentEscalateOnRepeated: v })} className="mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Escalate on Repeated Negative</p>
+                        <p className="text-[11px] text-muted-foreground">Auto-escalate if negative sentiment repeats within recent messages</p>
+                      </div>
+                    </div>
+                    {(sc.sentimentEscalateOnRepeated) && (
+                      <div className="space-y-2 pl-2">
+                        <Label className="text-xs">Repeat Count Before Escalation</Label>
+                        <Select value={String(sc.sentimentRepeatCount || 3)} onValueChange={(v) => updateSafety({ sentimentRepeatCount: parseInt(v) })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">2 negative messages</SelectItem>
+                            <SelectItem value="3">3 negative messages</SelectItem>
+                            <SelectItem value="4">4 negative messages</SelectItem>
+                            <SelectItem value="5">5 negative messages</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {sc.checks.piiDetection && (
-                  <div className="space-y-2">
-                    <Label>PII Types to Detect</Label>
+                  <div className="space-y-3 p-3 rounded-lg bg-muted/30 border">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">PII Detection Settings</Label>
+                    <div className="space-y-2">
+                      <Label>PII Types to Detect</Label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {([
+                          { type: 'credit_card' as PiiType, label: 'Credit Card' },
+                          { type: 'ssn' as PiiType, label: 'SSN' },
+                          { type: 'phone' as PiiType, label: 'Phone' },
+                          { type: 'email' as PiiType, label: 'Email' },
+                          { type: 'address' as PiiType, label: 'Address' },
+                          { type: 'name' as PiiType, label: 'Name' },
+                          { type: 'government_id' as PiiType, label: 'Gov ID' },
+                          { type: 'date_of_birth' as PiiType, label: 'Date of Birth' },
+                        ]).map(({ type, label }) => (
+                          <button
+                            key={type}
+                            onClick={() => togglePiiType(type)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                              ((sc.piiTypes || []) as PiiType[]).includes(type)
+                                ? 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400'
+                                : 'bg-muted/50 border-border text-muted-foreground hover:bg-muted'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Select all PII types relevant to your business and compliance requirements (GDPR, HIPAA, PCI-DSS)</p>
+                    </div>
+                  </div>
+                )}
+
+                {sc.checks.policyViolation && (
+                  <div className="space-y-3 p-3 rounded-lg bg-muted/30 border">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Policy Violation Categories</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {([
-                        { type: 'credit_card' as const, label: 'Credit Card' },
-                        { type: 'ssn' as const, label: 'SSN' },
-                        { type: 'phone' as const, label: 'Phone' },
-                        { type: 'email' as const, label: 'Email' },
-                        { type: 'address' as const, label: 'Address' },
-                      ]).map(({ type, label }) => (
+                        { cat: 'harassment' as PolicyCat, label: 'Harassment' },
+                        { cat: 'threats' as PolicyCat, label: 'Threats' },
+                        { cat: 'abuse' as PolicyCat, label: 'Abuse' },
+                        { cat: 'fraud' as PolicyCat, label: 'Fraud' },
+                        { cat: 'scams' as PolicyCat, label: 'Scams' },
+                        { cat: 'data_leakage' as PolicyCat, label: 'Data Leakage' },
+                        { cat: 'confidential_content' as PolicyCat, label: 'Confidential' },
+                      ]).map(({ cat, label }) => (
                         <button
-                          key={type}
-                          onClick={() => togglePiiType(type)}
+                          key={cat}
+                          onClick={() => togglePolicyCat(cat)}
                           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
-                            (sc.piiTypes || []).includes(type)
-                              ? 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400'
+                            ((sc.policyCategories || []) as PolicyCat[]).includes(cat)
+                              ? 'bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400'
                               : 'bg-muted/50 border-border text-muted-foreground hover:bg-muted'
                           }`}
                         >
@@ -1021,19 +1131,74 @@ export function NodePropertiesPanel({
                         </button>
                       ))}
                     </div>
+                    <p className="text-[11px] text-muted-foreground">Choose categories based on your use case: CS bots need harassment/threats/abuse, commerce bots need fraud/scams, internal bots need data leakage/confidential</p>
+                  </div>
+                )}
+
+                {sc.checks.profanityFilter && (
+                  <div className="space-y-3 p-3 rounded-lg bg-muted/30 border">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Profanity Filter Settings</Label>
+                    <div className="space-y-2">
+                      <Label>Filter Strength</Label>
+                      <Select value={sc.profanitySeverity || 'moderate'} onValueChange={(v) => updateSafety({ profanitySeverity: v as 'mild' | 'moderate' | 'strong' })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mild">Mild — Allow mild language, flag strong</SelectItem>
+                          <SelectItem value="moderate">Moderate — Flag most offensive language</SelectItem>
+                          <SelectItem value="strong">Strong — Flag all profanity strictly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[11px] text-muted-foreground">CS bots: use Mild (don't block flow). Public bots: use Strong.</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Grace Count</Label>
+                      <Select value={String(sc.profanityGraceCount ?? 1)} onValueChange={(v) => updateSafety({ profanityGraceCount: parseInt(v) })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No grace — immediate action</SelectItem>
+                          <SelectItem value="1">1st occurrence: warn, 2nd: action</SelectItem>
+                          <SelectItem value="2">Allow 2 warnings before action</SelectItem>
+                          <SelectItem value="3">Allow 3 warnings before action</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[11px] text-muted-foreground">Set how many profanity occurrences before escalating or restricting</p>
+                    </div>
                   </div>
                 )}
 
                 {sc.checks.topicGuardrail && (
-                  <div className="space-y-2">
-                    <Label>Blocked Topics</Label>
-                    <Textarea
-                      value={sc.blockedTopics}
-                      onChange={(e) => updateSafety({ blockedTopics: e.target.value })}
-                      placeholder="One topic per line, e.g.&#10;competitor pricing&#10;legal advice&#10;medical diagnosis"
-                      rows={3}
-                      className="text-xs"
-                    />
+                  <div className="space-y-3 p-3 rounded-lg bg-muted/30 border">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Topic Guardrail Settings</Label>
+                    <div className="space-y-2">
+                      <Label>Blocked Topics</Label>
+                      <Textarea
+                        value={sc.blockedTopics}
+                        onChange={(e) => updateSafety({ blockedTopics: e.target.value })}
+                        placeholder="One topic per line, e.g.&#10;Medical advice&#10;Legal advice&#10;Sexual content&#10;Violence&#10;Politics"
+                        rows={4}
+                        className="text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Quick-add common topics:</Label>
+                      <div className="flex flex-wrap gap-1">
+                        {['Medical advice', 'Legal advice', 'Sexual content', 'Violence', 'Politics', 'Competitor pricing', 'Internal policies'].map(topic => (
+                          <button
+                            key={topic}
+                            onClick={() => {
+                              const current = sc.blockedTopics || '';
+                              if (!current.toLowerCase().includes(topic.toLowerCase())) {
+                                updateSafety({ blockedTopics: current ? `${current}\n${topic}` : topic });
+                              }
+                            }}
+                            className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            + {topic}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">Topic guardrails prevent your bot from answering restricted subjects and reduce hallucinations</p>
                   </div>
                 )}
 
@@ -1042,19 +1207,21 @@ export function NodePropertiesPanel({
                     <span className="text-lg">⚡</span>
                     <Label className="text-sm font-semibold">Risk Actions</Label>
                   </div>
-                  <p className="text-xs text-muted-foreground">What happens when a risk is detected</p>
+                  <p className="text-xs text-muted-foreground">Define what happens when each type of risk is detected</p>
 
                   <div className="space-y-2">
                     <Label className="text-xs">On High Risk</Label>
                     <Select value={sc.onHighRisk} onValueChange={(v) => updateSafety({ onHighRisk: v as typeof sc.onHighRisk })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="warn_then_escalate">Warn First, Then Escalate</SelectItem>
                         <SelectItem value="transfer_agent">Transfer to Live Agent</SelectItem>
                         <SelectItem value="escalate_supervisor">Escalate to Supervisor</SelectItem>
                         <SelectItem value="send_warning">Send Warning Message</SelectItem>
                         <SelectItem value="end_conversation">End Conversation</SelectItem>
                       </SelectContent>
                     </Select>
+                    <p className="text-[11px] text-muted-foreground">"Warn First, Then Escalate" asks a clarifying question on first occurrence, escalates on second</p>
                   </div>
 
                   <div className="space-y-2">
@@ -1063,6 +1230,7 @@ export function NodePropertiesPanel({
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="continue_with_warning">Continue with Warning</SelectItem>
+                        <SelectItem value="continue_with_disclaimer">Continue with Disclaimer</SelectItem>
                         <SelectItem value="transfer_agent">Transfer to Live Agent</SelectItem>
                         <SelectItem value="log_only">Log Only</SelectItem>
                       </SelectContent>
@@ -1076,29 +1244,64 @@ export function NodePropertiesPanel({
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="mask_and_continue">Mask Data & Continue</SelectItem>
+                          <SelectItem value="mask_log_continue">Mask, Log & Continue</SelectItem>
                           <SelectItem value="block_and_warn">Block & Warn User</SelectItem>
                           <SelectItem value="transfer_agent">Transfer to Live Agent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[11px] text-muted-foreground">"Mask, Log & Continue" masks PII and creates a compliance audit entry</p>
+                    </div>
+                  )}
+
+                  {sc.checks.topicGuardrail && (
+                    <div className="space-y-2">
+                      <Label className="text-xs">On Sensitive Topic</Label>
+                      <Select value={sc.onSensitiveTopic || 'safe_fallback'} onValueChange={(v) => updateSafety({ onSensitiveTopic: v as typeof sc.onSensitiveTopic })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="safe_fallback">Safe Scripted Fallback</SelectItem>
+                          <SelectItem value="block_and_redirect">Block & Redirect</SelectItem>
+                          <SelectItem value="transfer_agent">Transfer to Live Agent</SelectItem>
+                          <SelectItem value="log_only">Log Only</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-2 pt-2 border-t">
-                  <Label>Custom Rules</Label>
+                <div className="space-y-3 pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📝</span>
+                    <Label className="text-sm font-semibold">Custom Rules</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Business-specific safety rules in natural language. Add at least 4-5 rules for best protection.</p>
                   <Textarea
                     value={sc.customRules}
                     onChange={(e) => updateSafety({ customRules: e.target.value })}
-                    placeholder="Additional safety rules in natural language, e.g.&#10;Never mention competitor products&#10;Always redirect billing complaints to support"
-                    rows={3}
+                    placeholder="Write custom safety rules, e.g.&#10;If user mentions refund + anger → escalate immediately&#10;If user mentions cancel account → route to retention agent"
+                    rows={4}
                     className="text-xs"
                   />
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Quick-add rule templates:</Label>
+                    <div className="space-y-1">
+                      {customRuleTemplates.map((rule, i) => (
+                        <button
+                          key={i}
+                          onClick={() => addRuleTemplate(rule)}
+                          className="w-full text-left px-2.5 py-1.5 rounded text-[11px] bg-muted/30 border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                          + {rule}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                   <div>
                     <p className="text-sm font-medium">Audit Logging</p>
-                    <p className="text-[11px] text-muted-foreground">Log all safety events for compliance</p>
+                    <p className="text-[11px] text-muted-foreground">Log all safety events for compliance review</p>
                   </div>
                   <Switch checked={sc.enableLogging} onCheckedChange={(v) => updateSafety({ enableLogging: v })} />
                 </div>

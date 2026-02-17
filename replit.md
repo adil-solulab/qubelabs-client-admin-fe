@@ -45,7 +45,16 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - **FlowType distinction**: `FlowType = 'flow' | 'workflow'` stored on each Flow/FlowSummary. Flows are conversational logic for rule-based agents; Workflows are backend automation processes.
 - **Flow Nodes** (for conversational flows): Prompt nodes (Text Input, Name Input, Email Input, Phone Input, Date Input, Quick Reply), Message nodes (Message, Carousel), Logic (Condition), Action nodes (Execute Flow, Raise Ticket, AI Assistant, Transfer, DTMF, Delay, End), Safety & Risk (Safety Check).
 - **Workflow Nodes** (for backend automation): Actions (API Call, Database, Function, Variable, Notification, Event Trigger), Logic (Condition, Delay), Integrations (WhatsApp, Slack, Telegram, Teams, Zendesk, Freshdesk, Zoho CRM, Salesforce, HubSpot), Safety & Risk (Safety Check).
-- **Safety Check Node**: A risk checkpoint that acts as a "security guard" in conversation flows. Configurable checks include Sentiment Analysis (anger/frustration detection with low/medium/high thresholds), PII Detection (credit card, SSN, phone, email, address), Policy Violation checking, Profanity Filter, and Topic Guardrails (blocked topics). Configurable actions for high risk (transfer agent, escalate supervisor, send warning, end conversation), medium risk (continue with warning, transfer agent, log only), and PII detection (mask & continue, block & warn, transfer agent). Includes custom rules in natural language and audit logging toggle.
+- **Safety Check Node**: A comprehensive risk checkpoint acting as a "security guard" in flows. Features:
+  - **Bot Type Selector**: Voice/Chat/Both with context-aware recommendations for thresholds and settings.
+  - **Sentiment Analysis**: Low/Medium/High thresholds with voice-specific tips. Supports "Escalate on Repeated Negative" with configurable repeat count (2-5 messages).
+  - **PII Detection**: 8 types — Credit Card, SSN, Phone, Email, Address, Name, Government ID, Date of Birth. Compliance-aware (GDPR, HIPAA, PCI-DSS).
+  - **Policy Violation**: 7 selectable categories — Harassment, Threats, Abuse, Fraud, Scams, Data Leakage, Confidential Content. Use-case specific guidance.
+  - **Profanity Filter**: Mild/Moderate/Strong severity with configurable grace count (0-3 warnings before action).
+  - **Topic Guardrails**: Blocked topics with quick-add buttons for common topics (Medical, Legal, Sexual, Violence, Politics, Competitors, Internal). Recommended ON badge.
+  - **Risk Actions**: High Risk (Warn Then Escalate, Transfer, Escalate, Warning, End), Medium Risk (Warning, Disclaimer, Transfer, Log Only), PII (Mask & Continue, Mask Log & Continue, Block & Warn, Transfer), Sensitive Topic (Safe Fallback, Block & Redirect, Transfer, Log Only).
+  - **Custom Rules**: Natural language rules with 5 quick-add templates for common business scenarios (refund+anger, cancel+sentiment, competitor routing, forbidden topics, hallucination fallback).
+  - **Audit Logging**: Toggle for compliance event logging.
 - **Node Categories**: `FLOW_NODE_CATEGORIES` and `WORKFLOW_NODE_CATEGORIES` in `src/types/flowBuilder.ts` control which nodes appear in the sidebar based on flowType.
 - **NodeToolsSidebar**: Accepts `flowType` prop and dynamically shows appropriate node palette.
 - **FlowListView**: Type filter tabs (All/Flows/Workflows), type badges (GitBranch for Flow, Zap for Workflow), two-step creation (select type → fill details).

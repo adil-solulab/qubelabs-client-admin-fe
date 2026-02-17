@@ -136,6 +136,7 @@ export interface NodeData {
     payload?: string;
   };
   safetyConfig?: {
+    botType: 'voice' | 'chat' | 'both';
     checks: {
       sentimentAnalysis: boolean;
       piiDetection: boolean;
@@ -144,11 +145,17 @@ export interface NodeData {
       topicGuardrail: boolean;
     };
     sentimentThreshold: 'low' | 'medium' | 'high';
-    piiTypes: ('credit_card' | 'ssn' | 'phone' | 'email' | 'address')[];
+    sentimentEscalateOnRepeated: boolean;
+    sentimentRepeatCount: number;
+    piiTypes: ('credit_card' | 'ssn' | 'phone' | 'email' | 'address' | 'name' | 'government_id' | 'date_of_birth')[];
+    policyCategories: ('harassment' | 'threats' | 'abuse' | 'fraud' | 'scams' | 'data_leakage' | 'confidential_content')[];
+    profanitySeverity: 'mild' | 'moderate' | 'strong';
+    profanityGraceCount: number;
     blockedTopics: string;
-    onHighRisk: 'transfer_agent' | 'escalate_supervisor' | 'send_warning' | 'end_conversation';
-    onMediumRisk: 'continue_with_warning' | 'transfer_agent' | 'log_only';
-    onPiiDetected: 'mask_and_continue' | 'block_and_warn' | 'transfer_agent';
+    onHighRisk: 'transfer_agent' | 'escalate_supervisor' | 'send_warning' | 'end_conversation' | 'warn_then_escalate';
+    onMediumRisk: 'continue_with_warning' | 'continue_with_disclaimer' | 'transfer_agent' | 'log_only';
+    onPiiDetected: 'mask_and_continue' | 'block_and_warn' | 'transfer_agent' | 'mask_log_continue';
+    onSensitiveTopic: 'safe_fallback' | 'block_and_redirect' | 'transfer_agent' | 'log_only';
     customRules: string;
     enableLogging: boolean;
   };
