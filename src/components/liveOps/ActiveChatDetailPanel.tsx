@@ -193,9 +193,9 @@ export function ActiveChatDetailPanel({
     <>
       <div className={cn(
         "fixed inset-y-0 right-0 z-50 flex animate-slide-in-right shadow-2xl",
-        showCustomerInfo && isVoiceCall ? 'w-full sm:w-[720px]' : 'w-full sm:w-[420px]'
+        showCustomerInfo && conversation.customerInfo ? 'w-full sm:w-[720px]' : 'w-full sm:w-[420px]'
       )}>
-        {showCustomerInfo && isVoiceCall && conversation.customerInfo && (
+        {showCustomerInfo && conversation.customerInfo && (
           <div className="hidden sm:block w-[300px] border-l bg-background">
             <CustomerInfoSidebar
               customerName={conversation.customerName}
@@ -221,7 +221,7 @@ export function ActiveChatDetailPanel({
               <p className="text-sm text-muted-foreground">View conversation details and take actions.</p>
             </div>
             <div className="flex items-center gap-1">
-              {isVoiceCall && conversation.customerInfo && (
+              {conversation.customerInfo && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

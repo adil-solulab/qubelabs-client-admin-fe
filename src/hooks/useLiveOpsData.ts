@@ -79,6 +79,26 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm2', role: 'agent', content: 'Great choice! Our enterprise plan includes unlimited users, priority support, and custom integrations. What specific features are you most interested in?', timestamp: new Date(Date.now() - 7.5 * 60 * 1000).toISOString() },
       { id: 'm3', role: 'customer', content: 'The custom integrations sound perfect for us!', timestamp: new Date(Date.now() - 7 * 60 * 1000).toISOString(), sentiment: 'positive' },
     ],
+    customerInfo: {
+      phone: '+1 (555) 321-9876',
+      email: 'michael.chen@innovate.io',
+      crmId: 'CRM-41023',
+      company: 'Innovate Solutions',
+      location: 'San Francisco, CA',
+      tier: 'standard',
+      lifetimeValue: '$12,400',
+      tags: ['Standard', 'Product Interest', 'Enterprise Prospect'],
+      previousInteractions: [
+        { id: 'pi-9', channel: 'chat', topic: 'Pricing Inquiry', date: '2026-01-10', outcome: 'resolved', agent: 'AI Assistant' },
+        { id: 'pi-10', channel: 'email', topic: 'Feature Request', date: '2026-02-01', outcome: 'resolved', agent: 'Emma Wilson' },
+      ],
+    },
+    coPilotSuggestions: [
+      { id: 'cp-20', type: 'intent', content: 'Customer interested in enterprise plan — potential upsell opportunity', confidence: 0.92 },
+      { id: 'cp-21', type: 'reply', content: 'I can schedule a demo with our enterprise team to walk you through custom integrations.', confidence: 0.88 },
+      { id: 'cp-22', type: 'knowledge', content: 'Enterprise plan includes REST API, webhooks, and 50+ pre-built integrations', confidence: 0.95 },
+    ],
+    notes: ['Interested in enterprise features'],
   },
   {
     id: 'conv-3',
@@ -152,6 +172,18 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm1', role: 'customer', content: 'Hello, I need help with my account settings.', timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
       { id: 'm2', role: 'system', content: 'You are in queue. Estimated wait time: 2 minutes', timestamp: new Date(Date.now() - 1.9 * 60 * 1000).toISOString() },
     ],
+    customerInfo: {
+      phone: '+1 (555) 456-7890',
+      email: 'david.miller@gmail.com',
+      crmId: 'CRM-55012',
+      location: 'Chicago, IL',
+      tier: 'standard',
+      lifetimeValue: '$3,200',
+      tags: ['Standard', 'Support'],
+      previousInteractions: [
+        { id: 'pi-11', channel: 'chat', topic: 'Password Reset', date: '2026-01-05', outcome: 'resolved', agent: 'AI Assistant' },
+      ],
+    },
   },
   {
     id: 'conv-5',
@@ -173,6 +205,24 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm1', role: 'customer', content: 'I would like to request a refund for order #98765.', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString() },
       { id: 'm2', role: 'agent', content: 'I\'d be happy to help you with your refund request. I can see your order and I\'m processing the refund now.', timestamp: new Date(Date.now() - 2.5 * 60 * 1000).toISOString() },
     ],
+    customerInfo: {
+      phone: '+1 (555) 678-1234',
+      email: 'lisa.park@webmail.com',
+      crmId: 'CRM-62890',
+      location: 'Seattle, WA',
+      tier: 'standard',
+      lifetimeValue: '$5,600',
+      tags: ['Standard', 'Refund History'],
+      previousInteractions: [
+        { id: 'pi-12', channel: 'email', topic: 'Order Confirmation', date: '2026-01-20', outcome: 'resolved', agent: 'AI Assistant' },
+        { id: 'pi-13', channel: 'chat', topic: 'Shipping Inquiry', date: '2026-02-08', outcome: 'resolved', agent: 'AI Assistant' },
+      ],
+    },
+    coPilotSuggestions: [
+      { id: 'cp-30', type: 'intent', content: 'Customer requesting refund for recent order — check return policy eligibility', confidence: 0.94 },
+      { id: 'cp-31', type: 'action', content: 'Process refund for order #98765 — within 30-day return window', confidence: 0.91 },
+    ],
+    notes: ['Refund request for order #98765'],
   },
   {
     id: 'conv-6',
@@ -197,6 +247,18 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm3', role: 'customer', content: 'Got it, I was able to reset successfully. Thank you!', timestamp: new Date(Date.now() - 22 * 60 * 1000).toISOString(), sentiment: 'positive' },
       { id: 'm4', role: 'system', content: 'Conversation resolved', timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
     ],
+    customerInfo: {
+      phone: '+1 (555) 222-3344',
+      email: 'james.wilson@company.com',
+      crmId: 'CRM-78123',
+      location: 'Denver, CO',
+      tier: 'standard',
+      lifetimeValue: '$4,100',
+      tags: ['Standard', 'Support'],
+      previousInteractions: [
+        { id: 'pi-14', channel: 'chat', topic: 'Login Issue', date: '2025-12-15', outcome: 'resolved', agent: 'AI Assistant' },
+      ],
+    },
   },
   {
     id: 'conv-7',
@@ -264,6 +326,19 @@ const generateMockConversations = (): LiveConversation[] => [
       { id: 'm2', role: 'system', content: 'You are in queue. Estimated wait time: 5 minutes', timestamp: new Date(Date.now() - 29.5 * 60 * 1000).toISOString() },
       { id: 'm3', role: 'system', content: 'Customer disconnected - conversation missed', timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString() },
     ],
+    customerInfo: {
+      phone: '+1 (555) 444-5566',
+      email: 'robert.kim@outlook.com',
+      crmId: 'CRM-90234',
+      location: 'New York, NY',
+      tier: 'standard',
+      lifetimeValue: '$7,800',
+      tags: ['Standard', 'Order Tracking'],
+      previousInteractions: [
+        { id: 'pi-15', channel: 'chat', topic: 'Order Placement', date: '2026-01-25', outcome: 'resolved', agent: 'AI Assistant' },
+        { id: 'pi-16', channel: 'email', topic: 'Delivery Update', date: '2026-02-05', outcome: 'resolved', agent: 'AI Assistant' },
+      ],
+    },
   },
 ];
 
