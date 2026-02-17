@@ -39,6 +39,7 @@ import {
 import type { LiveConversation, Agent } from '@/types/liveOps';
 import { SENTIMENT_CONFIG, CHANNEL_CONFIG, STATUS_CONFIG } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
+import { TransferPanel } from '@/components/liveOps/TransferPanel';
 
 interface ActiveChatDetailPanelProps {
   conversation: LiveConversation;
@@ -113,7 +114,7 @@ export function ActiveChatDetailPanel({
     }
   };
 
-  const availableAgents = agents.filter(a => a.status === 'available' || a.status === 'busy');
+
 
   const getChannelIcon = () => {
     switch (conversation.channel) {
@@ -334,35 +335,13 @@ export function ActiveChatDetailPanel({
 
         <div className="p-4 border-t flex-shrink-0 space-y-3">
           {showTransfer && (
-            <div className="p-3 rounded-lg border bg-muted/30 mb-2">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium">Transfer to Agent</p>
-                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setShowTransfer(false)}>
-                  Cancel
-                </Button>
-              </div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {availableAgents.map(agent => (
-                  <Button
-                    key={agent.id}
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start h-8"
-                    onClick={() => { onTransfer(agent.id); setShowTransfer(false); }}
-                    disabled={agent.currentConversations >= agent.maxConversations}
-                  >
-                    <div className={cn(
-                      'w-2 h-2 rounded-full mr-2',
-                      agent.status === 'available' && 'bg-success',
-                      agent.status === 'busy' && 'bg-warning'
-                    )} />
-                    <span className="text-sm">{agent.name}</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">
-                      {agent.currentConversations}/{agent.maxConversations}
-                    </span>
-                  </Button>
-                ))}
-              </div>
+            <div className="mb-2">
+              <TransferPanel
+                agents={agents}
+                onTransfer={(agentId) => { onTransfer(agentId); setShowTransfer(false); }}
+                onCancel={() => setShowTransfer(false)}
+                compact
+              />
             </div>
           )}
 

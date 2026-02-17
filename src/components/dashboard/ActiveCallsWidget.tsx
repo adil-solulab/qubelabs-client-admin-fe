@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, PhoneOff, MicOff, Mic, ArrowRightLeft, Users, X, ArrowRight } from 'lucide-react';
+import { Phone, PhoneOff, MicOff, Mic, ArrowRightLeft, Users, X, ArrowRight, Shuffle } from 'lucide-react';
 import { DashboardWidget } from './DashboardWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,13 +45,19 @@ interface CallWithState extends ActiveCall {
   isMuted?: boolean;
 }
 
-// Mock agents for transfer
+const TEAMS = [
+  { id: 'grp-1', name: 'Customer Support', agentIds: ['1', '3', '5'] },
+  { id: 'grp-2', name: 'Escalation', agentIds: ['2'] },
+  { id: 'grp-3', name: 'Sales', agentIds: ['4'] },
+  { id: 'grp-4', name: 'VIP Support', agentIds: ['2', '5'] },
+];
+
 const AVAILABLE_AGENTS = [
-  { id: '1', name: 'Sarah Johnson' },
-  { id: '2', name: 'Mike Chen' },
-  { id: '3', name: 'Emma Wilson' },
-  { id: '4', name: 'Tom Hardy' },
-  { id: '5', name: 'Lisa Park' },
+  { id: '1', name: 'Sarah Johnson', status: 'available' as const },
+  { id: '2', name: 'Mike Chen', status: 'available' as const },
+  { id: '3', name: 'Emma Wilson', status: 'busy' as const },
+  { id: '4', name: 'Tom Hardy', status: 'available' as const },
+  { id: '5', name: 'Lisa Park', status: 'available' as const },
 ];
 
 export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCallsWidgetProps) {
@@ -60,9 +66,9 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
   const [calls, setCalls] = useState<CallWithState[]>(initialCalls.map(c => ({ ...c, isMuted: false })));
   const [selectedCall, setSelectedCall] = useState<CallWithState | null>(null);
   
-  // Transfer modal state
   const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [callToTransfer, setCallToTransfer] = useState<CallWithState | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [selectedAgent, setSelectedAgent] = useState<string>('');
 
   // End call confirmation modal
@@ -109,14 +115,44 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
 
   const handleTransferCall = (call: CallWithState) => {
     setCallToTransfer(call);
+    setSelectedTeam('');
     setSelectedAgent('');
     setTransferModalOpen(true);
+  };
+
+  const teamAgents = selectedTeam
+    ? AVAILABLE_AGENTS.filter(a => {
+        const team = TEAMS.find(t => t.id === selectedTeam);
+        return team?.agentIds.includes(a.id) && a.name !== callToTransfer?.agent;
+      })
+    : [];
+
+  const handleRandomAssign = () => {
+    const available = teamAgents.filter(a => a.status === 'available');
+    if (available.length > 0) {
+      const randomAgent = available[Math.floor(Math.random() * available.length)];
+      setSelectedAgent(randomAgent.id);
+    } else if (teamAgents.length > 0) {
+      const randomAgent = teamAgents[Math.floor(Math.random() * teamAgents.length)];
+      setSelectedAgent(randomAgent.id);
+    }
   };
 
   const confirmTransfer = () => {
     if (!callToTransfer || !selectedAgent) return;
     
-    const agent = AVAILABLE_AGENTS.find(a => a.id === selectedAgent);
+    let finalAgentId = selectedAgent;
+    if (selectedAgent === '__random__') {
+      const available = teamAgents.filter(a => a.status === 'available');
+      const pool = available.length > 0 ? available : teamAgents;
+      if (pool.length > 0) {
+        finalAgentId = pool[Math.floor(Math.random() * pool.length)].id;
+      } else {
+        return;
+      }
+    }
+    
+    const agent = AVAILABLE_AGENTS.find(a => a.id === finalAgentId);
     
     setCalls(prev => prev.map(c => 
       c.id === callToTransfer.id 
@@ -405,23 +441,58 @@ export function ActiveCallsWidget({ calls: initialCalls, isLoading }: ActiveCall
                 <p className="text-sm text-muted-foreground">Current Agent: {callToTransfer.agent}</p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="agent-select">Transfer to Agent</Label>
-                <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an agent..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AVAILABLE_AGENTS.filter(a => a.name !== callToTransfer.agent).map(agent => (
-                      <SelectItem key={agent.id} value={agent.id}>
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          {agent.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Select Team</Label>
+                  <Select value={selectedTeam} onValueChange={(val) => { setSelectedTeam(val); setSelectedAgent(''); }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a team..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TEAMS.map(team => (
+                        <SelectItem key={team.id} value={team.id}>
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            {team.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedTeam && (
+                  <div className="space-y-2">
+                    <Label>Select Agent</Label>
+                    <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an agent..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__random__">
+                          <div className="flex items-center gap-2 text-primary font-medium">
+                            <Shuffle className="w-4 h-4" />
+                            Randomly assign based on availability
+                          </div>
+                        </SelectItem>
+                        {teamAgents.map(agent => (
+                          <SelectItem key={agent.id} value={agent.id}>
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                'w-2 h-2 rounded-full',
+                                agent.status === 'available' ? 'bg-emerald-500' : 'bg-amber-500'
+                              )} />
+                              {agent.name}
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({agent.status})
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </div>
           )}

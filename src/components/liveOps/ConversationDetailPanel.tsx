@@ -41,6 +41,7 @@ import { TranslatedMessage } from '@/components/translation/TranslatedMessage';
 import { TranslationControls } from '@/components/translation/TranslationControls';
 import { VoiceTranslationPanel } from '@/components/translation/VoiceTranslationPanel';
 import { LanguageSettingsModal } from '@/components/translation/LanguageSettingsModal';
+import { TransferPanel } from '@/components/liveOps/TransferPanel';
 
 interface ConversationDetailPanelProps {
   conversation: LiveConversation;
@@ -192,7 +193,7 @@ export function ConversationDetailPanel({
     notify.success('Language updated', 'Customer language has been updated.');
   }, [conversation.id, setCustomerLanguage]);
 
-  const availableAgents = agents.filter(a => a.status === 'available' || a.status === 'busy');
+
   const conversationTranslation = getConversationTranslation(conversation.id);
 
   // Helper component for locked buttons
@@ -394,32 +395,14 @@ export function ConversationDetailPanel({
           )}
         </div>
 
-        {/* Transfer Panel */}
         {showTransfer && canTransfer && (
-          <div className="mt-3 p-3 rounded-lg border bg-muted/30">
-            <p className="text-xs font-medium mb-2">Transfer to Agent:</p>
-            <div className="space-y-1">
-              {availableAgents.map(agent => (
-                <Button
-                  key={agent.id}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => handleTransfer(agent.id)}
-                  disabled={agent.currentConversations >= agent.maxConversations}
-                >
-                  <div className={cn(
-                    'w-2 h-2 rounded-full mr-2',
-                    agent.status === 'available' && 'bg-success',
-                    agent.status === 'busy' && 'bg-warning'
-                  )} />
-                  {agent.name}
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    {agent.currentConversations}/{agent.maxConversations}
-                  </span>
-                </Button>
-              ))}
-            </div>
+          <div className="mt-3">
+            <TransferPanel
+              agents={agents}
+              onTransfer={handleTransfer}
+              onCancel={() => setShowTransfer(false)}
+              compact
+            />
           </div>
         )}
       </div>
