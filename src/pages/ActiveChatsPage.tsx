@@ -41,6 +41,7 @@ export default function ActiveChatsPage() {
     transferToAgent,
     resolveConversation,
     endConversation,
+    sendMessage,
   } = useLiveOpsData();
 
   const { currentUser, currentRole, isClientAdmin } = useAuth();
@@ -379,6 +380,7 @@ export default function ActiveChatsPage() {
               onTransfer={(agentId) => handleTransfer(selectedConversation.id, agentId)}
               onResolve={() => handleResolve(selectedConversation.id)}
               onEnd={() => handleEnd(selectedConversation.id)}
+              onSendMessage={(content) => sendMessage(selectedConversation.id, content)}
             />
           </>
         )}

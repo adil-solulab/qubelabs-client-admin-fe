@@ -18,6 +18,11 @@ import {
   PhoneOff,
   Loader2,
   Flag,
+  MicOff,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +54,7 @@ interface ConversationDetailPanelProps {
   onEndConversation?: () => void;
   onResolveConversation?: () => void;
   onReport?: () => void;
+  onSendMessage?: (content: string) => void;
 }
 
 export function ConversationDetailPanel({
@@ -63,11 +69,16 @@ export function ConversationDetailPanel({
   onEndConversation,
   onResolveConversation,
   onReport,
+  onSendMessage,
 }: ConversationDetailPanelProps) {
   const [whisperMessage, setWhisperMessage] = useState('');
+  const [chatMessage, setChatMessage] = useState('');
   const [showTransfer, setShowTransfer] = useState(false);
   const [languageSettingsOpen, setLanguageSettingsOpen] = useState(false);
   const [isEndingConversation, setIsEndingConversation] = useState(false);
+  const [voiceMuted, setVoiceMuted] = useState(false);
+  const [voiceOnHold, setVoiceOnHold] = useState(false);
+  const [voiceSpeaker, setVoiceSpeaker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { currentRole, isClientAdmin } = useAuth();
@@ -536,7 +547,98 @@ export function ConversationDetailPanel({
         </div>
       </div>
 
-      {/* Whisper Input - Only for Supervisor roles */}
+      {conversation.channel === 'voice' && conversation.status === 'active' && (
+        <div className="p-3 border-t flex-shrink-0">
+          <div className="flex items-center justify-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={voiceMuted ? 'destructive' : 'outline'}
+                  size="icon"
+                  className="rounded-full h-10 w-10"
+                  onClick={() => {
+                    setVoiceMuted(!voiceMuted);
+                    notify.info(voiceMuted ? 'Unmuted' : 'Muted', voiceMuted ? 'Microphone is now on' : 'Microphone is now off');
+                  }}
+                >
+                  {voiceMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{voiceMuted ? 'Unmute' : 'Mute'}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={voiceOnHold ? 'secondary' : 'outline'}
+                  size="icon"
+                  className="rounded-full h-10 w-10"
+                  onClick={() => {
+                    setVoiceOnHold(!voiceOnHold);
+                    notify.info(voiceOnHold ? 'Resumed' : 'On Hold', voiceOnHold ? 'Call resumed' : 'Call placed on hold');
+                  }}
+                >
+                  {voiceOnHold ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{voiceOnHold ? 'Resume' : 'Hold'}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={voiceSpeaker ? 'secondary' : 'outline'}
+                  size="icon"
+                  className="rounded-full h-10 w-10"
+                  onClick={() => {
+                    setVoiceSpeaker(!voiceSpeaker);
+                    notify.info(voiceSpeaker ? 'Speaker Off' : 'Speaker On', voiceSpeaker ? 'Audio through headset' : 'Audio through speaker');
+                  }}
+                >
+                  {voiceSpeaker ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{voiceSpeaker ? 'Speaker Off' : 'Speaker On'}</TooltipContent>
+            </Tooltip>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            {voiceMuted && <Badge variant="destructive" className="text-[10px]">Muted</Badge>}
+            {voiceOnHold && <Badge variant="secondary" className="text-[10px]">On Hold</Badge>}
+            {voiceSpeaker && <Badge variant="secondary" className="text-[10px]">Speaker</Badge>}
+          </div>
+        </div>
+      )}
+
+      {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && onSendMessage && (
+        <div className="p-3 border-t flex-shrink-0">
+          <div className="flex gap-2">
+            <Input
+              value={chatMessage}
+              onChange={(e) => setChatMessage(e.target.value)}
+              placeholder={conversation.channel === 'email' ? 'Type your reply...' : 'Type a message...'}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && chatMessage.trim()) {
+                  e.preventDefault();
+                  onSendMessage(chatMessage.trim());
+                  setChatMessage('');
+                }
+              }}
+              className="text-sm"
+            />
+            <Button
+              size="icon"
+              onClick={() => {
+                if (chatMessage.trim()) {
+                  onSendMessage(chatMessage.trim());
+                  setChatMessage('');
+                }
+              }}
+              disabled={!chatMessage.trim()}
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {canWhisper && (conversation.supervisorMode === 'monitoring' || conversation.supervisorMode === 'whispering') && (
         <div className="p-3 border-t flex-shrink-0">
           <div className="flex gap-2">
@@ -552,7 +654,7 @@ export function ConversationDetailPanel({
             </Button>
           </div>
           <p className="text-[10px] text-muted-foreground mt-1">
-            💡 Only the agent will see this message
+            Only the agent will see this message
           </p>
         </div>
       )}

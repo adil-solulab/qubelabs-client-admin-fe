@@ -64,6 +64,7 @@ export default function LiveOpsPage() {
     stopSupervision,
     endConversation,
     resolveConversation,
+    sendMessage,
     chatCategoryStats,
     slaStats,
   } = useLiveOpsData();
@@ -629,6 +630,7 @@ export default function LiveOpsPage() {
               onEndConversation={handleEndConversation}
               onResolveConversation={handleResolveConversation}
               onReport={() => setReportModalOpen(true)}
+              onSendMessage={(content) => sendMessage(selectedConversation.id, content)}
             />
           </>
         )}

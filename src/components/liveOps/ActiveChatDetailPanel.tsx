@@ -13,12 +13,21 @@ import {
   PhoneOff,
   Loader2,
   Send,
+  Mic,
+  MicOff,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { notify } from '@/hooks/useNotification';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +49,7 @@ interface ActiveChatDetailPanelProps {
   onTransfer: (agentId: string) => void;
   onResolve: () => void;
   onEnd: () => void;
+  onSendMessage?: (content: string) => void;
 }
 
 export function ActiveChatDetailPanel({
@@ -51,12 +61,17 @@ export function ActiveChatDetailPanel({
   onTransfer,
   onResolve,
   onEnd,
+  onSendMessage,
 }: ActiveChatDetailPanelProps) {
   const [isTakingOver, setIsTakingOver] = useState(false);
   const [escalateOpen, setEscalateOpen] = useState(false);
   const [escalateReason, setEscalateReason] = useState('');
   const [isEscalating, setIsEscalating] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
+  const [chatMessage, setChatMessage] = useState('');
+  const [voiceMuted, setVoiceMuted] = useState(false);
+  const [voiceOnHold, setVoiceOnHold] = useState(false);
+  const [voiceSpeaker, setVoiceSpeaker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const sentiment = SENTIMENT_CONFIG[conversation.sentiment];
@@ -224,6 +239,98 @@ export function ActiveChatDetailPanel({
             </div>
           </div>
         </div>
+
+        {conversation.channel === 'voice' && conversation.status === 'active' && (
+          <div className="p-3 border-t flex-shrink-0">
+            <div className="flex items-center justify-center gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={voiceMuted ? 'destructive' : 'outline'}
+                    size="icon"
+                    className="rounded-full h-10 w-10"
+                    onClick={() => {
+                      setVoiceMuted(!voiceMuted);
+                      notify.info(voiceMuted ? 'Unmuted' : 'Muted', voiceMuted ? 'Microphone is now on' : 'Microphone is now off');
+                    }}
+                  >
+                    {voiceMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{voiceMuted ? 'Unmute' : 'Mute'}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={voiceOnHold ? 'secondary' : 'outline'}
+                    size="icon"
+                    className="rounded-full h-10 w-10"
+                    onClick={() => {
+                      setVoiceOnHold(!voiceOnHold);
+                      notify.info(voiceOnHold ? 'Resumed' : 'On Hold', voiceOnHold ? 'Call resumed' : 'Call placed on hold');
+                    }}
+                  >
+                    {voiceOnHold ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{voiceOnHold ? 'Resume' : 'Hold'}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={voiceSpeaker ? 'secondary' : 'outline'}
+                    size="icon"
+                    className="rounded-full h-10 w-10"
+                    onClick={() => {
+                      setVoiceSpeaker(!voiceSpeaker);
+                      notify.info(voiceSpeaker ? 'Speaker Off' : 'Speaker On', voiceSpeaker ? 'Audio through headset' : 'Audio through speaker');
+                    }}
+                  >
+                    {voiceSpeaker ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{voiceSpeaker ? 'Speaker Off' : 'Speaker On'}</TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              {voiceMuted && <Badge variant="destructive" className="text-[10px]">Muted</Badge>}
+              {voiceOnHold && <Badge variant="secondary" className="text-[10px]">On Hold</Badge>}
+              {voiceSpeaker && <Badge variant="secondary" className="text-[10px]">Speaker</Badge>}
+            </div>
+          </div>
+        )}
+
+        {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && onSendMessage && (
+          <div className="p-3 border-t flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                placeholder={conversation.channel === 'email' ? 'Type your reply...' : 'Type a message...'}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && chatMessage.trim()) {
+                    e.preventDefault();
+                    onSendMessage(chatMessage.trim());
+                    setChatMessage('');
+                  }
+                }}
+                className="text-sm"
+              />
+              <Button
+                size="icon"
+                onClick={() => {
+                  if (chatMessage.trim()) {
+                    onSendMessage(chatMessage.trim());
+                    setChatMessage('');
+                  }
+                }}
+                disabled={!chatMessage.trim()}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="p-4 border-t flex-shrink-0 space-y-3">
           {showTransfer && (

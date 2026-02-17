@@ -520,6 +520,30 @@ export function useLiveOpsData() {
     }
   }, [selectedConversation]);
 
+  const sendMessage = useCallback(async (conversationId: string, content: string, senderRole: 'agent' | 'customer' = 'agent') => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const newMessage: ConversationMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      role: senderRole,
+      content,
+      timestamp: new Date().toISOString(),
+    };
+
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? { ...conv, messages: [...conv.messages, newMessage] }
+        : conv
+    ));
+
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        messages: [...prev.messages, newMessage]
+      } : null);
+    }
+  }, [selectedConversation]);
+
   const resolveConversation = useCallback(async (conversationId: string) => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -568,6 +592,7 @@ export function useLiveOpsData() {
     resolveConversation,
     takeOverConversation,
     escalateConversation,
+    sendMessage,
     chatCategoryStats,
     slaStats,
   };
