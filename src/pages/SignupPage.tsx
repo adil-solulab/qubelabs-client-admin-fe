@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, UserPlus, ArrowRight, ArrowLeft, Check, Building2, User, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import type { Country } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 type Step = 1 | 2 | 3;
 
@@ -16,7 +19,7 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone: string | undefined;
   companyName: string;
   jobTitle: string;
   companySize: string;
@@ -92,12 +95,35 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [detectedCountry, setDetectedCountry] = useState<Country>('US');
+
+  useEffect(() => {
+    try {
+      const locale = navigator.language || navigator.languages?.[0] || 'en-US';
+      const parts = locale.split('-');
+      const countryCode = parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '';
+      if (countryCode && countryCode.length === 2) {
+        setDetectedCountry(countryCode as Country);
+      }
+    } catch {
+      // fallback to US
+    }
+
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.country_code && data.country_code.length === 2) {
+          setDetectedCountry(data.country_code as Country);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phone: undefined,
     companyName: '',
     jobTitle: '',
     companySize: '',
@@ -132,7 +158,7 @@ export default function SignupPage() {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (formData.phone && !/^\+?[\d\s\-()]{7,}$/.test(formData.phone)) {
+    if (formData.phone && !isValidPhoneNumber(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
@@ -339,14 +365,20 @@ export default function SignupPage() {
                   <Label htmlFor="phone" className="text-sm font-medium">
                     Phone number <span className="text-muted-foreground text-xs">(optional)</span>
                   </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+1 (555) 000-0000"
+                  <PhoneInput
+                    international
+                    countryCallingCodeEditable={false}
+                    defaultCountry={detectedCountry}
+                    placeholder="Enter phone number"
                     value={formData.phone}
-                    onChange={(e) => updateField('phone', e.target.value)}
-                    className={cn('h-11', errors.phone && 'border-destructive focus-visible:ring-destructive')}
-                    autoComplete="tel"
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, phone: value }));
+                      if (errors.phone) setErrors(prev => ({ ...prev, phone: undefined }));
+                    }}
+                    className={cn(
+                      'phone-input-wrapper h-11 rounded-md border bg-background px-3 text-sm',
+                      errors.phone ? 'border-destructive' : 'border-input'
+                    )}
                   />
                   {errors.phone && (
                     <p className="text-xs text-destructive">{errors.phone}</p>
