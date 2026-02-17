@@ -108,11 +108,22 @@ export interface GuardrailConfig {
   action: 'warn' | 'block' | 'flag';
 }
 
+export type VoiceCategory = 'conversational' | 'narration' | 'characters' | 'news' | 'meditation';
+export type VoiceProviderType = 'ElevenLabs' | 'Google Cloud' | 'Amazon Polly' | 'Azure Speech' | 'OpenAI';
+
 export interface VoiceConfig {
   id: string;
   name: string;
   provider: string;
   isPrimary: boolean;
+  gender?: 'male' | 'female' | 'non-binary';
+  accent?: string;
+  category?: VoiceCategory;
+  description?: string;
+  tags?: string[];
+  useCase?: string;
+  sampleText?: string;
+  age?: 'young' | 'middle-aged' | 'mature';
 }
 
 export interface AIAgent {
@@ -133,6 +144,7 @@ export interface AIAgent {
   firstMessage: string;
   disclosureRequirements: string;
   voices: VoiceConfig[];
+  voiceProfile?: VoiceProfile;
   languages: string[];
   llmProvider: string;
   persona: AgentPersona;
@@ -156,13 +168,29 @@ export const LLM_PROVIDERS: Record<string, string[]> = {
 };
 
 export const VOICE_OPTIONS: VoiceConfig[] = [
-  { id: 'v-eric', name: 'Eric - Smooth, Trustworthy', provider: 'ElevenLabs', isPrimary: true },
-  { id: 'v-sarah', name: 'Sarah - Warm, Professional', provider: 'ElevenLabs', isPrimary: false },
-  { id: 'v-adam', name: 'Adam - Deep, Authoritative', provider: 'ElevenLabs', isPrimary: false },
-  { id: 'v-rachel', name: 'Rachel - Friendly, Upbeat', provider: 'ElevenLabs', isPrimary: false },
-  { id: 'v-josh', name: 'Josh - Calm, Reassuring', provider: 'ElevenLabs', isPrimary: false },
-  { id: 'v-emily', name: 'Emily - Energetic, Clear', provider: 'ElevenLabs', isPrimary: false },
+  { id: 'v-eric', name: 'Eric', provider: 'ElevenLabs', isPrimary: true, gender: 'male', accent: 'American', category: 'conversational', description: 'Smooth, trustworthy mid-range voice perfect for customer interactions', tags: ['smooth', 'trustworthy', 'professional'], useCase: 'Customer Service, Sales', age: 'middle-aged', sampleText: 'Hello, thank you for calling. How may I assist you today?' },
+  { id: 'v-sarah', name: 'Sarah', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'American', category: 'conversational', description: 'Warm, professional voice with natural cadence and clarity', tags: ['warm', 'professional', 'clear'], useCase: 'Support, Onboarding', age: 'middle-aged', sampleText: 'I am happy to help you with that. Let me look into it right away.' },
+  { id: 'v-adam', name: 'Adam', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'American', category: 'narration', description: 'Deep, authoritative voice that commands attention and trust', tags: ['deep', 'authoritative', 'commanding'], useCase: 'Announcements, IVR', age: 'mature', sampleText: 'Welcome to our platform. Your security and satisfaction are our top priorities.' },
+  { id: 'v-rachel', name: 'Rachel', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'American', category: 'conversational', description: 'Friendly, upbeat voice with natural warmth and energy', tags: ['friendly', 'upbeat', 'energetic'], useCase: 'Sales, Marketing', age: 'young', sampleText: 'Great news! I have some exciting options for you today.' },
+  { id: 'v-josh', name: 'Josh', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'American', category: 'meditation', description: 'Calm, reassuring voice ideal for sensitive or support conversations', tags: ['calm', 'reassuring', 'soothing'], useCase: 'Healthcare, Wellness', age: 'middle-aged', sampleText: 'Take your time. I am here to help whenever you are ready.' },
+  { id: 'v-emily', name: 'Emily', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'British', category: 'news', description: 'Energetic, clear voice with a British accent and crisp delivery', tags: ['energetic', 'clear', 'articulate'], useCase: 'News, Reports', age: 'young', sampleText: 'Here is your latest update with all the details you need.' },
+  { id: 'v-marcus', name: 'Marcus', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'British', category: 'narration', description: 'Rich, sophisticated voice with British elegance and warmth', tags: ['rich', 'sophisticated', 'elegant'], useCase: 'Finance, Legal', age: 'mature', sampleText: 'Allow me to walk you through the details of your account.' },
+  { id: 'v-priya', name: 'Priya', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'Indian', category: 'conversational', description: 'Articulate, patient voice with gentle Indian accent', tags: ['articulate', 'patient', 'gentle'], useCase: 'Tech Support, Education', age: 'middle-aged', sampleText: 'Let me guide you through the process step by step.' },
+  { id: 'v-carlos', name: 'Carlos', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'Neutral', category: 'characters', description: 'Versatile, expressive voice with strong emotional range', tags: ['versatile', 'expressive', 'dynamic'], useCase: 'Interactive, Gaming', age: 'young', sampleText: 'This is going to be an amazing experience. Let us get started!' },
+  { id: 'v-olivia', name: 'Olivia', provider: 'Google Cloud', isPrimary: false, gender: 'female', accent: 'Australian', category: 'conversational', description: 'Bright, approachable voice with Australian warmth', tags: ['bright', 'approachable', 'friendly'], useCase: 'Hospitality, Travel', age: 'young', sampleText: 'Welcome! Let me help you plan something wonderful.' },
+  { id: 'v-james', name: 'James', provider: 'Azure Speech', isPrimary: false, gender: 'male', accent: 'American', category: 'news', description: 'Confident, measured voice ideal for professional communications', tags: ['confident', 'measured', 'professional'], useCase: 'Corporate, Training', age: 'middle-aged', sampleText: 'Let us review the key points from today is discussion.' },
+  { id: 'v-aria', name: 'Aria', provider: 'OpenAI', isPrimary: false, gender: 'female', accent: 'Neutral', category: 'conversational', description: 'Natural, balanced voice with exceptional clarity and warmth', tags: ['natural', 'balanced', 'clear'], useCase: 'General Purpose, Assistants', age: 'middle-aged', sampleText: 'I am here to help you with whatever you need.' },
+  { id: 'v-kai', name: 'Kai', provider: 'ElevenLabs', isPrimary: false, gender: 'non-binary', accent: 'Neutral', category: 'meditation', description: 'Gentle, androgynous voice with a calming, inclusive quality', tags: ['gentle', 'calming', 'inclusive'], useCase: 'Wellness, Accessibility', age: 'young', sampleText: 'Breathe in, breathe out. You are doing great.' },
+  { id: 'v-sofia', name: 'Sofia', provider: 'Amazon Polly', isPrimary: false, gender: 'female', accent: 'Neutral', category: 'narration', description: 'Smooth, polished voice with great tonal control', tags: ['smooth', 'polished', 'controlled'], useCase: 'E-Learning, Audiobooks', age: 'middle-aged', sampleText: 'In this section, we will explore the fundamentals of the topic.' },
 ];
+
+export const VOICE_CATEGORY_LABELS: Record<VoiceCategory, string> = {
+  conversational: 'Conversational',
+  narration: 'Narration',
+  characters: 'Characters',
+  news: 'News & Reports',
+  meditation: 'Meditation & Calm',
+};
 
 export const LANGUAGE_OPTIONS = [
   'English', 'Spanish', 'French', 'German', 'Portuguese', 'Italian',

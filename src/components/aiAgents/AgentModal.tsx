@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Bot, Crown, Plus, Trash2, Loader2, Shield } from 'lucide-react';
+import { Bot, Crown, Plus, Trash2, Loader2, Shield, Volume2, Play, Pause, Search, Sliders, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,8 +35,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import type { AIAgent, AgentType, ToneLevel, FallbackAction, ChannelType, GuardrailType, GuardrailConfig, VoiceConfig } from '@/types/aiAgents';
-import { TONE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS, GUARDRAIL_TYPE_LABELS, LLM_PROVIDERS, VOICE_OPTIONS, LANGUAGE_OPTIONS, TIMEZONE_OPTIONS } from '@/types/aiAgents';
+import type { AIAgent, AgentType, ToneLevel, FallbackAction, ChannelType, GuardrailType, GuardrailConfig, VoiceConfig, VoiceCategory } from '@/types/aiAgents';
+import { TONE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS, GUARDRAIL_TYPE_LABELS, LLM_PROVIDERS, VOICE_OPTIONS, LANGUAGE_OPTIONS, TIMEZONE_OPTIONS, VOICE_CATEGORY_LABELS } from '@/types/aiAgents';
+import { cn } from '@/lib/utils';
 
 const agentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -75,6 +76,12 @@ const agentSchema = z.object({
   memoryWindow: z.number().min(1).max(50),
   persistSessions: z.boolean(),
   shareContext: z.boolean(),
+  voiceStability: z.number().min(0).max(100),
+  voiceSimilarity: z.number().min(0).max(100),
+  voiceStyleExaggeration: z.number().min(0).max(100),
+  voiceSpeakerBoost: z.boolean(),
+  voiceSpeed: z.number().min(0).max(100),
+  voicePitch: z.number().min(0).max(100),
 });
 
 type AgentFormValues = z.infer<typeof agentSchema>;
@@ -95,6 +102,30 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
   const [guardrails, setGuardrails] = useState<GuardrailConfig[]>([]);
   const [voices, setVoices] = useState<VoiceConfig[]>([]);
   const [languages, setLanguages] = useState<string[]>(['English']);
+  const [voiceSearch, setVoiceSearch] = useState('');
+  const [voiceGenderFilter, setVoiceGenderFilter] = useState<'all' | 'male' | 'female' | 'non-binary'>('all');
+  const [voiceCategoryFilter, setVoiceCategoryFilter] = useState<VoiceCategory | 'all'>('all');
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+
+  const handlePreviewVoice = (voiceId: string) => {
+    if (playingVoiceId === voiceId) {
+      setPlayingVoiceId(null);
+      return;
+    }
+    setPlayingVoiceId(voiceId);
+    setTimeout(() => setPlayingVoiceId(null), 3000);
+  };
+
+  const filteredVoices = VOICE_OPTIONS.filter(v => {
+    if (voiceSearch) {
+      const q = voiceSearch.toLowerCase();
+      const searchable = [v.name, v.provider, v.accent, v.useCase, ...(v.tags || [])].filter(Boolean).join(' ').toLowerCase();
+      if (!searchable.includes(q)) return false;
+    }
+    if (voiceGenderFilter !== 'all' && v.gender !== voiceGenderFilter) return false;
+    if (voiceCategoryFilter !== 'all' && v.category !== voiceCategoryFilter) return false;
+    return true;
+  });
 
   const addGuardrail = () => {
     const newGuardrail: GuardrailConfig = {
@@ -156,6 +187,12 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
       memoryWindow: 10,
       persistSessions: true,
       shareContext: true,
+      voiceStability: 70,
+      voiceSimilarity: 75,
+      voiceStyleExaggeration: 0,
+      voiceSpeakerBoost: false,
+      voiceSpeed: 50,
+      voicePitch: 50,
     },
   });
 
@@ -198,6 +235,12 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         memoryWindow: agent.context.memoryWindow,
         persistSessions: agent.context.persistAcrossSessions,
         shareContext: agent.context.shareContextWithAgents,
+        voiceStability: agent.voiceProfile?.stability ?? 70,
+        voiceSimilarity: agent.voiceProfile?.clarity ?? 75,
+        voiceStyleExaggeration: agent.voiceProfile?.expressiveness ?? 0,
+        voiceSpeakerBoost: false,
+        voiceSpeed: agent.voiceProfile?.speed ?? 50,
+        voicePitch: agent.voiceProfile?.pitch ?? 50,
       });
       setVoices(agent.voices || []);
       setLanguages(agent.languages || ['English']);
@@ -239,6 +282,12 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         memoryWindow: 10,
         persistSessions: true,
         shareContext: true,
+        voiceStability: 70,
+        voiceSimilarity: 75,
+        voiceStyleExaggeration: 0,
+        voiceSpeakerBoost: false,
+        voiceSpeed: 50,
+        voicePitch: 50,
       });
       setVoices([]);
       setLanguages(['English']);
@@ -271,6 +320,24 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         firstMessage: values.firstMessage,
         disclosureRequirements: values.disclosureRequirements,
         voices: voices,
+        voiceProfile: (() => {
+          const primaryVoice = voices.find(v => v.isPrimary) || voices[0];
+          const genderMap: Record<string, 'male' | 'female' | 'neutral'> = { 'male': 'male', 'female': 'female', 'non-binary': 'neutral' };
+          const accentMap: Record<string, 'american' | 'british' | 'australian' | 'indian' | 'neutral'> = { 'American': 'american', 'British': 'british', 'Australian': 'australian', 'Indian': 'indian', 'Neutral': 'neutral' };
+          const ageMap: Record<string, 'young' | 'middle_aged' | 'old'> = { 'young': 'young', 'middle-aged': 'middle_aged', 'mature': 'old' };
+          return {
+            gender: genderMap[primaryVoice?.gender || 'female'] || 'female',
+            age: ageMap[primaryVoice?.age || 'middle-aged'] || 'middle_aged',
+            accent: accentMap[primaryVoice?.accent || 'American'] || 'neutral',
+            pitch: values.voicePitch,
+            speed: values.voiceSpeed,
+            stability: values.voiceStability,
+            clarity: values.voiceSimilarity,
+            expressiveness: values.voiceStyleExaggeration,
+            breathiness: 20,
+            warmth: 65,
+          };
+        })(),
         languages: languages,
         llmProvider: values.llmProvider,
         persona: {
@@ -768,49 +835,274 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Voice Library</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Browse and select voices for your agent</p>
+
                       <div className="space-y-2">
-                        <h4 className="text-sm font-semibold">Voices</h4>
-                        <p className="text-xs text-muted-foreground">Select the voice for the agent</p>
-                        {voices.map((v, i) => (
-                          <div key={v.id} className="flex items-center justify-between p-2 rounded-lg border bg-muted/30">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
-                                <span className="text-green-600 text-[10px]">&#9679;</span>
-                              </div>
-                              <div>
-                                <p className="text-xs font-medium">{v.name}</p>
-                                <p className="text-[10px] text-muted-foreground">{v.provider}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {v.isPrimary && <Badge variant="secondary" className="text-[9px] h-4">Primary</Badge>}
-                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setVoices(prev => prev.filter((_, idx) => idx !== i))}>
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                        <Select
-                          onValueChange={(voiceId) => {
-                            const voiceOpt = VOICE_OPTIONS.find(v => v.id === voiceId);
-                            if (voiceOpt && !voices.find(v => v.id === voiceId)) {
-                              setVoices(prev => [...prev, { ...voiceOpt, isPrimary: prev.length === 0 }]);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="+ Add voice" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {VOICE_OPTIONS.filter(v => !voices.find(sv => sv.id === v.id)).map(v => (
-                              <SelectItem key={v.id} value={v.id} className="text-xs">{v.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                          <Input
+                            placeholder="Search voices..."
+                            value={voiceSearch}
+                            onChange={(e) => setVoiceSearch(e.target.value)}
+                            className="h-8 text-xs pl-8"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {(['all', 'male', 'female', 'non-binary'] as const).map((g) => (
+                            <button
+                              key={g}
+                              type="button"
+                              onClick={() => setVoiceGenderFilter(g)}
+                              className={cn(
+                                'px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors',
+                                voiceGenderFilter === g
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50'
+                              )}
+                            >
+                              {g === 'all' ? 'All' : g === 'non-binary' ? 'Non-binary' : g.charAt(0).toUpperCase() + g.slice(1)}
+                            </button>
+                          ))}
+                          <Select value={voiceCategoryFilter} onValueChange={setVoiceCategoryFilter}>
+                            <SelectTrigger className="h-7 text-[10px] w-auto gap-1 border-border px-2">
+                              <SelectValue placeholder="All Categories" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all" className="text-xs">All Categories</SelectItem>
+                              {(Object.entries(VOICE_CATEGORY_LABELS) as [VoiceCategory, string][]).map(([value, label]) => (
+                                <SelectItem key={value} value={value} className="text-xs">{label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
+                      <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
+                        <div className="grid grid-cols-2 gap-2">
+                          {filteredVoices.slice(0, 6).map((v) => {
+                            const isSelected = voices.some(sv => sv.id === v.id);
+                            const isPlaying = playingVoiceId === v.id;
+                            return (
+                              <div
+                                key={v.id}
+                                className={cn(
+                                  'p-2.5 rounded-lg border transition-all space-y-1.5',
+                                  isSelected ? 'border-primary bg-primary/5' : 'border-border bg-muted/30 hover:border-primary/30'
+                                )}
+                              >
+                                <div className="flex items-start justify-between gap-1">
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <p className="text-xs font-semibold truncate">{v.name}</p>
+                                      <span className="text-[10px]">{v.gender === 'male' ? '♂' : v.gender === 'female' ? '♀' : '⚥'}</span>
+                                    </div>
+                                    <Badge variant="outline" className="text-[9px] h-4 mt-0.5">{v.provider}</Badge>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 shrink-0"
+                                    onClick={() => handlePreviewVoice(v.id)}
+                                  >
+                                    {isPlaying ? <Pause className="w-3 h-3 text-primary" /> : <Play className="w-3 h-3" />}
+                                  </Button>
+                                </div>
+                                {isPlaying && (
+                                  <div className="flex items-end gap-0.5 h-3">
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                      <div
+                                        key={i}
+                                        className="w-0.5 bg-primary rounded-full animate-pulse"
+                                        style={{ height: `${4 + Math.random() * 8}px`, animationDelay: `${i * 0.1}s` }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  {v.accent && <Badge variant="secondary" className="text-[9px] h-4">{v.accent}</Badge>}
+                                  {v.useCase && <Badge variant="secondary" className="text-[9px] h-4">{v.useCase.split(',')[0]}</Badge>}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground line-clamp-2">{v.description}</p>
+                                <Button
+                                  type="button"
+                                  variant={isSelected ? 'default' : 'outline'}
+                                  size="sm"
+                                  className="h-6 text-[10px] w-full"
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setVoices(prev => prev.filter(sv => sv.id !== v.id));
+                                    } else {
+                                      setVoices(prev => [...prev, { ...v, isPrimary: prev.length === 0 }]);
+                                    }
+                                  }}
+                                >
+                                  {isSelected ? '✓ Selected' : 'Select'}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {filteredVoices.length === 0 && (
+                          <p className="text-xs text-muted-foreground text-center py-4">No voices match your filters</p>
+                        )}
+                      </div>
+
+                      {voices.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium text-muted-foreground">Selected Voices</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {voices.map((v, i) => (
+                              <div key={v.id} className="flex items-center gap-1 px-2 py-1 rounded-full border bg-muted/50 text-xs">
+                                {i === 0 && <Badge variant="default" className="text-[8px] h-3.5 px-1">Primary</Badge>}
+                                <span className="font-medium text-[10px]">{v.name}</span>
+                                <span className="text-[9px] text-muted-foreground">{v.provider}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setVoices(prev => prev.filter(sv => sv.id !== v.id))}
+                                  className="ml-0.5 hover:text-destructive"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {voices.length > 0 && (
+                        <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <Sliders className="w-4 h-4 text-primary" />
+                            <h4 className="text-sm font-semibold">Voice Fine-Tuning</h4>
+                          </div>
+
+                          <FormField
+                            control={form.control}
+                            name="voiceStability"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel className="text-xs">Stability</FormLabel>
+                                  <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                                </div>
+                                <FormControl>
+                                  <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                                </FormControl>
+                                <div className="flex justify-between">
+                                  <span className="text-[10px] text-muted-foreground">Variable</span>
+                                  <span className="text-[10px] text-muted-foreground">Stable</span>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="voiceSimilarity"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel className="text-xs">Similarity Enhancement</FormLabel>
+                                  <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                                </div>
+                                <FormControl>
+                                  <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                                </FormControl>
+                                <div className="flex justify-between">
+                                  <span className="text-[10px] text-muted-foreground">Low</span>
+                                  <span className="text-[10px] text-muted-foreground">High</span>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="voiceStyleExaggeration"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel className="text-xs">Style Exaggeration</FormLabel>
+                                  <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                                </div>
+                                <FormControl>
+                                  <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                                </FormControl>
+                                <div className="flex justify-between">
+                                  <span className="text-[10px] text-muted-foreground">None</span>
+                                  <span className="text-[10px] text-muted-foreground">Maximum</span>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="voiceSpeed"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel className="text-xs">Speed</FormLabel>
+                                  <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                                </div>
+                                <FormControl>
+                                  <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                                </FormControl>
+                                <div className="flex justify-between">
+                                  <span className="text-[10px] text-muted-foreground">Slow</span>
+                                  <span className="text-[10px] text-muted-foreground">Fast</span>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="voicePitch"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel className="text-xs">Pitch</FormLabel>
+                                  <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                                </div>
+                                <FormControl>
+                                  <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                                </FormControl>
+                                <div className="flex justify-between">
+                                  <span className="text-[10px] text-muted-foreground">Deep</span>
+                                  <span className="text-[10px] text-muted-foreground">High</span>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="voiceSpeakerBoost"
+                            render={({ field }) => (
+                              <div className="flex items-center justify-between p-2 rounded-lg border bg-background">
+                                <div>
+                                  <p className="text-xs font-medium">Speaker Boost</p>
+                                  <p className="text-[10px] text-muted-foreground">Enhance speaker clarity and presence</p>
+                                </div>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} className="scale-75" />
+                              </div>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
                       <FormField
                         control={form.control}
                         name="expressiveMode"
@@ -962,6 +1254,7 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                         />
                       </div>
                     </div>
+                  </div>
                   </div>
                 </TabsContent>
 

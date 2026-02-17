@@ -33,6 +33,7 @@ Supports diverse data ingestion methods including file uploads (PDF, DOCX, TXT, 
 
 #### AI Agents (Super Agent + Agent Architecture)
 Implements a Super Agent (orchestrator) and specialized Agents (specialists) model. Agents are highly configurable with sections for Persona, Intent Understanding, Prompt Logic, Routing, and Guardrails, including enhanced voice profile settings.
+- **Enhanced Voice Selection**: ElevenLabs-style voice library browser with 14 detailed voices across 5 providers (ElevenLabs, Google Cloud, Azure Speech, Amazon Polly, OpenAI). Features gender/category/accent filters, searchable voice cards with descriptions and use-case tags, audio preview simulation, and selected voice chips. Voice Fine-Tuning section with sliders for Stability, Similarity Enhancement, Style Exaggeration, Speed, Pitch, and Speaker Boost toggle. Voice metadata (gender, age, accent) auto-derives from selected primary voice into VoiceProfile.
 
 #### Flow Builder (Flows & Workflows)
 A visual drag-and-drop canvas for designing conversational flows (`flow`) and backend workflow automations (`workflow`).
