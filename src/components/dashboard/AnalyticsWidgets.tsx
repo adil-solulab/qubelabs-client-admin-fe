@@ -63,7 +63,7 @@ function DiveDeepButton({ tab = 'overview' }: { tab?: string }) {
     <Button
       variant="ghost"
       size="sm"
-      className="text-xs text-primary hover:text-primary gap-1 h-7 px-2"
+      className="text-xs text-primary hover:text-primary gap-1 h-7 px-2 shrink-0 whitespace-nowrap"
       onClick={(e) => {
         e.stopPropagation();
         navigate(`/analytics?tab=${tab}`);
@@ -77,17 +77,17 @@ function DiveDeepButton({ tab = 'overview' }: { tab?: string }) {
 
 export function TotalConversationsKPI({ data }: { data: ConversationMetrics }) {
   return (
-    <Card className="gradient-card">
+    <Card className="gradient-card overflow-hidden">
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-2 shrink-0">
             <MessageSquare className="w-5 h-5 text-primary" />
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 min-w-0">
             <Badge
               variant="secondary"
               className={cn(
-                'text-[10px]',
+                'text-[10px] shrink-0',
                 data.trend > 0 ? 'text-success' : 'text-destructive'
               )}
             >
@@ -124,10 +124,10 @@ export function TotalConversationsKPI({ data }: { data: ConversationMetrics }) {
 
 export function ResolutionRateKPI({ data }: { data: ConversationMetrics }) {
   return (
-    <Card className="gradient-card">
+    <Card className="gradient-card overflow-hidden">
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between">
-          <ThumbsUp className="w-5 h-5 text-success" />
+        <div className="flex items-center justify-between gap-1">
+          <ThumbsUp className="w-5 h-5 text-success shrink-0" />
           <DiveDeepButton />
         </div>
         <p className="text-2xl font-bold mt-2">{data.resolutionRate}%</p>
@@ -153,10 +153,10 @@ export function AvgDurationKPI({ data }: { data: ConversationMetrics }) {
   const mins = Math.floor(data.avgDuration / 60);
   const secs = data.avgDuration % 60;
   return (
-    <Card className="gradient-card">
+    <Card className="gradient-card overflow-hidden">
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between">
-          <Clock className="w-5 h-5 text-warning" />
+        <div className="flex items-center justify-between gap-1">
+          <Clock className="w-5 h-5 text-warning shrink-0" />
           <DiveDeepButton />
         </div>
         <p className="text-2xl font-bold mt-2">
@@ -182,17 +182,17 @@ export function AvgDurationKPI({ data }: { data: ConversationMetrics }) {
 
 export function CSATScoreKPI({ data }: { data: CSATNPSData }) {
   return (
-    <Card className="gradient-card">
+    <Card className="gradient-card overflow-hidden">
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-2 shrink-0">
             <BarChart3 className="w-5 h-5 text-primary" />
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 min-w-0">
             <Badge
               variant="secondary"
               className={cn(
-                'text-[10px]',
+                'text-[10px] shrink-0',
                 data.csatTrend > 0 ? 'text-success' : 'text-destructive'
               )}
             >
@@ -223,17 +223,17 @@ export function CSATScoreKPI({ data }: { data: CSATNPSData }) {
 
 export function NPSScoreKPI({ data }: { data: CSATNPSData }) {
   return (
-    <Card className="gradient-card">
+    <Card className="gradient-card overflow-hidden">
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-2 shrink-0">
             <TrendingUp className="w-5 h-5 text-success" />
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 min-w-0">
             <Badge
               variant="secondary"
               className={cn(
-                'text-[10px]',
+                'text-[10px] shrink-0',
                 data.npsTrend > 0 ? 'text-success' : 'text-destructive'
               )}
             >
@@ -264,10 +264,10 @@ export function NPSScoreKPI({ data }: { data: CSATNPSData }) {
 
 export function HandoffRateKPI({ data }: { data: ConversationMetrics }) {
   return (
-    <Card className="gradient-card">
+    <Card className="gradient-card overflow-hidden">
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between">
-          <Users className="w-5 h-5 text-muted-foreground" />
+        <div className="flex items-center justify-between gap-1">
+          <Users className="w-5 h-5 text-muted-foreground shrink-0" />
           <DiveDeepButton />
         </div>
         <p className="text-2xl font-bold mt-2">{data.handoffRate}%</p>
