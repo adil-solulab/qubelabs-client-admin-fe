@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ArrowLeft,
   Shield,
+  Radio,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,10 +18,11 @@ import { useChannelsData } from '@/hooks/useChannelsData';
 import { notify } from '@/hooks/useNotification';
 import { ConnectorConfigPanel, CONNECTOR_ICONS, CONNECTOR_COLORS } from '@/components/channels/ConnectorConfigPanel';
 import { ChatWidgetConfigPanel } from '@/components/channels/ChatWidgetConfigPanel';
+import { WebRTCConfigPanel } from '@/components/channels/WebRTCConfigPanel';
 import type { ChannelCategory, Connector } from '@/types/channels';
 import { cn } from '@/lib/utils';
 
-type ViewMode = 'categories' | 'connectors' | 'connector-config' | 'chat-widget';
+type ViewMode = 'categories' | 'connectors' | 'connector-config' | 'chat-widget' | 'webrtc';
 
 const CATEGORY_CONFIG: Record<ChannelCategory, { icon: React.ElementType; color: string; bg: string; border: string }> = {
   voice: { icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800/40' },
@@ -33,12 +35,14 @@ export default function ChannelsPage() {
   const {
     connectors,
     chatWidgetConfig,
+    webRTCConfig,
     isSaving,
     getConnectorsByCategory,
     connectConnector,
     disconnectConnector,
     updateConnectorConfig,
     updateChatWidgetConfig,
+    updateWebRTCConfig,
     getCategoryStats,
   } = useChannelsData();
 
@@ -56,6 +60,10 @@ export default function ChannelsPage() {
       setSelectedCategory(category);
       setViewMode('connectors');
     }
+  };
+
+  const handleWebRTCClick = () => {
+    setViewMode('webrtc');
   };
 
   const handleConnectorClick = (connector: Connector) => {
@@ -139,6 +147,19 @@ export default function ChannelsPage() {
     );
   }
 
+  if (viewMode === 'webrtc') {
+    return (
+      <AppLayout>
+        <WebRTCConfigPanel
+          config={webRTCConfig}
+          isSaving={isSaving}
+          onUpdate={updateWebRTCConfig}
+          onBack={handleBackToCategories}
+        />
+      </AppLayout>
+    );
+  }
+
   if (viewMode === 'connectors' && selectedCategory) {
     return (
       <AppLayout>
@@ -215,7 +236,7 @@ export default function ChannelsPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {categoryStats.map((cat) => {
             const config = CATEGORY_CONFIG[cat.id];
             const CatIcon = config.icon;
@@ -255,6 +276,30 @@ export default function ChannelsPage() {
               </Card>
             );
           })}
+
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-cyan-200 dark:border-cyan-800/40"
+            onClick={handleWebRTCClick}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-cyan-50 dark:bg-cyan-950/30">
+                  <Radio className="w-5 h-5 text-cyan-600" />
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </div>
+
+              <h3 className="text-sm font-bold mb-0.5">WebRTC</h3>
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-1">Real-time communication & media settings</p>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-cyan-50 dark:bg-cyan-950/30 text-cyan-600 border-cyan-200 dark:border-cyan-800/40">
+                  <Wifi className="w-2.5 h-2.5 mr-0.5" />
+                  Configured
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-8">

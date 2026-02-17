@@ -43,7 +43,7 @@ A visual drag-and-drop canvas for designing conversational flows (`flow`) and ba
 - Features an environment selector (Staging, Sandbox, Production) and a category sidebar. A Test Panel supports Chat and Voice modes.
 
 #### Integrations & Channels (Merged Module)
-A unified page for managing 27 integrations across 7 categories: CRM, Voice, Messaging, Email, Chat Widget, LiveChat, Payments. Includes a dedicated Chat Widget integration with a 5-tab configuration panel.
+A unified page for managing 27 integrations across 7 categories: CRM, Voice, Messaging, Email, Chat Widget, LiveChat, Payments. Includes a dedicated Chat Widget integration with a 5-tab configuration panel. Features a WebRTC Configuration Panel with 7 tabs: ICE Servers (STUN/TURN management), Audio Codecs (Opus/G.711/G.722 with priority ordering), Audio Processing (echo cancellation, noise suppression, VAD), Bandwidth & Quality, SIP Gateway integration, Security (SRTP/DTLS/OAuth), and Network settings.
 
 #### Outbound Campaigns
 Manages outbound calling campaigns (Voice, WhatsApp, SMS, Email) with a dashboard, filterable table, and a 3-step creation wizard (Basic Info → Lead Source / Flow & Workflow → Review & Launch). The wizard includes a lead source selector in Step 1 with two options: CSV/Excel file upload (.csv and .xls only) or Flow/Workflow selection. Step 2 adapts based on the chosen lead source. Features enhanced lead upload with CSV mapping, file type validation, and refined voice settings modal.

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Connector, ConnectorStatus, ChatWidgetConfig, ChannelCategory } from '@/types/channels';
+import type { Connector, ConnectorStatus, ChatWidgetConfig, ChannelCategory, WebRTCConfig, IceServer } from '@/types/channels';
 
 const generateConnectors = (): Connector[] => [
   {
@@ -284,9 +284,73 @@ const defaultChatWidgetConfig: ChatWidgetConfig = {
 </script>`,
 };
 
+const defaultWebRTCConfig: WebRTCConfig = {
+  iceServers: [
+    { id: 'stun-1', type: 'stun', url: 'stun:stun.l.google.com:19302', priority: 1, enabled: true },
+    { id: 'stun-2', type: 'stun', url: 'stun:stun1.l.google.com:19302', priority: 2, enabled: true },
+    { id: 'turn-1', type: 'turn', url: 'turn:turn.conx.ai:3478', username: 'conx_user', credential: '••••••••', priority: 3, enabled: true },
+    { id: 'turn-2', type: 'turn', url: 'turns:turn.conx.ai:5349', username: 'conx_user', credential: '••••••••', priority: 4, enabled: false },
+  ],
+  audioCodecs: {
+    opus: { enabled: true, bitrate: 32000, stereo: false, dtx: true, fec: true },
+    g711u: { enabled: true },
+    g711a: { enabled: false },
+    g722: { enabled: true },
+    priority: ['opus', 'g722', 'g711u', 'g711a'],
+  },
+  audioProcessing: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+    noiseSuppressionLevel: 'high',
+    comfortNoise: true,
+    vadEnabled: true,
+    vadSensitivity: 60,
+  },
+  bandwidth: {
+    maxAudioBitrate: 64000,
+    adaptiveBitrate: true,
+    jitterBufferTarget: 50,
+    jitterBufferMax: 200,
+    packetLossThreshold: 5,
+  },
+  sipGateway: {
+    enabled: false,
+    serverUrl: '',
+    transport: 'wss',
+    registrarUrl: '',
+    username: '',
+    password: '',
+    domain: '',
+    outboundProxy: '',
+    registrationExpiry: 3600,
+    keepAliveInterval: 30,
+  },
+  security: {
+    srtp: true,
+    srtpMode: 'required',
+    dtls: true,
+    dtlsFingerprint: 'sha-256',
+    oauthEnabled: false,
+    oauthProvider: '',
+    oauthClientId: '',
+  },
+  network: {
+    iceTransportPolicy: 'all',
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+    rtcpMuxPolicy: 'require',
+    tcpCandidates: true,
+    continuousGathering: true,
+    connectionTimeout: 30,
+    keepAliveInterval: 15,
+  },
+};
+
 export function useChannelsData() {
   const [connectors, setConnectors] = useState<Connector[]>(generateConnectors());
   const [chatWidgetConfig, setChatWidgetConfig] = useState<ChatWidgetConfig>(defaultChatWidgetConfig);
+  const [webRTCConfig, setWebRTCConfig] = useState<WebRTCConfig>(defaultWebRTCConfig);
   const [isSaving, setIsSaving] = useState(false);
 
   const getConnectorsByCategory = useCallback((category: ChannelCategory) => {
@@ -341,6 +405,23 @@ export function useChannelsData() {
     setIsSaving(false);
   }, []);
 
+  const updateWebRTCConfig = useCallback(async (updates: Partial<WebRTCConfig>) => {
+    setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setWebRTCConfig(prev => {
+      const merged = { ...prev };
+      if (updates.iceServers) merged.iceServers = updates.iceServers;
+      if (updates.audioCodecs) merged.audioCodecs = { ...prev.audioCodecs, ...updates.audioCodecs };
+      if (updates.audioProcessing) merged.audioProcessing = { ...prev.audioProcessing, ...updates.audioProcessing };
+      if (updates.bandwidth) merged.bandwidth = { ...prev.bandwidth, ...updates.bandwidth };
+      if (updates.sipGateway) merged.sipGateway = { ...prev.sipGateway, ...updates.sipGateway };
+      if (updates.security) merged.security = { ...prev.security, ...updates.security };
+      if (updates.network) merged.network = { ...prev.network, ...updates.network };
+      return merged;
+    });
+    setIsSaving(false);
+  }, []);
+
   const getCategoryStats = useCallback(() => {
     const categories: ChannelCategory[] = ['voice', 'messaging', 'chat-widget', 'email'];
     return categories.map(cat => {
@@ -358,6 +439,7 @@ export function useChannelsData() {
   return {
     connectors,
     chatWidgetConfig,
+    webRTCConfig,
     isSaving,
     getConnectorsByCategory,
     getConnector,
@@ -365,6 +447,7 @@ export function useChannelsData() {
     disconnectConnector,
     updateConnectorConfig,
     updateChatWidgetConfig,
+    updateWebRTCConfig,
     getCategoryStats,
   };
 }

@@ -48,13 +48,15 @@ import { notify } from '@/hooks/useNotification';
 import { PermissionButton } from '@/components/auth/PermissionButton';
 import { IntegrationDetailView } from '@/components/integrations/IntegrationDetailView';
 import { ChatWidgetConfigPanel } from '@/components/channels/ChatWidgetConfigPanel';
+import { WebRTCConfigPanel } from '@/components/channels/WebRTCConfigPanel';
 import { CreateAPIKeyModal } from '@/components/integrations/CreateAPIKeyModal';
 import { AddWebhookModal } from '@/components/integrations/AddWebhookModal';
 import type { Integration, IntegrationCategory } from '@/types/integrations';
 import { CATEGORY_CONFIG, INTEGRATION_ICONS } from '@/types/integrations';
+import { useChannelsData } from '@/hooks/useChannelsData';
 import { cn } from '@/lib/utils';
 
-type ViewMode = 'listing' | 'detail' | 'chat-widget';
+type ViewMode = 'listing' | 'detail' | 'chat-widget' | 'webrtc';
 
 const CATEGORY_LUCIDE_ICONS: Record<IntegrationCategory, React.ElementType> = {
   crm: BarChart3,
@@ -82,6 +84,7 @@ export default function IntegrationsPage() {
     createWebhook,
   } = useIntegrationsData();
 
+  const { webRTCConfig, isSaving: isSavingWebRTC, updateWebRTCConfig } = useChannelsData();
   const { withPermission } = usePermission('integrations');
 
   const [viewMode, setViewMode] = useState<ViewMode>('listing');
@@ -241,6 +244,19 @@ export default function IntegrationsPage() {
     );
   }
 
+  if (viewMode === 'webrtc') {
+    return (
+      <AppLayout>
+        <WebRTCConfigPanel
+          config={webRTCConfig}
+          isSaving={isSavingWebRTC}
+          onUpdate={updateWebRTCConfig}
+          onBack={handleBackToListing}
+        />
+      </AppLayout>
+    );
+  }
+
   const totalCount = integrations.length + 1;
 
   return (
@@ -389,6 +405,49 @@ export default function IntegrationsPage() {
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {['Appearance', 'Bot Icon', 'Settings', 'Navigation', 'Deploy'].map(f => (
+                            <Badge key={f} variant="secondary" className="text-[10px]">{f}</Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {(activeCategory === 'all' || activeCategory === 'voice') && (
+                  <div>
+                    {activeCategory === 'all' && (
+                      <h2 className="text-base font-semibold text-foreground mb-4">WebRTC Configuration</h2>
+                    )}
+                    <Card
+                      className="gradient-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 group max-w-md border-cyan-200 dark:border-cyan-800/40"
+                      onClick={() => setViewMode('webrtc')}
+                    >
+                      <CardContent className="pt-5 pb-5">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center text-2xl flex-shrink-0 border border-cyan-200 dark:border-cyan-800/40 group-hover:border-primary/30 transition-colors">
+                            <Wifi className="w-5 h-5 text-cyan-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
+                                WebRTC
+                              </h3>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-cyan-50 dark:bg-cyan-950/30 text-cyan-600 border-cyan-200 dark:border-cyan-800/40">
+                                <Settings2 className="w-2.5 h-2.5 mr-0.5" />
+                                Configured
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                              Real-time communication settings — ICE servers, audio codecs, SIP gateway, security, and network configuration.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Settings2 className="w-4 h-4 text-muted-foreground" />
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['ICE Servers', 'Audio Codecs', 'Audio Processing', 'Bandwidth', 'SIP Gateway', 'Security', 'Network'].map(f => (
                             <Badge key={f} variant="secondary" className="text-[10px]">{f}</Badge>
                           ))}
                         </div>
