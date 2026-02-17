@@ -59,7 +59,7 @@ export const AVAILABLE_SCREENS: ScreenMeta[] = [
   { id: 'channels', label: 'Channels', path: '/channels', category: 'core' },
   { id: 'flow-builder', label: 'Flow Builder', path: '/flow-builder', category: 'core' },
   { id: 'live-ops', label: 'Live Operations', path: '/live-ops', category: 'operations' },
-  { id: 'outbound-calls', label: 'Outbound Calls', path: '/outbound-calls', category: 'operations' },
+  { id: 'outbound-calls', label: 'Outbound Campaigns', path: '/outbound-calls', category: 'operations' },
   { id: 'analytics', label: 'Analytics', path: '/analytics', category: 'operations' },
   { id: 'integrations', label: 'Integrations', path: '/integrations', category: 'settings' },
   { id: 'billing', label: 'Billing', path: '/billing', category: 'settings' },

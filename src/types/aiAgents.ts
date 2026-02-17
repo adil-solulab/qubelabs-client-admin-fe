@@ -221,6 +221,56 @@ export const FALLBACK_ACTION_LABELS: Record<FallbackAction, string> = {
 
 export type PersonaType = 'sales' | 'support' | 'custom';
 
+export type VoiceGender = 'male' | 'female' | 'neutral';
+export type VoiceAge = 'young' | 'middle_aged' | 'old';
+export type VoiceAccent = 'american' | 'british' | 'australian' | 'indian' | 'neutral';
+
+export interface VoiceProfile {
+  gender: VoiceGender;
+  age: VoiceAge;
+  accent: VoiceAccent;
+  pitch: number;
+  speed: number;
+  stability: number;
+  clarity: number;
+  expressiveness: number;
+  breathiness: number;
+  warmth: number;
+}
+
+export const VOICE_GENDER_LABELS: Record<VoiceGender, string> = {
+  male: 'Male',
+  female: 'Female',
+  neutral: 'Neutral / Androgynous',
+};
+
+export const VOICE_AGE_LABELS: Record<VoiceAge, string> = {
+  young: 'Young',
+  middle_aged: 'Middle Aged',
+  old: 'Mature',
+};
+
+export const VOICE_ACCENT_LABELS: Record<VoiceAccent, string> = {
+  american: 'American English',
+  british: 'British English',
+  australian: 'Australian English',
+  indian: 'Indian English',
+  neutral: 'Neutral / Standard',
+};
+
+export const DEFAULT_VOICE_PROFILE: VoiceProfile = {
+  gender: 'female',
+  age: 'middle_aged',
+  accent: 'american',
+  pitch: 50,
+  speed: 50,
+  stability: 70,
+  clarity: 75,
+  expressiveness: 60,
+  breathiness: 20,
+  warmth: 65,
+};
+
 export interface Persona {
   id: string;
   name: string;
@@ -233,6 +283,7 @@ export interface Persona {
     adaptability: number;
     voiceStyle: string;
   };
+  voiceProfile?: VoiceProfile;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

@@ -125,3 +125,18 @@ Enables agents to report/escalate conversations to Client Admins with comments. 
 - Types: Added CreditData interface to types/dashboard.ts
 - Hook: useDashboardData now provides creditData with mock credit balance information
 - Dashboard second row grid updated from 3-col to 4-col layout to accommodate Credit Usage widget
+
+### Outbound Campaigns Rename & Enhancements (Feb 2026)
+- Renamed "Outbound Calls" to "Outbound Campaigns" in sidebar navigation and roles/permissions labels
+- Route path remains `/outbound-calls` for backward compatibility; only display labels changed
+- **Lead Upload CSV Mapping**: Enhanced LeadUploadModal with a 3-step flow (Upload → Map Columns → Validate)
+  - Step 1: File upload with drag-and-drop (CSV, Excel, PDF)
+  - Step 2: Auto-detected CSV columns with field mapping (Name*, Phone*, Email, Company, Notes), data preview table, prevents duplicate column assignments
+  - Step 3: Validation summary (total/valid/invalid/duplicate counts), error and warning display, mapped fields review
+  - Non-CSV files skip mapping and go directly to upload
+- **Voice Settings Modal Enhancement**: Redesigned with 3-tab layout (Tone & Style, Voice Profile, Audio Controls)
+  - Tone & Style tab: Existing primary tone, adaptability slider, voice style description
+  - Voice Profile tab: Gender selection (Male/Female/Neutral), Age (Young/Middle Aged/Mature), Accent (American/British/Australian/Indian/Neutral), voice preview button with audio visualizer
+  - Audio Controls tab: 7 fine-tunable sliders (Pitch, Speed, Stability, Clarity, Expressiveness, Breathiness, Warmth) with low/high labels and reset to defaults
+  - Types: Added VoiceProfile, VoiceGender, VoiceAge, VoiceAccent to aiAgents.ts with labels and DEFAULT_VOICE_PROFILE constant
+  - Persona interface extended with optional `voiceProfile` field
