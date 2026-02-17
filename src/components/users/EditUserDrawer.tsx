@@ -48,7 +48,8 @@ const editUserSchema = z.object({
   phone: z.string().optional(),
   department: z.string().optional(),
   role: z.string(),
-  status: z.enum(['available', 'busy', 'offline'] as const),
+  status: z.enum(['available', 'busy', 'away', 'offline'] as const),
+  maxConcurrentChats: z.coerce.number().min(1).max(50).default(5),
 });
 
 type EditUserFormValues = z.infer<typeof editUserSchema>;
@@ -75,6 +76,7 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
       department: '',
       role: 'agent',
       status: 'offline',
+      maxConcurrentChats: 5,
     },
   });
 
@@ -94,6 +96,7 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
         department: user.department || '',
         role: user.role,
         status: user.status,
+        maxConcurrentChats: user.maxConcurrentChats ?? 5,
       });
       setSelectedSkills(user.skills);
       previousRoleRef.current = user.role;
@@ -142,6 +145,7 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
         skills: selectedSkills,
         phone: values.phone || undefined,
         department: values.department || undefined,
+        maxConcurrentChats: values.maxConcurrentChats,
       });
       onOpenChange(false);
     } finally {
@@ -153,6 +157,7 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
     switch (status) {
       case 'available': return 'bg-success';
       case 'busy': return 'bg-warning';
+      case 'away': return 'bg-orange-400';
       case 'offline': return 'bg-muted-foreground';
       default: return 'bg-muted-foreground';
     }
@@ -376,6 +381,23 @@ export function EditUserDrawer({ user, open, onOpenChange, onUpdateUser }: EditU
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="maxConcurrentChats"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Max Concurrent Chats</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} max={50} {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Maximum number of simultaneous chat sessions (1-50).
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

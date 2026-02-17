@@ -47,6 +47,7 @@ interface ConversationDetailPanelProps {
   onTransfer: (agentId: string) => void;
   onStopSupervision: () => void;
   onEndConversation?: () => void;
+  onResolveConversation?: () => void;
   onReport?: () => void;
 }
 
@@ -60,6 +61,7 @@ export function ConversationDetailPanel({
   onTransfer,
   onStopSupervision,
   onEndConversation,
+  onResolveConversation,
   onReport,
 }: ConversationDetailPanelProps) {
   const [whisperMessage, setWhisperMessage] = useState('');
@@ -341,6 +343,18 @@ export function ConversationDetailPanel({
             >
               <Flag className="w-3 h-3 mr-1" />
               Report
+            </Button>
+          )}
+
+          {onResolveConversation && conversation.status === 'active' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-success border-success/30 hover:bg-success/10"
+              onClick={onResolveConversation}
+            >
+              <AlertTriangle className="w-3 h-3 mr-1" />
+              Resolve
             </Button>
           )}
 

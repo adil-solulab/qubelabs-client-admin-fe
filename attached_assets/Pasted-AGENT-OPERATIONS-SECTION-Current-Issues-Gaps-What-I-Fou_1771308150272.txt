@@ -1,0 +1,146 @@
+AGENT OPERATIONS SECTION - Current Issues & Gaps
+What I Found on Your Platform:
+Your Live Operations page shows: - Basic conversation list with status (Active, Waiting, Escalated) - Simple metrics (Active, In Queue, Available, Avg Wait, Longest) - Limited filtering options (Channel, Status, Sentiment) - One escalated conversation visible (Sarah Johnson - Technical Issue)
+What's Missing Compared to Yellow.ai:
+Feature	Yellow.ai Implementation	Your Platform Status
+Agent Status Management	4 statuses: Available, Busy, Away, Offline with clear business logic	Basic status shown, no management
+Real-time Supervisor View	Live monitoring of all group conversations with instant updates	Static list view
+Chat Categorization	My Chats, Active Chats, Queued Chats, Open Chats, Resolved, Missed	Only basic status filter
+Agent Concurrency Control	Configurable max concurrent chats per agent	Not visible
+Queue Management	Visual queue with wait times and priority	Basic "In Queue" count
+SLA Monitoring	Real-time SLA breach warnings with timestamps	Basic alert shown
+Critical Gap - Agent Status Workflow:
+Yellow.ai's Approach:
+Available → Can receive new chats
+Busy → No new chats, but can be manually transferred to
+Away → No new chats, but remains in queue (not missed)
+Offline → No assignment, chats become missed if offline queue disabled
+Your Platform: - Shows status but lacks the workflow logic behind it - No clear escalation path when agents are Busy/Away - Missing "Away" status distinction (crucial for lunch breaks)
+2. TEAM CREATION - Structural Issues
+What I Found on Your Platform:
+Your Users & Team Management shows: - 8 Total Users (1 Admin, 2 Supervisors, 5 Agents) - Skills assigned to users (Technical Support, Billing, Sales, etc.) - Departments assigned - Status tracking
+What's Missing - The "Groups" Concept:
+Yellow.ai's Team Structure:
+Inbox Admin
+    └── Groups (Support, Escalation, Billing, etc.)
+            ├── Group Supervisor
+            └── Agents (with skills)
+Critical Missing Elements:
+NO GROUPS/TEAMS STRUCTURE
+Yellow.ai requires agents to be organized into Groups
+Each group has a dedicated supervisor
+Chats are routed to specific groups based on intent
+Your platform assigns skills to individuals but lacks group-based routing
+NO SUPERVISOR-TO-GROUP MAPPING
+Yellow.ai: Supervisors are assigned to specific groups
+They only see chats from their group
+Your platform: Supervisors seem to have global visibility (inefficient)
+MISSING GROUP-SPECIFIC SETTINGS:
+Group email ID for ticket creation
+Group-specific working hours
+Group-level auto-assignment rules
+Group queue configuration
+Recommended Team Structure for Your Platform:
+Customer Support Group
+├── Supervisor: Sarah Mitchell
+└── Agents: Michael Chen, David Kim
+Escalation Group
+├── Supervisor: Lisa Park
+└── Agents: James Wilson
+Sales Group
+└── Agent: Emily Rodriguez
+VIP Support Group
+└── Agent: James Wilson
+3. ESCALATION FLOW - Critical Gaps in Flow Builder
+What I Found on Your Platform:
+Your Flow Builder shows: - 6 flows total (5 published, 1 draft) - Categories: Base, FAQs, Operations - "Customer Support Flow" (Voice) - Main flow - "Handle Customer" (Chat) - Customer inquiry handling and routing - No visible escalation-specific flow
+What's Missing - Escalation Flow Components:
+Yellow.ai's Escalation Flow:
+1. Intent Detection → "chat with agent" / "speak to human"
+2. Raise Live Chat Request → Send to Inbox
+3. Auto-Assignment Logic:
+   - Check agent availability
+   - Check concurrency limits
+   - Check last assigned time
+   - Route to appropriate group
+4. Queue Management:
+   - If no agent available → Queue
+   - If queue full → Missed chat
+5. Context Transfer:
+   - Pass conversation history
+   - Pass user details
+   - Pass custom fields (Order ID, etc.)
+6. Agent Handoff:
+   - Agent receives chat with context
+   - Can transfer to another agent/group
+   - Can resolve with required fields
+Critical Missing Elements in Your Flow Builder:
+NO ESCALATION TRIGGER NODE
+Missing node to detect escalation intent
+Should trigger on: "speak to agent", "transfer to human", negative sentiment
+NO GROUP ROUTING LOGIC
+Your flows don't route to specific agent groups
+Should route: Billing → Billing Group, Technical → Support Group
+NO AGENT AVAILABILITY CHECK
+Before escalating, check if agents are available
+If not, provide fallback (callback, email ticket, queue)
+NO CONTEXT TRANSFER
+Escalated chats should include:
+Full conversation transcript
+User profile data
+Intent classification
+Priority level
+Custom fields (Order ID, Account #)
+NO QUEUE MANAGEMENT FLOW
+What happens when no agents available?
+Yellow.ai options:
+Queue with wait time estimate
+Offer callback
+Create email ticket
+Provide self-service alternative
+4. AI CALL ESCALATION - Voice-Specific Gaps
+What's Missing for Voice Escalation:
+NO VOICE-TO-HUMAN HANDOFF FLOW
+Your platform shows 5 active voice calls
+No visible flow for transferring AI voice call to human agent
+MISSING VOICE-SPECIFIC LOGIC:
+Sentiment-based escalation (frustrated customer)
+Intent-based escalation (complex query)
+Failed recognition escalation (3 failed attempts)
+NO CALLBACK QUEUE INTEGRATION
+Your Callbacks section shows 3 pending
+Should be integrated into escalation flow
+ACTIONABLE RECOMMENDATIONS
+Immediate Actions (High Priority):
+Create Groups in User Management
+Add "Groups" section under Management
+Allow creating groups: Support, Escalation, Billing, Sales
+Assign supervisors to groups
+Add agents to groups (agents can be in multiple groups)
+Implement Agent Status Workflow
+Add 4 statuses: Available, Busy, Away, Offline
+Implement status-based assignment logic
+Add "Away" persistence (not marked offline on logout)
+Build Escalation Flow in Flow Builder
+Create "Escalate to Human" node
+Add group routing logic
+Implement context transfer
+Add queue management
+Add Auto-Assignment Logic
+Based on: Availability, Concurrency, Last assigned time
+Priority routing for escalated chats
+Skill-based routing within groups
+POSITIVE FLOW - What Should Work
+Your platform should handle this flow smoothly:
+1. Customer starts chat → AI Agent responds
+2. AI cannot resolve → Detects escalation intent
+3. Check agent availability in appropriate group
+4. If available → Transfer with context
+5. Agent receives chat with full history
+6. Agent resolves or transfers to another agent
+7. Chat marked resolved with required fields
+Current Blockers:
+No group-based routing
+No context transfer mechanism
+No agent availability check before escalation
+No queue fallback

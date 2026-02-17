@@ -14,6 +14,11 @@ import {
   RefreshCw,
   Info,
   Loader2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -22,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -42,8 +48,9 @@ import { SurveyModal } from '@/components/surveys/SurveyModal';
 import type { ConversationChannel, SentimentType, ConversationStatus, LiveConversation } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
 
-// Simulated assigned agent ID for Agent role demo
 const CURRENT_AGENT_ID = 'agent-1';
+
+type ChatTab = 'all' | 'active' | 'queued' | 'resolved' | 'missed';
 
 export default function LiveOpsPage() {
   const {
@@ -58,13 +65,15 @@ export default function LiveOpsPage() {
     transferToAgent,
     stopSupervision,
     endConversation,
+    resolveConversation,
+    chatCategoryStats,
+    slaStats,
   } = useLiveOpsData();
 
   const { currentRole, isClientAdmin, currentUser } = useAuth();
   const roleName = currentRole?.name || 'Client Admin';
   const { createTicket } = useReportTickets();
 
-  // Survey integration
   const { config: surveyConfig, triggerSurvey, submitSurveyResponse, isGeneratingSummary } = useSurveyData();
   const [surveyModalOpen, setSurveyModalOpen] = useState(false);
   const [surveyResponseId, setSurveyResponseId] = useState<string | null>(null);
@@ -72,47 +81,52 @@ export default function LiveOpsPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<ConversationChannel | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
   const [sentimentFilter, setSentimentFilter] = useState<SentimentType | 'all'>('all');
   const [bargeInModalOpen, setBargeInModalOpen] = useState(false);
   const [conversationToBargeIn, setConversationToBargeIn] = useState<LiveConversation | null>(null);
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<ChatTab>('all');
+  const [agentPanelOpen, setAgentPanelOpen] = useState(false);
 
-  // Handle refresh
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    // Simulate refresh delay for visual feedback
     await new Promise(resolve => setTimeout(resolve, 800));
     setIsRefreshing(false);
     notify.success('Data refreshed', 'Live operations data has been updated.');
   }, []);
 
-  // Permission checks
   const canViewAll = isClientAdmin || roleName === 'Supervisor';
   const canWhisper = isClientAdmin || roleName === 'Supervisor';
   const canBargeIn = isClientAdmin || roleName === 'Supervisor';
 
-  // Filter conversations based on role
   const roleFilteredConversations = useMemo(() => {
     if (canViewAll) {
       return conversations;
     }
-    // Agent can only see their assigned conversations
     return conversations.filter(conv => 
       conv.agentId === CURRENT_AGENT_ID || 
-      conv.agentName === 'John Smith' // For demo purposes
+      conv.agentName === 'John Smith'
     );
   }, [conversations, canViewAll]);
 
-  // Apply user filters
-  const filteredConversations = roleFilteredConversations.filter(conv => {
+  const tabFilteredConversations = useMemo(() => {
+    return roleFilteredConversations.filter(conv => {
+      if (activeTab === 'all') return true;
+      if (activeTab === 'active') return conv.status === 'active';
+      if (activeTab === 'queued') return conv.status === 'waiting';
+      if (activeTab === 'resolved') return conv.status === 'resolved';
+      if (activeTab === 'missed') return conv.status === 'missed';
+      return true;
+    });
+  }, [roleFilteredConversations, activeTab]);
+
+  const filteredConversations = tabFilteredConversations.filter(conv => {
     const matchesSearch = conv.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conv.topic.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesChannel = channelFilter === 'all' || conv.channel === channelFilter;
-    const matchesStatus = statusFilter === 'all' || conv.status === statusFilter;
     const matchesSentiment = sentimentFilter === 'all' || conv.sentiment === sentimentFilter;
-    return matchesSearch && matchesChannel && matchesStatus && matchesSentiment;
+    return matchesSearch && matchesChannel && matchesSentiment;
   });
 
   const handleMonitor = async () => {
@@ -172,17 +186,12 @@ export default function LiveOpsPage() {
     notify.info('Supervision ended', 'You are no longer supervising this conversation.');
   };
 
-  // End conversation and trigger survey
   const handleEndConversation = async () => {
     if (!selectedConversation) return;
     
-    // Store the conversation details before clearing
     setEndedConversation(selectedConversation);
-    
-    // Actually end the conversation in state
     await endConversation(selectedConversation.id);
     
-    // Trigger survey if enabled
     if (surveyConfig.enabled) {
       const shouldTrigger = 
         (selectedConversation.channel === 'voice' && surveyConfig.triggerOn.includes('voice_end')) ||
@@ -200,7 +209,6 @@ export default function LiveOpsPage() {
         );
         setSurveyResponseId(response.id);
         
-        // Show survey modal after brief delay
         setTimeout(() => {
           setSurveyModalOpen(true);
         }, 1000);
@@ -208,6 +216,12 @@ export default function LiveOpsPage() {
     }
     
     notify.success('Conversation ended', 'The conversation has been marked as completed and removed from the queue.');
+  };
+
+  const handleResolveConversation = async () => {
+    if (!selectedConversation) return;
+    await resolveConversation(selectedConversation.id);
+    notify.success('Conversation resolved', `Conversation with ${selectedConversation.customerName} has been resolved.`);
   };
 
   const handleReport = (comment: string, priority: import('@/types/reportTickets').TicketPriority) => {
@@ -243,12 +257,10 @@ export default function LiveOpsPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Calculate role-specific queue stats
   const roleQueueStats = useMemo(() => {
     if (canViewAll) {
       return queueStats;
     }
-    // Agent sees only their stats
     const assignedActive = roleFilteredConversations.filter(c => c.status === 'active').length;
     const assignedWaiting = roleFilteredConversations.filter(c => c.status === 'waiting').length;
     return {
@@ -257,6 +269,34 @@ export default function LiveOpsPage() {
       totalWaiting: assignedWaiting,
     };
   }, [queueStats, roleFilteredConversations, canViewAll]);
+
+  const tabs: { key: ChatTab; label: string; count: number }[] = [
+    { key: 'all', label: 'All', count: roleFilteredConversations.length },
+    { key: 'active', label: 'Active', count: chatCategoryStats.active },
+    { key: 'queued', label: 'Queued', count: chatCategoryStats.queued },
+    { key: 'resolved', label: 'Resolved', count: chatCategoryStats.resolved },
+    { key: 'missed', label: 'Missed', count: chatCategoryStats.missed },
+  ];
+
+  const getAgentStatusColor = (status: string) => {
+    switch (status) {
+      case 'available': return 'bg-success';
+      case 'busy': return 'bg-warning';
+      case 'away': return 'bg-muted-foreground';
+      case 'offline': return 'bg-destructive';
+      default: return 'bg-muted';
+    }
+  };
+
+  const getAgentStatusLabel = (status: string) => {
+    switch (status) {
+      case 'available': return 'Available';
+      case 'busy': return 'Busy';
+      case 'away': return 'Away';
+      case 'offline': return 'Offline';
+      default: return status;
+    }
+  };
 
   return (
     <AppLayout>
@@ -293,6 +333,20 @@ export default function LiveOpsPage() {
           </div>
         </div>
 
+        {/* SLA Breach Banner */}
+        {slaStats.totalBreached > 0 && canViewAll && (
+          <Alert variant="destructive" className="mb-4 flex-shrink-0">
+            <AlertTriangle className="w-4 h-4" />
+            <AlertDescription>
+              <span className="font-semibold">{slaStats.totalBreached} SLA breach{slaStats.totalBreached > 1 ? 'es' : ''} detected</span>
+              {' — '}
+              {slaStats.activeBreached > 0 && `${slaStats.activeBreached} active`}
+              {slaStats.activeBreached > 0 && slaStats.queueBreached > 0 && ', '}
+              {slaStats.queueBreached > 0 && `${slaStats.queueBreached} in queue`}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Role-based info banner for Agent */}
         {!canViewAll && (
           <Alert className="mb-4 flex-shrink-0">
@@ -304,7 +358,7 @@ export default function LiveOpsPage() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 flex-shrink-0">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4 flex-shrink-0">
           <Card className="gradient-card">
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center gap-3">
@@ -329,7 +383,7 @@ export default function LiveOpsPage() {
                 </div>
                 <div>
                   <p className="text-xl font-bold">{roleQueueStats.totalWaiting}</p>
-                  <p className="text-[10px] text-muted-foreground">In Queue</p>
+                  <p className="text-[10px] text-muted-foreground">Queued</p>
                 </div>
               </div>
             </CardContent>
@@ -345,7 +399,7 @@ export default function LiveOpsPage() {
                     </div>
                     <div>
                       <p className="text-xl font-bold">{queueStats.availableAgents}</p>
-                      <p className="text-[10px] text-muted-foreground">Available</p>
+                      <p className="text-[10px] text-muted-foreground">Available Agents</p>
                     </div>
                   </div>
                 </CardContent>
@@ -368,12 +422,26 @@ export default function LiveOpsPage() {
               <Card className="gradient-card">
                 <CardContent className="pt-3 pb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-destructive" />
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <div>
                       <p className="text-xl font-bold">{formatTime(queueStats.longestWait)}</p>
-                      <p className="text-[10px] text-muted-foreground">Longest</p>
+                      <p className="text-[10px] text-muted-foreground">Longest Wait</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="gradient-card">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                      <AlertTriangle className="w-4 h-4 text-destructive" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">{slaStats.totalBreached}</p>
+                      <p className="text-[10px] text-muted-foreground">SLA Breaches</p>
                     </div>
                   </div>
                 </CardContent>
@@ -386,6 +454,27 @@ export default function LiveOpsPage() {
         <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
           {/* Conversations List */}
           <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+            {/* Chat Category Tabs */}
+            <div className="flex gap-1 mb-3 flex-shrink-0 overflow-x-auto pb-1">
+              {tabs.map(tab => (
+                <Button
+                  key={tab.key}
+                  variant={activeTab === tab.key ? 'default' : 'outline'}
+                  size="sm"
+                  className="gap-1.5 shrink-0"
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                  <Badge
+                    variant={activeTab === tab.key ? 'secondary' : 'outline'}
+                    className="text-[10px] px-1.5 py-0 h-4 min-w-[1.25rem] flex items-center justify-center"
+                  >
+                    {tab.count}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+
             {/* Filters */}
             <Card className="gradient-card mb-4 flex-shrink-0">
               <CardContent className="pt-3 pb-3">
@@ -406,20 +495,9 @@ export default function LiveOpsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Channels</SelectItem>
-                        <SelectItem value="voice">📞 Voice</SelectItem>
-                        <SelectItem value="chat">💬 Chat</SelectItem>
-                        <SelectItem value="email">📧 Email</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ConversationStatus | 'all')}>
-                      <SelectTrigger className="w-[110px]">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="waiting">Waiting</SelectItem>
-                        <SelectItem value="on_hold">On Hold</SelectItem>
+                        <SelectItem value="voice">Voice</SelectItem>
+                        <SelectItem value="chat">Chat</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select value={sentimentFilter} onValueChange={(v) => setSentimentFilter(v as SentimentType | 'all')}>
@@ -428,10 +506,10 @@ export default function LiveOpsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Sentiment</SelectItem>
-                        <SelectItem value="positive">😊 Positive</SelectItem>
-                        <SelectItem value="neutral">😐 Neutral</SelectItem>
-                        <SelectItem value="negative">😟 Negative</SelectItem>
-                        <SelectItem value="escalated">🚨 Escalated</SelectItem>
+                        <SelectItem value="positive">Positive</SelectItem>
+                        <SelectItem value="neutral">Neutral</SelectItem>
+                        <SelectItem value="negative">Negative</SelectItem>
+                        <SelectItem value="escalated">Escalated</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -452,7 +530,7 @@ export default function LiveOpsPage() {
                       <p className="text-sm text-muted-foreground">
                         {!canViewAll 
                           ? 'You will see conversations assigned to you here'
-                          : searchQuery || channelFilter !== 'all' || statusFilter !== 'all'
+                          : searchQuery || channelFilter !== 'all' || activeTab !== 'all'
                             ? 'Try adjusting your filters'
                             : 'Conversations will appear here when customers connect'
                         }
@@ -478,10 +556,68 @@ export default function LiveOpsPage() {
             </p>
           </div>
 
+          {/* Agent Status Panel */}
+          {canViewAll && (
+            <div className="w-[260px] flex-shrink-0 flex flex-col min-h-0 overflow-hidden">
+              <Card className="gradient-card flex flex-col min-h-0 overflow-hidden">
+                <CardHeader
+                  className="pb-2 pt-3 px-4 cursor-pointer flex-shrink-0"
+                  onClick={() => setAgentPanelOpen(!agentPanelOpen)}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Agent Status
+                    </CardTitle>
+                    {agentPanelOpen ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </CardHeader>
+                {agentPanelOpen && (
+                  <CardContent className="pt-0 px-4 pb-3 flex-1 min-h-0 overflow-y-auto">
+                    <div className="space-y-3">
+                      {agents.map(agent => (
+                        <div key={agent.id} className="p-2 rounded-lg border bg-muted/30">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className={cn('w-2 h-2 rounded-full', getAgentStatusColor(agent.status))} />
+                            <span className="text-sm font-medium truncate flex-1">{agent.name}</span>
+                            <Badge variant="outline" className="text-[10px] shrink-0">
+                              {getAgentStatusLabel(agent.status)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={(agent.currentConversations / agent.maxConversations) * 100}
+                              className="h-1.5 flex-1"
+                            />
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {agent.currentConversations}/{agent.maxConversations}
+                            </span>
+                          </div>
+                          {agent.skills.length > 0 && (
+                            <div className="flex gap-1 mt-1.5 flex-wrap">
+                              {agent.skills.map(skill => (
+                                <Badge key={skill} variant="secondary" className="text-[9px] px-1 py-0">
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            </div>
+          )}
+
           {/* Detail Panel */}
           {selectedConversation && (
             <>
-              {/* Backdrop */}
               <div 
                 className="fixed inset-0 bg-black/40 z-40"
                 onClick={() => setSelectedConversation(null)}
@@ -496,6 +632,7 @@ export default function LiveOpsPage() {
                 onTransfer={handleTransfer}
                 onStopSupervision={handleStopSupervision}
                 onEndConversation={handleEndConversation}
+                onResolveConversation={handleResolveConversation}
                 onReport={() => setReportModalOpen(true)}
               />
             </>
@@ -503,7 +640,6 @@ export default function LiveOpsPage() {
         </div>
       </div>
 
-      {/* Barge In Modal */}
       <BargeInModal
         conversation={conversationToBargeIn}
         open={bargeInModalOpen}
@@ -511,7 +647,6 @@ export default function LiveOpsPage() {
         onConfirm={handleBargeInConfirm}
       />
 
-      {/* Report Conversation Modal */}
       <ReportConversationModal
         open={reportModalOpen}
         onOpenChange={setReportModalOpen}
@@ -519,7 +654,6 @@ export default function LiveOpsPage() {
         onSubmit={handleReport}
       />
 
-      {/* Post-Interaction Survey Modal */}
       <SurveyModal
         open={surveyModalOpen}
         onOpenChange={setSurveyModalOpen}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { 
   LiveConversation, 
   ConversationMessage, 
@@ -23,6 +23,8 @@ const generateMockConversations = (): LiveConversation[] => [
     topic: 'Billing Inquiry (Spanish)',
     isAiHandled: true,
     supervisorMode: null,
+    groupId: 'grp-1',
+    priority: 'medium',
     messages: [
       { id: 'm1', role: 'customer', content: 'Hola, tengo una pregunta sobre mi factura reciente.', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
       { id: 'm2', role: 'agent', content: 'Hello María! I\'d be happy to help you with your billing inquiry. Could you please provide your account number?', timestamp: new Date(Date.now() - 4.5 * 60 * 1000).toISOString() },
@@ -45,6 +47,8 @@ const generateMockConversations = (): LiveConversation[] => [
     topic: 'Product Demo',
     isAiHandled: true,
     supervisorMode: null,
+    groupId: 'grp-2',
+    priority: 'low',
     messages: [
       { id: 'm1', role: 'customer', content: 'I\'d like to learn more about your enterprise plan.', timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString() },
       { id: 'm2', role: 'agent', content: 'Great choice! Our enterprise plan includes unlimited users, priority support, and custom integrations. What specific features are you most interested in?', timestamp: new Date(Date.now() - 7.5 * 60 * 1000).toISOString() },
@@ -66,6 +70,8 @@ const generateMockConversations = (): LiveConversation[] => [
     isAiHandled: false,
     supervisorMode: 'monitoring',
     supervisorId: 'sup-1',
+    groupId: 'grp-1',
+    priority: 'urgent',
     messages: [
       { id: 'm1', role: 'customer', content: 'This is the third time I\'m calling about this issue!', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(), sentiment: 'escalated' },
       { id: 'm2', role: 'agent', content: 'I completely understand your frustration, Sarah. Let me look into this right away and make sure we resolve it today.', timestamp: new Date(Date.now() - 14.5 * 60 * 1000).toISOString() },
@@ -89,6 +95,8 @@ const generateMockConversations = (): LiveConversation[] => [
     topic: 'General Inquiry',
     isAiHandled: false,
     supervisorMode: null,
+    groupId: 'grp-3',
+    priority: 'low',
     messages: [
       { id: 'm1', role: 'customer', content: 'Hello, I need help with my account settings.', timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
       { id: 'm2', role: 'system', content: 'You are in queue. Estimated wait time: 2 minutes', timestamp: new Date(Date.now() - 1.9 * 60 * 1000).toISOString() },
@@ -108,9 +116,83 @@ const generateMockConversations = (): LiveConversation[] => [
     topic: 'Refund Request',
     isAiHandled: true,
     supervisorMode: null,
+    groupId: 'grp-4',
+    priority: 'high',
     messages: [
       { id: 'm1', role: 'customer', content: 'I would like to request a refund for order #98765.', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString() },
       { id: 'm2', role: 'agent', content: 'I\'d be happy to help you with your refund request. I can see your order and I\'m processing the refund now.', timestamp: new Date(Date.now() - 2.5 * 60 * 1000).toISOString() },
+    ],
+  },
+  {
+    id: 'conv-6',
+    customerId: 'cust-6',
+    customerName: 'James Wilson',
+    agentId: 'agent-2',
+    agentName: 'Emma Wilson',
+    channel: 'chat',
+    status: 'resolved',
+    sentiment: 'positive',
+    startedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    resolvedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    duration: 1500,
+    topic: 'Password Reset',
+    isAiHandled: false,
+    supervisorMode: null,
+    groupId: 'grp-2',
+    priority: 'medium',
+    messages: [
+      { id: 'm1', role: 'customer', content: 'I can\'t log in to my account. I need to reset my password.', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
+      { id: 'm2', role: 'agent', content: 'I can help you with that. I\'ve sent a password reset link to your registered email address.', timestamp: new Date(Date.now() - 44 * 60 * 1000).toISOString() },
+      { id: 'm3', role: 'customer', content: 'Got it, I was able to reset successfully. Thank you!', timestamp: new Date(Date.now() - 22 * 60 * 1000).toISOString(), sentiment: 'positive' },
+      { id: 'm4', role: 'system', content: 'Conversation resolved', timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
+    ],
+  },
+  {
+    id: 'conv-7',
+    customerId: 'cust-7',
+    customerName: 'Anna Thompson',
+    agentId: 'ai-1',
+    agentName: 'AI Assistant',
+    channel: 'voice',
+    status: 'resolved',
+    sentiment: 'neutral',
+    startedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    resolvedAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+    duration: 1500,
+    topic: 'Subscription Upgrade',
+    isAiHandled: true,
+    supervisorMode: null,
+    groupId: 'grp-3',
+    priority: 'low',
+    messages: [
+      { id: 'm1', role: 'customer', content: 'I\'d like to upgrade my subscription to the pro plan.', timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString() },
+      { id: 'm2', role: 'agent', content: 'I\'ve upgraded your subscription to the Pro plan. You now have access to all premium features.', timestamp: new Date(Date.now() - 58 * 60 * 1000).toISOString() },
+      { id: 'm3', role: 'customer', content: 'Perfect, thanks for the quick help!', timestamp: new Date(Date.now() - 36 * 60 * 1000).toISOString(), sentiment: 'positive' },
+      { id: 'm4', role: 'system', content: 'Conversation resolved', timestamp: new Date(Date.now() - 35 * 60 * 1000).toISOString() },
+    ],
+  },
+  {
+    id: 'conv-8',
+    customerId: 'cust-8',
+    customerName: 'Robert Kim',
+    agentId: '',
+    agentName: '',
+    channel: 'chat',
+    status: 'missed',
+    sentiment: 'negative',
+    startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    resolvedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    duration: 0,
+    waitTime: 300,
+    topic: 'Order Status Check',
+    isAiHandled: false,
+    supervisorMode: null,
+    groupId: 'grp-4',
+    priority: 'high',
+    messages: [
+      { id: 'm1', role: 'customer', content: 'Where is my order #54321? It\'s been 2 weeks!', timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), sentiment: 'negative' },
+      { id: 'm2', role: 'system', content: 'You are in queue. Estimated wait time: 5 minutes', timestamp: new Date(Date.now() - 29.5 * 60 * 1000).toISOString() },
+      { id: 'm3', role: 'system', content: 'Customer disconnected - conversation missed', timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString() },
     ],
   },
 ];
@@ -127,15 +209,43 @@ export function useLiveOpsData() {
   const [agents, setAgents] = useState<Agent[]>(generateMockAgents());
   const [selectedConversation, setSelectedConversation] = useState<LiveConversation | null>(null);
 
+  const conversationsWithSLA = useMemo(() => {
+    return conversations.map(conv => {
+      let slaBreached = false;
+      if (conv.status === 'active' && conv.duration > 600) {
+        slaBreached = true;
+      }
+      if (conv.status === 'waiting' && (conv.waitTime || 0) > 120) {
+        slaBreached = true;
+      }
+      return { ...conv, slaBreached };
+    });
+  }, [conversations]);
+
   const queueStats: QueueStats = {
-    totalWaiting: conversations.filter(c => c.status === 'waiting').length,
+    totalWaiting: conversationsWithSLA.filter(c => c.status === 'waiting').length,
     averageWaitTime: 95,
     longestWait: 180,
-    activeConversations: conversations.filter(c => c.status === 'active').length,
+    activeConversations: conversationsWithSLA.filter(c => c.status === 'active').length,
     availableAgents: agents.filter(a => a.status === 'available').length,
   };
 
-  // Simulate real-time updates
+  const chatCategoryStats = useMemo(() => ({
+    active: conversationsWithSLA.filter(c => c.status === 'active').length,
+    queued: conversationsWithSLA.filter(c => c.status === 'waiting').length,
+    resolved: conversationsWithSLA.filter(c => c.status === 'resolved').length,
+    missed: conversationsWithSLA.filter(c => c.status === 'missed').length,
+  }), [conversationsWithSLA]);
+
+  const slaStats = useMemo(() => {
+    const breached = conversationsWithSLA.filter(c => c.slaBreached);
+    return {
+      totalBreached: breached.length,
+      activeBreached: breached.filter(c => c.status === 'active').length,
+      queueBreached: breached.filter(c => c.status === 'waiting').length,
+    };
+  }, [conversationsWithSLA]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setConversations(prev => prev.map(conv => {
@@ -152,7 +262,6 @@ export function useLiveOpsData() {
     return () => clearInterval(interval);
   }, []);
 
-  // Simulate new messages
   useEffect(() => {
     const interval = setInterval(() => {
       const activeConvs = conversations.filter(c => c.status === 'active');
@@ -334,7 +443,6 @@ export function useLiveOpsData() {
         : conv
     ));
     
-    // Remove conversation from list after animation
     setTimeout(() => {
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
     }, 300);
@@ -344,8 +452,41 @@ export function useLiveOpsData() {
     }
   }, [selectedConversation]);
 
+  const resolveConversation = useCallback(async (conversationId: string) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const resolveMessage: ConversationMessage = {
+      id: `resolve-${Date.now()}`,
+      role: 'system',
+      content: 'Conversation resolved',
+      timestamp: new Date().toISOString(),
+    };
+
+    setConversations(prev => prev.map(conv =>
+      conv.id === conversationId
+        ? {
+            ...conv,
+            status: 'resolved' as const,
+            resolvedAt: new Date().toISOString(),
+            supervisorMode: null,
+            messages: [...conv.messages, resolveMessage]
+          }
+        : conv
+    ));
+
+    if (selectedConversation?.id === conversationId) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        status: 'resolved',
+        resolvedAt: new Date().toISOString(),
+        supervisorMode: null,
+        messages: [...prev.messages, resolveMessage]
+      } : null);
+    }
+  }, [selectedConversation]);
+
   return {
-    conversations,
+    conversations: conversationsWithSLA,
     agents,
     queueStats,
     selectedConversation,
@@ -356,5 +497,8 @@ export function useLiveOpsData() {
     transferToAgent,
     stopSupervision,
     endConversation,
+    resolveConversation,
+    chatCategoryStats,
+    slaStats,
   };
 }

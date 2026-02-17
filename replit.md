@@ -2,9 +2,7 @@
 
 ## Overview
 
-ConX is an enterprise AI platform designed as a single-page application (SPA) for managing conversational AI operations. It offers comprehensive tools for AI agent management, knowledge base creation, live operations monitoring, outbound calling campaigns, analytics, and team management. The platform features a robust role-based access control system for Client Admins, Supervisors, and Agents. The core vision is to provide "responsible intelligence" through an interactive prototype that maintains state without a backend.
-
-The application serves as a frontend-only prototype, utilizing in-memory state management to demonstrate functionality and user experience.
+ConX is an enterprise AI platform designed as a single-page application (SPA) for managing conversational AI operations. It offers comprehensive tools for AI agent management, knowledge base creation, live operations monitoring, outbound calling campaigns, analytics, and team management. The platform features a robust role-based access control system. The core vision is to provide "responsible intelligence" through an interactive prototype that maintains state without a backend, focusing on demonstrating functionality and user experience.
 
 ## User Preferences
 
@@ -12,90 +10,58 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-The application is built with React 18 and TypeScript, using Vite as the build tool. React Router handles client-side navigation with protected routes.
+The application is a frontend-only prototype built with React 18 and TypeScript, using Vite as the build tool. React Router handles client-side navigation with protected routes.
 
 ### UI/UX Decisions
-- **Brand Identity**: ConX, tagline "responsible intelligence". Uses primary blue (#0094FF), primary green (#00FF7A), dark navy (#011B40), and dark (#000A17). Font is DM Sans. Logo files: conx-logo.jpg (light), conx-logo-dark.jpg (dark), conx-logomark.png (icon).
-- **Component Library**: `shadcn/ui` based on Radix UI primitives, styled with Tailwind CSS and CSS variables for theming. Components follow atomic design principles.
-- **Theming**: Supports light/dark/system modes with customizable colors, fonts, spacing, and border radius, managed by `ThemeProvider`.
-- **Sidebar Navigation**: Grouped, collapsible navigation with role-based filtering, highlighting active group headers.
+- **Brand Identity**: ConX, tagline "responsible intelligence", using a defined color palette (blue, green, navy, dark) and DM Sans font. Logo assets are provided.
+- **Component Library**: `shadcn/ui` based on Radix UI, styled with Tailwind CSS and CSS variables for theming, adhering to atomic design principles.
+- **Theming**: Supports light/dark/system modes with customizable UI elements.
+- **Sidebar Navigation**: Grouped, collapsible navigation with role-based filtering.
 
 ### Technical Implementations
-- **State Management**: Primarily in-memory state using React hooks. Feature-specific data hooks (e.g., `useAIAgentsData`, `useDashboardData`) manage data. `@tanstack/react-query` is available for async state.
-- **Authentication & Authorization**: Custom `AuthContext` provides authentication. Role-based access control includes Client Admin, Supervisor, and Agent roles, with `ProtectedRoute` for route guarding and `usePermission` for action-level checks.
-- **Notification System**: Centralized notifications using Sonner, with a `useNotification` hook for various alert types.
-- **Form Handling**: React Hook Form with Zod for schema validation.
+- **State Management**: Primarily in-memory using React hooks. `@tanstack/react-query` is available for async state.
+- **Authentication & Authorization**: Custom `AuthContext` with role-based access control (Client Admin, Supervisor, Agent) for route guarding and action-level checks.
+- **Notification System**: Centralized notifications using Sonner.
+- **Form Handling**: React Hook Form with Zod for validation.
 
 ### Feature Specifications
 
 #### Knowledge Base Multi-Source Architecture
-- Supports file uploads (PDF, DOCX, TXT, MD, CSV, XLSX), URL scraping (single/bulk), sitemap discovery, and integration imports (Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, Database).
-- Features auto-sync capabilities with configurable frequencies.
-- A unified `AddSourceModal` provides a single interface for adding various source types.
+Supports diverse data ingestion methods including file uploads (PDF, DOCX, TXT, MD, CSV, XLSX), URL scraping, sitemap discovery, and integrations with services like Salesforce, Confluence, Zendesk, Notion, SharePoint, Google Drive, AWS S3, ServiceNow, Freshdesk, and databases. Features auto-sync capabilities and a unified `AddSourceModal`.
 
 #### AI Agents (Super Agent + Agent Architecture)
-- Employs a Super Agent (orchestrator) and specialized Agents (specialists) model.
-- **Super Agent**: Routes queries, handles welcome messages, small talk, fallback, and maintains context. Only one Super Agent is allowed.
-- **Agents**: Domain-specific agents for sales, support, technical, and knowledge base functions, linked to a parent Super Agent.
-- **Configuration Sections (per agent)**: Persona, Intent Understanding, Start Triggers, Prompt Logic, Variables, Routing Logic, Fallback Behavior, Context Handling, and Guardrails.
-- UI features an agent listing view and a detailed configuration view with collapsible sections.
+Implements a Super Agent (orchestrator) and specialized Agents (specialists) model. The Super Agent handles routing, welcome messages, and context, while specialized Agents manage domain-specific functions (sales, support, knowledge base). Agents are highly configurable with sections for Persona, Intent Understanding, Prompt Logic, Routing, and Guardrails.
 
-#### Flow Builder (Flows & Workflows) - Main USP
-- Visual drag-and-drop canvas for designing conversational flows and backend workflow automations.
-- **FlowType distinction**: `FlowType = 'flow' | 'workflow'` stored on each Flow/FlowSummary. Flows are conversational logic for rule-based agents; Workflows are backend automation processes.
-- **Flow Nodes** (for conversational flows): Prompt nodes (Text Input, Name Input, Email Input, Phone Input, Date Input, Quick Reply), Message nodes (Message, Carousel), Logic (Condition), Action nodes (Execute Flow, Raise Ticket, AI Assistant, Transfer, DTMF, Delay, End), Safety & Risk (Safety Check).
-- **Workflow Nodes** (for backend automation): Actions (API Call, Database, Function, Variable, Notification, Event Trigger), Logic (Condition, Delay), Integrations (WhatsApp, Slack, Telegram, Teams, Zendesk, Freshdesk, Zoho CRM, Salesforce, HubSpot), Safety & Risk (Safety Check).
-- **Safety Check Node**: A comprehensive risk checkpoint acting as a "security guard" in flows. Features:
-  - **Bot Type Selector**: Voice/Chat/Both with context-aware recommendations for thresholds and settings.
-  - **Sentiment Analysis**: Low/Medium/High thresholds with voice-specific tips. Supports "Escalate on Repeated Negative" with configurable repeat count (2-5 messages).
-  - **PII Detection**: 8 types — Credit Card, SSN, Phone, Email, Address, Name, Government ID, Date of Birth. Compliance-aware (GDPR, HIPAA, PCI-DSS).
-  - **Policy Violation**: 7 selectable categories — Harassment, Threats, Abuse, Fraud, Scams, Data Leakage, Confidential Content. Use-case specific guidance.
-  - **Profanity Filter**: Mild/Moderate/Strong severity with configurable grace count (0-3 warnings before action).
-  - **Topic Guardrails**: Blocked topics with quick-add buttons for common topics (Medical, Legal, Sexual, Violence, Politics, Competitors, Internal). Recommended ON badge.
-  - **Risk Actions**: High Risk (Warn Then Escalate, Transfer, Escalate, Warning, End), Medium Risk (Warning, Disclaimer, Transfer, Log Only), PII (Mask & Continue, Mask Log & Continue, Block & Warn, Transfer), Sensitive Topic (Safe Fallback, Block & Redirect, Transfer, Log Only).
-  - **Custom Rules**: Natural language rules with 5 quick-add templates for common business scenarios (refund+anger, cancel+sentiment, competitor routing, forbidden topics, hallucination fallback).
-  - **Audit Logging**: Toggle for compliance event logging.
-- **Node Categories**: `FLOW_NODE_CATEGORIES` and `WORKFLOW_NODE_CATEGORIES` in `src/types/flowBuilder.ts` control which nodes appear in the sidebar based on flowType.
-- **NodeToolsSidebar**: Accepts `flowType` prop and dynamically shows appropriate node palette.
-- **FlowListView**: Type filter tabs (All/Flows/Workflows), type badges (GitBranch for Flow, Zap for Workflow), two-step creation (select type → fill details).
-- **NodePropertiesPanel**: Property forms for all 30+ node types including text inputs, quick replies, database operations, function code, variables, notifications, event triggers.
-- Features an environment selector (Staging, Sandbox, Production) and a category sidebar for flow organization.
-- The Test Panel supports Chat and Voice modes, simulating various node functionalities and providing test statistics.
+#### Flow Builder (Flows & Workflows)
+A visual drag-and-drop canvas for designing conversational flows (`flow`) and backend workflow automations (`workflow`).
+- **Flow Nodes**: Include Prompt (Text, Name, Email, Phone, Date, Quick Reply), Message (Message, Carousel), Logic (Condition), Action (Execute Flow, Raise Ticket, AI Assistant, Transfer, DTMF, Delay, End), and Safety & Risk (Safety Check).
+- **Workflow Nodes**: Include Actions (API Call, Database, Function, Variable, Notification, Event Trigger), Logic (Condition, Delay), Integrations (WhatsApp, Slack, Telegram, Teams, Zendesk, Freshdesk, Zoho CRM, Salesforce, HubSpot), and Safety & Risk (Safety Check).
+- **Safety Check Node**: A comprehensive risk assessment node with configurable settings for Bot Type, Sentiment Analysis, PII Detection (8 types), Policy Violation (7 categories), Profanity Filter, Topic Guardrails, and Custom Rules. It offers various Risk Actions (Warn Then Escalate, Transfer, Mask, Block) and Audit Logging.
+- Features an environment selector (Staging, Sandbox, Production) and a category sidebar for organization. A Test Panel supports Chat and Voice modes.
 
 #### Integrations & Channels (Merged Module)
-- Unified "Integrations & Channels" page with category sidebar and grouped card grid.
-- Covers 27 integrations across 7 categories: CRM (4), Voice (5), Messaging (6), Email (4), Chat Widget (1), LiveChat (4), Payments (3).
-- **Channel connectors merged**: All Voice (Twilio, Vonage, Genesys Cloud, Asterisk/FreePBX, Amazon Connect), Messaging (WhatsApp, Slack, Telegram, Teams, Facebook Messenger, Instagram Direct), and Email (SendGrid, Amazon SES, Mailgun, Custom SMTP) connectors integrated as integration cards.
-- **Chat Widget**: Special integration card with 5-tab configuration panel (Appearance, Bot Icon, Settings, Navigation, Deploy) accessible directly from the Integrations page.
-- **IntegrationDetailView**: Supports text, password, select, and number field types for connector configuration.
-- Each integration includes configuration fields, setup instructions, and connection management.
-- **Channels page removed**: `/channels` route and sidebar entry removed; all channel functionality lives in Integrations.
-- **Types**: `Integration`, `IntegrationCategory` (includes 'voice' | 'messaging' | 'email' | 'chat_widget') in `src/types/integrations.ts`
-- **Data Hook**: `useIntegrationsData` manages all integrations including channel connectors and chat widget config.
+A unified page for managing 27 integrations across 7 categories: CRM, Voice, Messaging, Email, Chat Widget, LiveChat, Payments. All channel connectors (Voice, Messaging, Email) are now integrated as integration cards. A dedicated Chat Widget integration offers a 5-tab configuration panel. Each integration provides configuration fields and setup instructions.
 
-#### Outbound Campaigns (Yellow.ai-style Campaign Management)
-- **Campaign List View**: Dashboard with stats cards (total, running, scheduled, completed), filterable/searchable campaign table with status badges, channel icons, audience counts, and progress bars
-- **Campaign Channels**: Supports Voice, WhatsApp, SMS, and Email outbound campaigns
-- **Create Campaign Wizard**: Simplified 3-step wizard: Basic Info (name, description, channel) → Flow & Workflow Selection (searchable dropdowns for conversational flows and automation workflows from Flow Builder) → Review & Launch
-- **Campaign Detail View**: Campaign header with status controls (pause/resume/launch), progress stats bar, tabbed content (Leads tab with filtering/search, Analytics tab with sentiment analysis, call outcomes, and campaign performance metrics)
-- **Lead Management**: Lead cards with status, sentiment, call attempts, duration, escalation; Lead upload modal with drag-and-drop file upload; Escalate to human agent modal
-- **Types**: `Campaign`, `CampaignTemplate`, `CampaignSegment`, `CampaignSchedule`, `CampaignGoal`, `CreateCampaignData` in `src/types/outboundCalling.ts`
-- **Data Hook**: `useOutboundCallingData` manages campaigns array, templates, segments, leads, with CRUD operations and mock data
-- **Components**: `CampaignListView`, `CreateCampaignWizard`, `CampaignDetailView`, `LeadCard`, `LeadUploadModal`, `EscalateLeadModal` in `src/components/outboundCalling/`
+#### Outbound Campaigns
+Manages outbound calling campaigns (Voice, WhatsApp, SMS, Email) with a dashboard, filterable table, and a 3-step creation wizard (Basic Info → Flow & Workflow Selection → Review & Launch). Campaign details include status controls, progress stats, and tabs for Lead Management (upload, status, sentiment, escalation) and Analytics.
 
 #### Analytics Module
-- Features 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns.
-- Tracks Outcome KPIs like Time Saved, Effort Saved, Conversion Rate, Engagement Rate, and CSAT Score with sparkline charts.
-- Provides detailed analytics for campaigns, channels, LLM usage, transcription accuracy, and compliance.
-- Includes a `KPICard` component for reusable KPI visualization.
+Provides 7 sub-tabs: Overview, Channels, Sentiment & Speech, LLM Analytics, Transcription, Compliance, Campaigns. Tracks Outcome KPIs (Time Saved, Effort Saved, Conversion Rate, Engagement Rate, CSAT Score) with sparkline charts and detailed analytics across various aspects of the platform.
+
+#### Live Operations (Enhanced)
+Real-time monitoring of conversations with auto-updating durations and simulated messages. Features chat categorization tabs (All, Active, Queued, Resolved, Missed), configurable SLA monitoring with breach alerts, stats cards, and an Agent Status Panel. Supervisors can monitor, whisper, barge-in, transfer, and resolve conversations.
+
+#### Users & Team Management (Enhanced with Groups)
+Offers tabbed views for Users and Groups. The Users tab provides CRUD operations for user accounts, role management, agent status workflow (Available, Busy, Away, Offline), and concurrency control (`maxConcurrentChats`). The Groups tab enables creation and management of agent groups with supervisor assignment, agent members, working hours, and auto-assignment settings.
 
 #### Security & Compliance Module
-- Organized into 5 tabs: Compliance, SSO, RBAC, Moderation, Audit Logs.
-- **Compliance**: PII Protection, Zero Retention Policy, Consent Management, GDPR Controls, Data Masking, Data Retention.
-- **SSO**: Supports SAML, OIDC, Azure AD, Okta, Google.
-- **RBAC**: Multi-Factor Authentication, password policies, session policies, IP restrictions.
-- **Moderation**: Content rules for profanity, spam, hate speech.
-- **Audit Logs**: Searchable and filterable log table.
+Organized into 5 tabs: Compliance (PII Protection, Zero Retention, Consent, GDPR, Data Masking, Retention), SSO (SAML, OIDC, Azure AD, Okta, Google), RBAC (MFA, password policies, session policies, IP restrictions), Moderation (content rules), and Audit Logs.
+
+#### Transcripts Module
+Allows viewing, listening to, and managing conversation recordings across all channels. Features a transcript listing with filters, search, multi-select bulk delete, a detailed view with timeline and audio player, export options, and session metadata. RBAC is implemented for Client Admin, Supervisor, and Agent roles.
+
+#### Report Tickets Module
+Enables agents to report/escalate conversations to Client Admins with comments. Admins can review, comment, and close tickets. Features a ticket list with filters, a detail view with comment threads, and stats cards. RBAC is implemented for Client Admin, Supervisor, and Agent roles.
 
 ## External Dependencies
 
@@ -121,30 +87,7 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - **@tanstack/react-query**: Async state management (available).
 - **next-themes**: Theme persistence utilities.
 
-### Testing
-- **Vitest**: Test runner.
-- **@testing-library/jest-dom**: DOM testing utilities.
-
 ### Build & Development
 - **Vite**: Build tool.
 - **TypeScript**: Type checking.
 - **ESLint**: Linting.
-
-### Transcripts Module
-- **Purpose**: View, listen to, and manage conversation recordings across all channels
-- **RBAC**: Added `transcripts` to ScreenId type. Client Admin has full access, Supervisor can view/export, Agent can view only. Configurable via Roles page.
-- **Features**: Transcript listing with filters (channel, status, sentiment, has-recording), search, multi-select with bulk delete, per-transcript detail view with conversation timeline, audio player with play/pause/seek/skip/volume controls, export to text file, session metadata sidebar (details, summary, tags)
-- **Data Hook**: `useTranscriptsData` manages transcripts array with filtering, deletion, multi-delete, and stats computation
-- **Types**: `Transcript`, `TranscriptEntry`, `TranscriptChannel`, `TranscriptStatus`, `SentimentType` in `src/types/transcripts.ts`
-- **Components**: `TranscriptsPage` at `/transcripts` route, protected by `ProtectedRoute` with `screenId="transcripts"`
-- **Sidebar**: Listed under Insights group between Analytics and Surveys
-
-### Report Tickets Module
-- **Purpose**: Agents can report/escalate conversations to Client Admin with comments; admins can review, comment, and close tickets
-- **RBAC**: Added `report-tickets` to ScreenId type. Client Admin has full access (view, create, edit, close). Supervisor can view, create, edit. Agent can view and create.
-- **Features**: Report a conversation from Live Ops with priority and comment, ticket list with search/status/priority filters, ticket detail view with comment thread, close ticket with resolution comment (Client Admin only), stats cards (total, open, closed, critical)
-- **Shared State**: `ReportTicketsProvider` context wraps the app so tickets persist between Live Ops and Report Tickets pages
-- **Data Hook**: `useReportTicketsData` manages tickets array with CRUD operations, comments, and stats. Exposed via `useReportTickets` context hook.
-- **Types**: `ReportTicket`, `TicketComment`, `TicketStatus`, `TicketPriority` in `src/types/reportTickets.ts`
-- **Components**: `ReportTicketsPage` at `/report-tickets` route, `ReportConversationModal` in Live Ops conversation detail panel
-- **Sidebar**: Listed under Operations group after Outbound Calls

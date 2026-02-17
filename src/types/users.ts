@@ -1,6 +1,6 @@
 export type UserRole = 'client_admin' | 'supervisor' | 'agent';
 
-export type AgentStatus = 'available' | 'busy' | 'offline';
+export type AgentStatus = 'available' | 'busy' | 'away' | 'offline';
 
 export interface Skill {
   id: string;
@@ -18,8 +18,27 @@ export interface TeamUser {
   avatar?: string;
   phone?: string;
   department?: string;
+  maxConcurrentChats: number;
   createdAt: string;
   lastActive?: string;
+}
+
+export interface AgentGroup {
+  id: string;
+  name: string;
+  description: string;
+  supervisorId: string;
+  agentIds: string[];
+  email?: string;
+  workingHours?: {
+    start: string;
+    end: string;
+    timezone: string;
+    days: string[];
+  };
+  autoAssignment: boolean;
+  maxQueueSize: number;
+  createdAt: string;
 }
 
 export const AVAILABLE_SKILLS: Skill[] = [
@@ -44,5 +63,13 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 export const STATUS_LABELS: Record<AgentStatus, string> = {
   available: 'Available',
   busy: 'Busy',
+  away: 'Away',
   offline: 'Offline',
+};
+
+export const STATUS_DESCRIPTIONS: Record<AgentStatus, string> = {
+  available: 'Can receive new chats and calls',
+  busy: 'No new chats, but can receive manual transfers',
+  away: 'Temporarily unavailable (breaks, meetings). Stays in queue.',
+  offline: 'No assignment. Chats become missed if queue disabled.',
 };

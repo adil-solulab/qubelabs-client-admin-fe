@@ -1,7 +1,20 @@
-export type ConversationStatus = 'active' | 'waiting' | 'on_hold' | 'transferring' | 'ended';
+export type ConversationStatus = 'active' | 'waiting' | 'on_hold' | 'transferring' | 'ended' | 'resolved' | 'missed';
 export type ConversationChannel = 'voice' | 'chat' | 'email';
 export type SentimentType = 'positive' | 'neutral' | 'negative' | 'escalated';
 export type SupervisorMode = 'monitoring' | 'whispering' | 'barged_in' | null;
+export type ChatCategory = 'my_chats' | 'active' | 'queued' | 'open' | 'resolved' | 'missed';
+
+export interface SLAConfig {
+  firstResponseTime: number;
+  resolutionTime: number;
+  queueWaitTime: number;
+}
+
+export const DEFAULT_SLA: SLAConfig = {
+  firstResponseTime: 60,
+  resolutionTime: 600,
+  queueWaitTime: 120,
+};
 
 export interface ConversationMessage {
   id: string;
@@ -30,6 +43,10 @@ export interface LiveConversation {
   isAiHandled: boolean;
   supervisorMode: SupervisorMode;
   supervisorId?: string;
+  groupId?: string;
+  slaBreached?: boolean;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  resolvedAt?: string;
 }
 
 export interface Agent {
@@ -82,4 +99,6 @@ export const STATUS_CONFIG: Record<ConversationStatus, {
   on_hold: { label: 'On Hold', color: 'text-muted-foreground', bgColor: 'bg-muted' },
   transferring: { label: 'Transferring', color: 'text-primary', bgColor: 'bg-primary/10' },
   ended: { label: 'Ended', color: 'text-muted-foreground', bgColor: 'bg-muted' },
+  resolved: { label: 'Resolved', color: 'text-success', bgColor: 'bg-success/10' },
+  missed: { label: 'Missed', color: 'text-destructive', bgColor: 'bg-destructive/10' },
 };

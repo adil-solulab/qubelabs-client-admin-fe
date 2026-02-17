@@ -46,7 +46,8 @@ const addUserSchema = z.object({
   role: z.string({
     required_error: 'Please select a role',
   }),
-  status: z.enum(['available', 'busy', 'offline'] as const).default('offline'),
+  status: z.enum(['available', 'busy', 'away', 'offline'] as const).default('offline'),
+  maxConcurrentChats: z.coerce.number().min(1).max(50).default(5),
 });
 
 type AddUserFormValues = z.infer<typeof addUserSchema>;
@@ -71,6 +72,7 @@ export function AddUserModal({ open, onOpenChange, onAddUser }: AddUserModalProp
       department: '',
       role: undefined,
       status: 'offline',
+      maxConcurrentChats: 5,
     },
   });
 
@@ -108,6 +110,7 @@ export function AddUserModal({ open, onOpenChange, onAddUser }: AddUserModalProp
         skills: selectedSkills,
         phone: values.phone || undefined,
         department: values.department || undefined,
+        maxConcurrentChats: values.maxConcurrentChats,
       });
       form.reset();
       setSelectedSkills([]);
@@ -292,9 +295,27 @@ export function AddUserModal({ open, onOpenChange, onAddUser }: AddUserModalProp
                         <SelectContent>
                           <SelectItem value="available">Available</SelectItem>
                           <SelectItem value="busy">Busy</SelectItem>
+                          <SelectItem value="away">Away</SelectItem>
                           <SelectItem value="offline">Offline</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="maxConcurrentChats"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Max Concurrent Chats</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} max={50} {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Maximum number of simultaneous chat sessions (1-50).
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

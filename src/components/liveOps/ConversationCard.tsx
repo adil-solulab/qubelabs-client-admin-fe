@@ -97,6 +97,12 @@ export function ConversationCard({ conversation, isSelected, onClick }: Conversa
                   : formatDuration(conversation.duration)
                 }
               </Badge>
+
+              {conversation.slaBreached && (
+                <Badge variant="destructive" className="text-[10px] gap-1 animate-pulse">
+                  SLA
+                </Badge>
+              )}
             </div>
 
             {/* Supervisor Mode Indicator */}
