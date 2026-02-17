@@ -121,6 +121,7 @@ export interface LiveConversation {
   notes?: string[];
   transferred?: boolean;
   transferredTo?: string;
+  supervisorJoined?: boolean;
 }
 
 export interface Agent {

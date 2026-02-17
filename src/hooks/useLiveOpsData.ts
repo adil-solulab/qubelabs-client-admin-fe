@@ -433,6 +433,7 @@ export function useLiveOpsData() {
             ...conv, 
             supervisorMode: 'barged_in' as SupervisorMode, 
             supervisorId: 'current-user',
+            supervisorJoined: true,
             messages: [...conv.messages, bargeMessage]
           }
         : conv
@@ -443,6 +444,7 @@ export function useLiveOpsData() {
         ...prev, 
         supervisorMode: 'barged_in', 
         supervisorId: 'current-user',
+        supervisorJoined: true,
         messages: [...prev.messages, bargeMessage]
       } : null);
     }
@@ -551,6 +553,7 @@ export function useLiveOpsData() {
             isAiHandled: false,
             status: 'active' as const,
             supervisorMode: null,
+            supervisorJoined: true,
             messages: [...conv.messages, takeOverMessage]
           }
         : conv
@@ -564,6 +567,7 @@ export function useLiveOpsData() {
         isAiHandled: false,
         status: 'active',
         supervisorMode: null,
+        supervisorJoined: true,
         messages: [...prev.messages, takeOverMessage]
       } : null);
     }
