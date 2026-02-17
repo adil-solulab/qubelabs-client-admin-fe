@@ -6,7 +6,7 @@ import {
   Ticket, ClipboardList,
   BarChart3, Cloud, Hexagon,
   TextCursor, Zap, LayoutGrid, UserCircle, AtSign, Smartphone, Calendar,
-  RefreshCw, Database, Code, Box, Timer, Bell, Globe
+  RefreshCw, Database, Code, Box, Timer, Bell, Globe, ShieldCheck
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -52,6 +52,7 @@ const NODE_ICONS: Record<NodeType, React.ReactNode> = {
   delay: <Timer className="w-5 h-5" />,
   notification: <Bell className="w-5 h-5" />,
   event_trigger: <Globe className="w-5 h-5" />,
+  safety_check: <ShieldCheck className="w-5 h-5" />,
 };
 
 const NODE_DESCRIPTIONS: Record<NodeType, string> = {
@@ -87,6 +88,7 @@ const NODE_DESCRIPTIONS: Record<NodeType, string> = {
   delay: 'Add a time delay',
   notification: 'Send a notification',
   event_trigger: 'Trigger an external event',
+  safety_check: 'Risk & safety checkpoint for AI guardrails',
 };
 
 export function NodeToolsSidebar({ onAddNode, canEdit, flowType = 'flow' }: NodeToolsSidebarProps) {
