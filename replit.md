@@ -105,3 +105,15 @@ Enables agents to report/escalate conversations to Client Admins with comments. 
 - **Vite**: Build tool.
 - **TypeScript**: Type checking.
 - **ESLint**: Linting.
+
+## Recent Changes
+
+### User Profile Redesign (Feb 2026)
+- Redesigned Account Settings page with 4-tab layout: Profile, Sessions, Security, Settings
+- **Profile tab**: Personal info with international phone number input (react-phone-number-input with auto country detection via browser locale + IP geolocation), avatar upload, editable name
+- **Sessions tab**: Active sessions list with individual session termination confirmation modal (shows device details, location, IP, and warnings)
+- **Security tab**: Password management, Two-Factor Authentication (2FA) with dual methods (Authenticator App with QR code, Security Questions), standalone Security Questions management (3 customizable questions)
+- **Settings tab**: Language, timezone, theme preferences, notification settings (SLA Breaches and Security Alerts only)
+- Removed weekly reports, system updates, and agent offline from notification preferences
+- Types: Added TwoFactorState, SecurityQuestion to userProfile.ts; SECURITY_QUESTIONS_LIST constant
+- Hook: useUserProfileData now manages 2FA state and security questions with enable/disable/save methods
