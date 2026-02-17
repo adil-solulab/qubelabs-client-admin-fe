@@ -1,0 +1,118 @@
+Here’s a professional review + recommendations based on the screenshot you shared of your Safety Check Node inside your flow builder.
+I’ve analyzed the image fully — here is the breakdown.
+✅ Overall Assessment
+Your Safety Check node setup is good, but it can be made much stronger depending on:
+1️⃣ The use-case
+2️⃣ Whether the bot is customer-facing or internal
+3️⃣ Whether calls are voice or chat
+4️⃣ Your business’s compliance rules (PII, sentiment, safety)
+Right now you are using default / generic safety configurations, which is okay — but not optimized.
+🔍 Detailed Review of Each Sub-Function
+Below I’m reviewing each component the UI is showing:
+① Sentiment Analysis — ON
+Good, but recommended tuning:
+✔ Keep On
+⚠️ Adjust Threshold
+Suggested:
+Flag negative + mixed
+Trigger escalation on repeated negative sentiment
+For voice workflows: sentiment should check both tone + content.
+➡️ Consider adding a rule:
+If sentiment is negative twice in last 3 messages → escalate or route to empathy flow
+② PII Detection — ON
+This is good but depends on your vertical.
+You have these PII categories selected:
+Credit Card, SSN, Phone, Email, Address
+✨ Recommended Improvements:
+Add Name if required
+Add Government ID if relevant
+Add Date of Birth if compliance-heavy
+➡️ Also check your business region → compliance differs by geography (GDPR, HIPAA, PCI-DSS).
+③ Policy Violation — ON
+Recommended to keep ON.
+🔧 Add refinement:
+If your bot is for customer support, include categories:
+Harassment
+Threats
+Abuse
+If your bot is for commerce, include categories:
+Fraud
+Scams
+If your bot is for internal use, include:
+Data leakage
+Internal confidential content
+④ Profanity Filter — ON
+Good.
+⚠️ Suggest tuning:
+If it's a customer service bot → mildly filter, DO NOT block the flow
+If it's a public-facing website bot → strong filter recommended
+You may want to add a grace count, e.g.:
+First profanity — warn
+Second — restrict or escalate
+⑤ Topic Guardrail — Off
+This is off in your screenshot, but this is VERY powerful.
+Recommended: Turn ON
+Use this to prevent the bot from answering on topics like:
+Medical advice
+Legal advice
+Sexual content
+Violence
+Politics
+You can customize allowed vs disallowed topics.
+This makes your bot safer and reduces hallucinations.
+⑥ Anger / Frustration Threshold — Medium
+"Medium" is okay for normal CS bots.
+But I recommend:
+Voice Bots: Set to Low (voice tone has more frustration cues)
+Text Bots: Medium is fine
+Support Escalation Bots: Set to High to avoid unnecessary escalations
+⑦ Risk Actions
+You have:
+On High Risk → Escalate to Supervisor
+On Medium Risk → Continue with Warning
+On PII Detected → Mask Data & Continue
+These are correct default behaviors, BUT:
+Suggested Enhancements
+On High Safety Risk
+Instead of always escalating, consider:
+First occurrence → ask clarifying question
+Second → escalate
+On PII Detected
+Good, but also log the event for compliance.
+Your UI has Audit Logging = ON which is correct.
+⑧ Custom Rules Section
+This is the MOST important area people ignore.
+Suggested additions:
+“If user mentions refund + anger → escalate immediately”
+“If user mentions cancel account + negative sentiment → route to retention agent”
+“If user mentions competitor → route to sales agent”
+“If user asks a forbidden topic → predefined response + block”
+“If bot detects hallucination risk → fallback to safe scripted message”
+💡 Recommended Final Safety Node Configuration (Best Practices)
+Here is the ideal setup:
+🔷 Turn ON
+Sentiment
+PII (all relevant types)
+Profanity
+Policy guardrails
+Topic guardrails
+Audit logging
+🔷 Thresholds
+Anger/frustration → Low for voice, Medium for chat
+PII → Mask + Continue (never escalate unless required)
+🔷 Risk Actions
+High Risk → First warn → then escalate
+Medium Risk → Continue with disclaimer
+Sensitive Topic → Safe fallback
+PII → Mask + continue
+🔷 Custom Rules (important)
+Add at least 4–5 business-specific rules.
+✔ YES — You should modify it
+Right now you are using mostly default toggles, which work, but don’t protect you enough depending on your business use case.
+I recommend enabling:
+✔ Topic guardrails
+✔ More PII categories
+✔ Some custom escalation logic
+✔ Better thresholds for frustration
+✔ Custom safety rules
+ 

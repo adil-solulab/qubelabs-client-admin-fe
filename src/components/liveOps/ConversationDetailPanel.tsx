@@ -17,6 +17,7 @@ import {
   Globe,
   PhoneOff,
   Loader2,
+  Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,7 @@ interface ConversationDetailPanelProps {
   onTransfer: (agentId: string) => void;
   onStopSupervision: () => void;
   onEndConversation?: () => void;
+  onReport?: () => void;
 }
 
 export function ConversationDetailPanel({
@@ -58,6 +60,7 @@ export function ConversationDetailPanel({
   onTransfer,
   onStopSupervision,
   onEndConversation,
+  onReport,
 }: ConversationDetailPanelProps) {
   const [whisperMessage, setWhisperMessage] = useState('');
   const [showTransfer, setShowTransfer] = useState(false);
@@ -329,7 +332,18 @@ export function ConversationDetailPanel({
             <LockedButton tooltip="Supervisor access required">Transfer</LockedButton>
           )}
 
-          {/* End Conversation Button */}
+          {onReport && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onReport}
+              className="text-warning border-warning/30 hover:bg-warning/10"
+            >
+              <Flag className="w-3 h-3 mr-1" />
+              Report
+            </Button>
+          )}
+
           {onEndConversation && conversation.status === 'active' && (
             <Button
               variant="destructive"

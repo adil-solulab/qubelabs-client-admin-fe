@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ReportTicketsProvider } from "@/hooks/useReportTicketsContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
@@ -26,6 +27,7 @@ import ThemeSettingsPage from "./pages/ThemeSettingsPage";
 import RolesPage from "./pages/RolesPage";
 import AIEnginePage from "./pages/AIEnginePage";
 import TranscriptsPage from "./pages/TranscriptsPage";
+import ReportTicketsPage from "./pages/ReportTicketsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
@@ -36,6 +38,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
+        <ReportTicketsProvider>
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
@@ -145,11 +148,17 @@ const App = () => (
                   <TranscriptsPage />
                 </ProtectedRoute>
               } />
+              <Route path="/report-tickets" element={
+                <ProtectedRoute screenId="report-tickets">
+                  <ReportTicketsPage />
+                </ProtectedRoute>
+              } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </ReportTicketsProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

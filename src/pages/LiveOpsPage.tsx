@@ -32,10 +32,12 @@ import {
 import { useLiveOpsData } from '@/hooks/useLiveOpsData';
 import { useSurveyData } from '@/hooks/useSurveyData';
 import { useAuth } from '@/hooks/useAuth';
+import { useReportTickets } from '@/hooks/useReportTicketsContext';
 import { notify } from '@/hooks/useNotification';
 import { ConversationCard } from '@/components/liveOps/ConversationCard';
 import { ConversationDetailPanel } from '@/components/liveOps/ConversationDetailPanel';
 import { BargeInModal } from '@/components/liveOps/BargeInModal';
+import { ReportConversationModal } from '@/components/liveOps/ReportConversationModal';
 import { SurveyModal } from '@/components/surveys/SurveyModal';
 import type { ConversationChannel, SentimentType, ConversationStatus, LiveConversation } from '@/types/liveOps';
 import { cn } from '@/lib/utils';
@@ -58,8 +60,9 @@ export default function LiveOpsPage() {
     endConversation,
   } = useLiveOpsData();
 
-  const { currentRole, isClientAdmin } = useAuth();
+  const { currentRole, isClientAdmin, currentUser } = useAuth();
   const roleName = currentRole?.name || 'Client Admin';
+  const { createTicket } = useReportTickets();
 
   // Survey integration
   const { config: surveyConfig, triggerSurvey, submitSurveyResponse, isGeneratingSummary } = useSurveyData();
@@ -73,6 +76,7 @@ export default function LiveOpsPage() {
   const [sentimentFilter, setSentimentFilter] = useState<SentimentType | 'all'>('all');
   const [bargeInModalOpen, setBargeInModalOpen] = useState(false);
   const [conversationToBargeIn, setConversationToBargeIn] = useState<LiveConversation | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Handle refresh
@@ -204,6 +208,25 @@ export default function LiveOpsPage() {
     }
     
     notify.success('Conversation ended', 'The conversation has been marked as completed and removed from the queue.');
+  };
+
+  const handleReport = (comment: string, priority: import('@/types/reportTickets').TicketPriority) => {
+    if (!selectedConversation) return;
+    const reportRole = (roleName === 'Supervisor' ? 'Supervisor' : 'Agent') as 'Agent' | 'Supervisor';
+    createTicket(
+      {
+        conversationId: selectedConversation.id,
+        customerName: selectedConversation.customerName,
+        channel: selectedConversation.channel,
+        topic: selectedConversation.topic,
+        reportComment: comment,
+        priority,
+      },
+      currentUser?.id || CURRENT_AGENT_ID,
+      currentUser?.name || 'John Smith',
+      reportRole
+    );
+    notify.success('Report submitted', 'Your report has been sent to the Client Admin for review.');
   };
 
   const handleSubmitSurvey = async (score: number, followUp?: string) => {
@@ -473,6 +496,7 @@ export default function LiveOpsPage() {
                 onTransfer={handleTransfer}
                 onStopSupervision={handleStopSupervision}
                 onEndConversation={handleEndConversation}
+                onReport={() => setReportModalOpen(true)}
               />
             </>
           )}
@@ -485,6 +509,14 @@ export default function LiveOpsPage() {
         open={bargeInModalOpen}
         onOpenChange={setBargeInModalOpen}
         onConfirm={handleBargeInConfirm}
+      />
+
+      {/* Report Conversation Modal */}
+      <ReportConversationModal
+        open={reportModalOpen}
+        onOpenChange={setReportModalOpen}
+        conversation={selectedConversation}
+        onSubmit={handleReport}
       />
 
       {/* Post-Interaction Survey Modal */}

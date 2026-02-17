@@ -25,6 +25,7 @@ import {
   Star,
   Home,
   FileText,
+  Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -71,6 +72,7 @@ const navGroups: NavGroup[] = [
       { icon: Headphones, label: 'Live Ops', path: '/live-ops', screenId: 'live-ops', badge: '12' },
       { icon: PhoneCall, label: 'Callbacks', path: '/callbacks', screenId: 'live-ops', badge: '3' },
       { icon: PhoneOutgoing, label: 'Outbound Calls', path: '/outbound-calls', screenId: 'outbound-calls' },
+      { icon: Flag, label: 'Report Tickets', path: '/report-tickets', screenId: 'report-tickets' },
     ],
   },
   {

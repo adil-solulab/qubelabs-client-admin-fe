@@ -17,7 +17,8 @@ export type ScreenId =
   | 'theme'
   | 'roles'
   | 'ai-engine'
-  | 'transcripts';
+  | 'transcripts'
+  | 'report-tickets';
 
 // Action types for granular permissions
 export type ActionType = 'view' | 'create' | 'edit' | 'delete' | 'export' | 'publish';
@@ -67,6 +68,7 @@ export const AVAILABLE_SCREENS: ScreenMeta[] = [
   { id: 'theme', label: 'Theme', path: '/theme', category: 'settings' },
   { id: 'roles', label: 'Roles & Permissions', path: '/roles', category: 'settings' },
   { id: 'transcripts', label: 'Transcripts', path: '/transcripts', category: 'operations' },
+  { id: 'report-tickets', label: 'Report Tickets', path: '/report-tickets', category: 'operations' },
 ];
 
 // All available actions
@@ -111,6 +113,7 @@ export const SYSTEM_ROLES: Role[] = [
       { screenId: 'outbound-calls', actions: ['view', 'create', 'edit'] },
       { screenId: 'analytics', actions: ['view', 'export'] },
       { screenId: 'transcripts', actions: ['view', 'export'] },
+      { screenId: 'report-tickets', actions: ['view', 'create', 'edit'] },
     ],
     userCount: 3,
     createdAt: '2024-01-01',
@@ -127,6 +130,7 @@ export const SYSTEM_ROLES: Role[] = [
       { screenId: 'knowledge-base', actions: ['view'] },
       { screenId: 'live-ops', actions: ['view'] },
       { screenId: 'transcripts', actions: ['view'] },
+      { screenId: 'report-tickets', actions: ['view', 'create'] },
     ],
     userCount: 12,
     createdAt: '2024-01-01',

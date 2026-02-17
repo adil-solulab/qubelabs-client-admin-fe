@@ -129,3 +129,13 @@ The application is built with React 18 and TypeScript, using Vite as the build t
 - **Types**: `Transcript`, `TranscriptEntry`, `TranscriptChannel`, `TranscriptStatus`, `SentimentType` in `src/types/transcripts.ts`
 - **Components**: `TranscriptsPage` at `/transcripts` route, protected by `ProtectedRoute` with `screenId="transcripts"`
 - **Sidebar**: Listed under Insights group between Analytics and Surveys
+
+### Report Tickets Module
+- **Purpose**: Agents can report/escalate conversations to Client Admin with comments; admins can review, comment, and close tickets
+- **RBAC**: Added `report-tickets` to ScreenId type. Client Admin has full access (view, create, edit, close). Supervisor can view, create, edit. Agent can view and create.
+- **Features**: Report a conversation from Live Ops with priority and comment, ticket list with search/status/priority filters, ticket detail view with comment thread, close ticket with resolution comment (Client Admin only), stats cards (total, open, closed, critical)
+- **Shared State**: `ReportTicketsProvider` context wraps the app so tickets persist between Live Ops and Report Tickets pages
+- **Data Hook**: `useReportTicketsData` manages tickets array with CRUD operations, comments, and stats. Exposed via `useReportTickets` context hook.
+- **Types**: `ReportTicket`, `TicketComment`, `TicketStatus`, `TicketPriority` in `src/types/reportTickets.ts`
+- **Components**: `ReportTicketsPage` at `/report-tickets` route, `ReportConversationModal` in Live Ops conversation detail panel
+- **Sidebar**: Listed under Operations group after Outbound Calls
