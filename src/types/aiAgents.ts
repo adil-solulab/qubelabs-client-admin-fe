@@ -108,22 +108,11 @@ export interface GuardrailConfig {
   action: 'warn' | 'block' | 'flag';
 }
 
-export type VoiceCategory = 'conversational' | 'narration' | 'characters' | 'news' | 'meditation';
-export type VoiceProviderType = 'ElevenLabs' | 'Google Cloud' | 'Amazon Polly' | 'Azure Speech' | 'OpenAI';
-
 export interface VoiceConfig {
   id: string;
   name: string;
   provider: string;
   isPrimary: boolean;
-  gender?: 'male' | 'female' | 'non-binary';
-  accent?: string;
-  category?: VoiceCategory;
-  description?: string;
-  tags?: string[];
-  useCase?: string;
-  sampleText?: string;
-  age?: 'young' | 'middle-aged' | 'mature';
 }
 
 export interface AIAgent {
@@ -167,30 +156,6 @@ export const LLM_PROVIDERS: Record<string, string[]> = {
   'Meta': ['Llama 3.1 405B', 'Llama 3.1 70B'],
 };
 
-export const VOICE_OPTIONS: VoiceConfig[] = [
-  { id: 'v-eric', name: 'Eric', provider: 'ElevenLabs', isPrimary: true, gender: 'male', accent: 'American', category: 'conversational', description: 'Smooth, trustworthy mid-range voice perfect for customer interactions', tags: ['smooth', 'trustworthy', 'professional'], useCase: 'Customer Service, Sales', age: 'middle-aged', sampleText: 'Hello, thank you for calling. How may I assist you today?' },
-  { id: 'v-sarah', name: 'Sarah', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'American', category: 'conversational', description: 'Warm, professional voice with natural cadence and clarity', tags: ['warm', 'professional', 'clear'], useCase: 'Support, Onboarding', age: 'middle-aged', sampleText: 'I am happy to help you with that. Let me look into it right away.' },
-  { id: 'v-adam', name: 'Adam', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'American', category: 'narration', description: 'Deep, authoritative voice that commands attention and trust', tags: ['deep', 'authoritative', 'commanding'], useCase: 'Announcements, IVR', age: 'mature', sampleText: 'Welcome to our platform. Your security and satisfaction are our top priorities.' },
-  { id: 'v-rachel', name: 'Rachel', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'American', category: 'conversational', description: 'Friendly, upbeat voice with natural warmth and energy', tags: ['friendly', 'upbeat', 'energetic'], useCase: 'Sales, Marketing', age: 'young', sampleText: 'Great news! I have some exciting options for you today.' },
-  { id: 'v-josh', name: 'Josh', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'American', category: 'meditation', description: 'Calm, reassuring voice ideal for sensitive or support conversations', tags: ['calm', 'reassuring', 'soothing'], useCase: 'Healthcare, Wellness', age: 'middle-aged', sampleText: 'Take your time. I am here to help whenever you are ready.' },
-  { id: 'v-emily', name: 'Emily', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'British', category: 'news', description: 'Energetic, clear voice with a British accent and crisp delivery', tags: ['energetic', 'clear', 'articulate'], useCase: 'News, Reports', age: 'young', sampleText: 'Here is your latest update with all the details you need.' },
-  { id: 'v-marcus', name: 'Marcus', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'British', category: 'narration', description: 'Rich, sophisticated voice with British elegance and warmth', tags: ['rich', 'sophisticated', 'elegant'], useCase: 'Finance, Legal', age: 'mature', sampleText: 'Allow me to walk you through the details of your account.' },
-  { id: 'v-priya', name: 'Priya', provider: 'ElevenLabs', isPrimary: false, gender: 'female', accent: 'Indian', category: 'conversational', description: 'Articulate, patient voice with gentle Indian accent', tags: ['articulate', 'patient', 'gentle'], useCase: 'Tech Support, Education', age: 'middle-aged', sampleText: 'Let me guide you through the process step by step.' },
-  { id: 'v-carlos', name: 'Carlos', provider: 'ElevenLabs', isPrimary: false, gender: 'male', accent: 'Neutral', category: 'characters', description: 'Versatile, expressive voice with strong emotional range', tags: ['versatile', 'expressive', 'dynamic'], useCase: 'Interactive, Gaming', age: 'young', sampleText: 'This is going to be an amazing experience. Let us get started!' },
-  { id: 'v-olivia', name: 'Olivia', provider: 'Google Cloud', isPrimary: false, gender: 'female', accent: 'Australian', category: 'conversational', description: 'Bright, approachable voice with Australian warmth', tags: ['bright', 'approachable', 'friendly'], useCase: 'Hospitality, Travel', age: 'young', sampleText: 'Welcome! Let me help you plan something wonderful.' },
-  { id: 'v-james', name: 'James', provider: 'Azure Speech', isPrimary: false, gender: 'male', accent: 'American', category: 'news', description: 'Confident, measured voice ideal for professional communications', tags: ['confident', 'measured', 'professional'], useCase: 'Corporate, Training', age: 'middle-aged', sampleText: 'Let us review the key points from today is discussion.' },
-  { id: 'v-aria', name: 'Aria', provider: 'OpenAI', isPrimary: false, gender: 'female', accent: 'Neutral', category: 'conversational', description: 'Natural, balanced voice with exceptional clarity and warmth', tags: ['natural', 'balanced', 'clear'], useCase: 'General Purpose, Assistants', age: 'middle-aged', sampleText: 'I am here to help you with whatever you need.' },
-  { id: 'v-kai', name: 'Kai', provider: 'ElevenLabs', isPrimary: false, gender: 'non-binary', accent: 'Neutral', category: 'meditation', description: 'Gentle, androgynous voice with a calming, inclusive quality', tags: ['gentle', 'calming', 'inclusive'], useCase: 'Wellness, Accessibility', age: 'young', sampleText: 'Breathe in, breathe out. You are doing great.' },
-  { id: 'v-sofia', name: 'Sofia', provider: 'Amazon Polly', isPrimary: false, gender: 'female', accent: 'Neutral', category: 'narration', description: 'Smooth, polished voice with great tonal control', tags: ['smooth', 'polished', 'controlled'], useCase: 'E-Learning, Audiobooks', age: 'middle-aged', sampleText: 'In this section, we will explore the fundamentals of the topic.' },
-];
-
-export const VOICE_CATEGORY_LABELS: Record<VoiceCategory, string> = {
-  conversational: 'Conversational',
-  narration: 'Narration',
-  characters: 'Characters',
-  news: 'News & Reports',
-  meditation: 'Meditation & Calm',
-};
 
 export const LANGUAGE_OPTIONS = [
   'English', 'Spanish', 'French', 'German', 'Portuguese', 'Italian',
@@ -250,20 +215,34 @@ export const FALLBACK_ACTION_LABELS: Record<FallbackAction, string> = {
 export type PersonaType = 'sales' | 'support' | 'custom';
 
 export type VoiceGender = 'male' | 'female' | 'neutral';
-export type VoiceAge = 'young' | 'middle_aged' | 'old';
-export type VoiceAccent = 'american' | 'british' | 'australian' | 'indian' | 'neutral';
+export type VoiceAge = 'child' | 'teen' | 'adult' | 'senior';
+export type VoiceAccent = 'us_english' | 'uk_english' | 'indian_english' | 'australian' | 'african_english' | 'middle_eastern_english' | 'neutral';
+export type VoiceStyleTone = 'cheerful' | 'calm' | 'professional' | 'friendly' | 'serious' | 'energetic' | 'authoritative' | 'supportive' | 'whispery' | 'conversational' | 'high_energy_sales' | 'empathetic';
+export type VoiceClarity = 'softened' | 'balanced' | 'crisp';
+export type VoiceSpeakingRate = 'slow' | 'normal' | 'fast' | 'very_fast';
+export type VoiceEmotion = 'neutral' | 'happy' | 'sad' | 'angry' | 'confident' | 'excited' | 'apologetic' | 'analytical';
+export type VoicePauseLength = 'short' | 'medium' | 'long';
+export type VoiceFallbackTone = 'professional' | 'apologetic' | 'neutral' | 'informal';
 
 export interface VoiceProfile {
   gender: VoiceGender;
   age: VoiceAge;
   accent: VoiceAccent;
+  styleTone: VoiceStyleTone;
   pitch: number;
-  speed: number;
+  speakingRate: VoiceSpeakingRate;
   stability: number;
-  clarity: number;
+  clarity: VoiceClarity;
   expressiveness: number;
   breathiness: number;
   warmth: number;
+  emotion: VoiceEmotion;
+  emotionStrength: number;
+  pauseLength: VoicePauseLength;
+  fillersEnabled: boolean;
+  interruptible: boolean;
+  fallbackTone: VoiceFallbackTone;
+  customPronunciations: { word: string; pronunciation: string }[];
 }
 
 export const VOICE_GENDER_LABELS: Record<VoiceGender, string> = {
@@ -273,30 +252,93 @@ export const VOICE_GENDER_LABELS: Record<VoiceGender, string> = {
 };
 
 export const VOICE_AGE_LABELS: Record<VoiceAge, string> = {
-  young: 'Young',
-  middle_aged: 'Middle Aged',
-  old: 'Mature',
+  child: 'Child',
+  teen: 'Teen',
+  adult: 'Adult',
+  senior: 'Senior',
 };
 
 export const VOICE_ACCENT_LABELS: Record<VoiceAccent, string> = {
-  american: 'American English',
-  british: 'British English',
+  us_english: 'US English',
+  uk_english: 'UK English',
+  indian_english: 'Indian English',
   australian: 'Australian English',
-  indian: 'Indian English',
+  african_english: 'African English',
+  middle_eastern_english: 'Middle Eastern English',
   neutral: 'Neutral / Standard',
+};
+
+export const VOICE_STYLE_TONE_LABELS: Record<VoiceStyleTone, string> = {
+  cheerful: 'Cheerful',
+  calm: 'Calm',
+  professional: 'Professional',
+  friendly: 'Friendly',
+  serious: 'Serious',
+  energetic: 'Energetic',
+  authoritative: 'Authoritative',
+  supportive: 'Supportive',
+  whispery: 'Whispery',
+  conversational: 'Conversational',
+  high_energy_sales: 'High-energy Sales',
+  empathetic: 'Empathetic',
+};
+
+export const VOICE_CLARITY_LABELS: Record<VoiceClarity, string> = {
+  softened: 'Softened',
+  balanced: 'Balanced',
+  crisp: 'Crisp',
+};
+
+export const VOICE_SPEAKING_RATE_LABELS: Record<VoiceSpeakingRate, string> = {
+  slow: 'Slow',
+  normal: 'Normal',
+  fast: 'Fast',
+  very_fast: 'Very Fast',
+};
+
+export const VOICE_EMOTION_LABELS: Record<VoiceEmotion, string> = {
+  neutral: 'Neutral',
+  happy: 'Happy',
+  sad: 'Sad',
+  angry: 'Angry',
+  confident: 'Confident',
+  excited: 'Excited',
+  apologetic: 'Apologetic',
+  analytical: 'Analytical',
+};
+
+export const VOICE_PAUSE_LABELS: Record<VoicePauseLength, string> = {
+  short: 'Short',
+  medium: 'Medium',
+  long: 'Long',
+};
+
+export const VOICE_FALLBACK_TONE_LABELS: Record<VoiceFallbackTone, string> = {
+  professional: 'Professional',
+  apologetic: 'Apologetic',
+  neutral: 'Neutral',
+  informal: 'Informal',
 };
 
 export const DEFAULT_VOICE_PROFILE: VoiceProfile = {
   gender: 'female',
-  age: 'middle_aged',
-  accent: 'american',
+  age: 'adult',
+  accent: 'us_english',
+  styleTone: 'professional',
   pitch: 50,
-  speed: 50,
+  speakingRate: 'normal',
   stability: 70,
-  clarity: 75,
+  clarity: 'balanced',
   expressiveness: 60,
   breathiness: 20,
   warmth: 65,
+  emotion: 'neutral',
+  emotionStrength: 50,
+  pauseLength: 'medium',
+  fillersEnabled: false,
+  interruptible: true,
+  fallbackTone: 'professional',
+  customPronunciations: [],
 };
 
 export interface Persona {

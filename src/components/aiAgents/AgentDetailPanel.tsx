@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import type { AIAgent } from '@/types/aiAgents';
-import { TONE_LABELS, TRIGGER_TYPE_LABELS, VARIABLE_TYPE_LABELS, GUARDRAIL_TYPE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS } from '@/types/aiAgents';
+import { TONE_LABELS, TRIGGER_TYPE_LABELS, VARIABLE_TYPE_LABELS, GUARDRAIL_TYPE_LABELS, FALLBACK_ACTION_LABELS, CHANNEL_LABELS, VOICE_GENDER_LABELS, VOICE_AGE_LABELS, VOICE_ACCENT_LABELS, VOICE_STYLE_TONE_LABELS } from '@/types/aiAgents';
 import { cn } from '@/lib/utils';
 
 interface AgentDetailPanelProps {
@@ -214,16 +214,13 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
             )}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-2.5 rounded-lg bg-muted/50">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Voices</p>
-                {(agent.voices || []).length > 0 ? (
-                  <div className="space-y-1 mt-1">
-                    {agent.voices.map(v => (
-                      <div key={v.id} className="flex items-center gap-1.5">
-                        <Volume2 className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-xs">{v.name}</span>
-                        {v.isPrimary && <Badge variant="outline" className="text-[9px] h-4">Primary</Badge>}
-                      </div>
-                    ))}
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Voice Profile</p>
+                {agent.voiceProfile ? (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_GENDER_LABELS[agent.voiceProfile.gender]}</Badge>
+                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_AGE_LABELS[agent.voiceProfile.age]}</Badge>
+                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_ACCENT_LABELS[agent.voiceProfile.accent]}</Badge>
+                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_STYLE_TONE_LABELS[agent.voiceProfile.styleTone]}</Badge>
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-1">No voice configured</p>

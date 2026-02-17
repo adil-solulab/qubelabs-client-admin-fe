@@ -18,9 +18,7 @@ const generateMockAgents = (): AIAgent[] => [
     defaultPersonality: true,
     firstMessage: 'Hello! Welcome to our support. How can I help you today?',
     disclosureRequirements: 'This conversation may be recorded for quality assurance purposes.',
-    voices: [
-      { id: 'v-eric', name: 'Eric - Smooth, Trustworthy', provider: 'ElevenLabs', isPrimary: true },
-    ],
+    voices: [],
     languages: ['English', 'Spanish'],
     llmProvider: 'OpenAI',
     persona: {
@@ -105,9 +103,7 @@ const generateMockAgents = (): AIAgent[] => [
     defaultPersonality: true,
     firstMessage: 'Great to meet you! I\'d love to help you find the perfect solution.',
     disclosureRequirements: '',
-    voices: [
-      { id: 'v-rachel', name: 'Rachel - Friendly, Upbeat', provider: 'ElevenLabs', isPrimary: true },
-    ],
+    voices: [],
     languages: ['English'],
     llmProvider: 'OpenAI',
     persona: {
@@ -185,9 +181,7 @@ const generateMockAgents = (): AIAgent[] => [
     defaultPersonality: true,
     firstMessage: 'I\'m here to help! Let\'s get this sorted out for you.',
     disclosureRequirements: 'Your conversation may be used to improve our service quality.',
-    voices: [
-      { id: 'v-sarah', name: 'Sarah - Warm, Professional', provider: 'ElevenLabs', isPrimary: true },
-    ],
+    voices: [],
     languages: ['English', 'French'],
     llmProvider: 'OpenAI',
     persona: {
