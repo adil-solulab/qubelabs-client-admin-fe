@@ -1,4 +1,4 @@
-export type PlanType = 'starter' | 'professional' | 'enterprise';
+export type PlanType = 'starter' | 'pro' | 'enterprise' | 'custom';
 export type PlanInterval = 'monthly' | 'yearly';
 export type InvoiceStatus = 'paid' | 'pending' | 'failed' | 'refunded';
 export type PaymentMethod = 'card' | 'bank' | 'paypal';
@@ -19,6 +19,7 @@ export interface SubscriptionPlan {
   };
   isCurrentPlan: boolean;
   isPopular?: boolean;
+  isContactSales?: boolean;
 }
 
 export interface UsageMetrics {
@@ -67,16 +68,18 @@ export interface BillingInfo {
   invoices: Invoice[];
   paymentMethods: PaymentMethodData[];
   credits: CreditBalance;
+  autoRenew: boolean;
 }
 
 export const PLAN_CONFIG: Record<PlanType, {
   color: string;
   bgColor: string;
-  icon: string;
+  gradient: string;
 }> = {
-  starter: { color: 'text-muted-foreground', bgColor: 'bg-muted', icon: '🚀' },
-  professional: { color: 'text-primary', bgColor: 'bg-primary/10', icon: '⭐' },
-  enterprise: { color: 'text-warning', bgColor: 'bg-warning/10', icon: '👑' },
+  starter: { color: 'text-muted-foreground', bgColor: 'bg-muted', gradient: 'from-slate-500/10 to-slate-600/5' },
+  pro: { color: 'text-primary', bgColor: 'bg-primary/10', gradient: 'from-blue-500/10 to-indigo-600/5' },
+  enterprise: { color: 'text-amber-600', bgColor: 'bg-amber-500/10', gradient: 'from-amber-500/10 to-orange-600/5' },
+  custom: { color: 'text-purple-600', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/10 to-pink-600/5' },
 };
 
 export const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, {

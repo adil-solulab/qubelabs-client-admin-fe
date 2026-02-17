@@ -59,8 +59,11 @@ Real-time monitoring of conversations with auto-updating durations and simulated
 #### Users & Team Management (Enhanced with Groups)
 Offers tabbed views for Users and Groups. The Users tab provides CRUD operations for user accounts, role management, agent status workflow, and concurrency control. The Groups tab enables creation and management of agent groups with supervisor assignment, agent members, working hours, and auto-assignment settings.
 
+#### Billing & Subscription
+Professional redesigned billing page with 4 plan tiers: Starter ($49/mo), Pro ($199/mo), Enterprise ($499/mo), and Custom (contact sales). Features auto-renew toggle, credits balance display, usage metrics with progress bars, payment methods management, and invoice history. Custom plan opens a contact sales modal form instead of direct upgrade. Plan types: 'starter' | 'pro' | 'enterprise' | 'custom'.
+
 #### Security & Compliance Module
-Organized into 5 tabs: Compliance (PII Protection, Zero Retention, Consent, GDPR, Data Masking, Retention), SSO (SAML, OIDC, Azure AD, Okta, Google), RBAC (MFA, password policies, session policies, IP restrictions), Moderation (content rules), and Audit Logs.
+Organized into 5 tabs: Compliance (PII Protection, Zero Retention, Consent, GDPR, Data Masking, Retention), SSO (SAML, OIDC, Azure AD, Okta, Google), RBAC (MFA, password policies, session policies, IP restrictions), Moderation (content rules), and Audit Logs. Data retention includes backup validation ensuring backup retention always exceeds conversation and log retention periods (auto-adjusts). RBI-compliant defaults: conversations 365 days, logs 365 days, backups 730 days.
 
 #### Transcripts Module
 Allows viewing, listening to, and managing conversation recordings across all channels. Features a transcript listing with filters, search, multi-select bulk delete, a detailed view with timeline and audio player, export options, and session metadata. RBAC is implemented for Client Admin, Supervisor, and Agent roles.

@@ -30,14 +30,14 @@ const mockGDPRSettings: GDPRSettings = {
 };
 
 const mockDataRetention: DataRetentionSettings = {
-  conversationRetentionDays: 90,
+  conversationRetentionDays: 365,
   logRetentionDays: 365,
   backupRetentionDays: 730,
   autoDeleteEnabled: true,
   maskPII: true,
   maskCreditCards: true,
   maskPhoneNumbers: true,
-  maskEmails: false,
+  maskEmails: true,
   maskSSN: true,
 };
 

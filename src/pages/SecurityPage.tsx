@@ -608,29 +608,66 @@ export default function SecurityPage() {
                       }
                     />
                   </div>
-                  {[
-                    { key: 'conversationRetentionDays', label: 'Conversations', min: 30, max: 365, step: 30 },
-                    { key: 'logRetentionDays', label: 'System Logs', min: 30, max: 730, step: 30 },
-                    { key: 'backupRetentionDays', label: 'Backups', min: 90, max: 1095, step: 90 },
-                  ].map(item => (
-                    <div key={item.key} className="p-3 rounded-lg border bg-muted/30">
-                      <div className="flex justify-between mb-2">
-                        <p className="text-sm font-medium">{item.label}</p>
-                        <span className="text-sm text-muted-foreground">
-                          {dataRetention[item.key as keyof DataRetentionSettings] as number} days
-                        </span>
-                      </div>
-                      <Slider
-                        value={[dataRetention[item.key as keyof DataRetentionSettings] as number]}
-                        min={item.min}
-                        max={item.max}
-                        step={item.step}
-                        onValueChange={([value]) =>
-                          setDataRetention(prev => ({ ...prev, [item.key]: value }))
-                        }
-                      />
-                    </div>
-                  ))}
+                  {(() => {
+                    const minBackupDays = Math.max(dataRetention.conversationRetentionDays, dataRetention.logRetentionDays);
+                    const backupStep = 30;
+                    const minBackupValue = minBackupDays + backupStep;
+                    return (
+                      <>
+                        {[
+                          { key: 'conversationRetentionDays', label: 'Conversations', min: 30, max: 365, step: 30 },
+                          { key: 'logRetentionDays', label: 'System Logs', min: 30, max: 730, step: 30 },
+                        ].map(item => (
+                          <div key={item.key} className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex justify-between mb-2">
+                              <p className="text-sm font-medium">{item.label}</p>
+                              <span className="text-sm text-muted-foreground">
+                                {dataRetention[item.key as keyof DataRetentionSettings] as number} days
+                              </span>
+                            </div>
+                            <Slider
+                              value={[dataRetention[item.key as keyof DataRetentionSettings] as number]}
+                              min={item.min}
+                              max={item.max}
+                              step={item.step}
+                              onValueChange={([value]) => {
+                                setDataRetention(prev => {
+                                  const updated = { ...prev, [item.key]: value };
+                                  const newMin = Math.max(updated.conversationRetentionDays, updated.logRetentionDays);
+                                  const newMinBackup = newMin + backupStep;
+                                  if (updated.backupRetentionDays < newMinBackup) {
+                                    updated.backupRetentionDays = newMinBackup;
+                                  }
+                                  return updated;
+                                });
+                              }}
+                            />
+                          </div>
+                        ))}
+                        <div className="p-3 rounded-lg border bg-muted/30">
+                          <div className="flex justify-between mb-2">
+                            <p className="text-sm font-medium">Backups</p>
+                            <span className="text-sm text-muted-foreground">
+                              {dataRetention.backupRetentionDays} days
+                            </span>
+                          </div>
+                          <Slider
+                            value={[Math.max(dataRetention.backupRetentionDays, minBackupValue)]}
+                            min={minBackupValue}
+                            max={1825}
+                            step={backupStep}
+                            onValueChange={([value]) => {
+                              const clamped = Math.max(value, minBackupValue);
+                              setDataRetention(prev => ({ ...prev, backupRetentionDays: clamped }));
+                            }}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Must be greater than conversations ({dataRetention.conversationRetentionDays} days) and logs ({dataRetention.logRetentionDays} days)
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>

@@ -21,14 +21,15 @@ const availablePlans: SubscriptionPlan[] = [
       '2 AI agents',
       'Basic analytics',
       'Email support',
+      '5 GB storage',
     ],
     limits: { calls: 1000, chats: 5000, emails: 2000, agents: 2, storage: 5 },
     isCurrentPlan: false,
   },
   {
-    id: 'plan-professional',
-    name: 'Professional',
-    type: 'professional',
+    id: 'plan-pro',
+    name: 'Pro',
+    type: 'pro',
     price: 199,
     interval: 'monthly',
     features: [
@@ -39,6 +40,7 @@ const availablePlans: SubscriptionPlan[] = [
       'Priority support',
       'Custom integrations',
       'API access',
+      '50 GB storage',
     ],
     limits: { calls: 10000, chats: 50000, emails: 20000, agents: 10, storage: 50 },
     isCurrentPlan: true,
@@ -54,23 +56,45 @@ const availablePlans: SubscriptionPlan[] = [
       'Unlimited AI calls',
       'Unlimited chat sessions',
       'Unlimited AI agents',
-      'Custom analytics',
-      'Dedicated support',
+      'Custom analytics & reports',
+      'Dedicated account manager',
       'Custom integrations',
       'Full API access',
       'SLA guarantee',
       'On-premise option',
+      '500 GB storage',
     ],
     limits: { calls: -1, chats: -1, emails: -1, agents: -1, storage: 500 },
     isCurrentPlan: false,
   },
+  {
+    id: 'plan-custom',
+    name: 'Custom',
+    type: 'custom',
+    price: 0,
+    interval: 'monthly',
+    features: [
+      'Fully tailored to your needs',
+      'Custom call & chat limits',
+      'Unlimited AI agents',
+      'White-label options',
+      'Dedicated infrastructure',
+      'Custom SLA & compliance',
+      'On-premise deployment',
+      '24/7 premium support',
+      'Custom training & onboarding',
+    ],
+    limits: { calls: -1, chats: -1, emails: -1, agents: -1, storage: -1 },
+    isCurrentPlan: false,
+    isContactSales: true,
+  },
 ];
 
 const mockInvoices: Invoice[] = [
-  { id: 'inv-001', date: '2025-02-01', dueDate: '2025-02-15', amount: 199, status: 'paid', description: 'Professional Plan - February 2025' },
-  { id: 'inv-002', date: '2025-01-01', dueDate: '2025-01-15', amount: 199, status: 'paid', description: 'Professional Plan - January 2025' },
-  { id: 'inv-003', date: '2024-12-01', dueDate: '2024-12-15', amount: 199, status: 'paid', description: 'Professional Plan - December 2024' },
-  { id: 'inv-004', date: '2024-11-01', dueDate: '2024-11-15', amount: 199, status: 'paid', description: 'Professional Plan - November 2024' },
+  { id: 'inv-001', date: '2025-02-01', dueDate: '2025-02-15', amount: 199, status: 'paid', description: 'Pro Plan - February 2025' },
+  { id: 'inv-002', date: '2025-01-01', dueDate: '2025-01-15', amount: 199, status: 'paid', description: 'Pro Plan - January 2025' },
+  { id: 'inv-003', date: '2024-12-01', dueDate: '2024-12-15', amount: 199, status: 'paid', description: 'Pro Plan - December 2024' },
+  { id: 'inv-004', date: '2024-11-01', dueDate: '2024-11-15', amount: 199, status: 'paid', description: 'Pro Plan - November 2024' },
   { id: 'inv-005', date: '2024-10-01', dueDate: '2024-10-15', amount: 49, status: 'paid', description: 'Starter Plan - October 2024' },
 ];
 
@@ -83,6 +107,7 @@ export function useBillingData() {
   const [plans] = useState<SubscriptionPlan[]>(availablePlans);
   const [invoices] = useState<Invoice[]>(mockInvoices);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodData[]>(mockPaymentMethods);
+  const [autoRenew, setAutoRenew] = useState(true);
 
   const currentPlan = plans.find(p => p.isCurrentPlan) || plans[1];
 
@@ -105,6 +130,12 @@ export function useBillingData() {
   const nextBillingDate = '2025-03-01';
   const nextAmount = currentPlan.price;
 
+  const toggleAutoRenew = useCallback(async () => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setAutoRenew(prev => !prev);
+    return { success: true };
+  }, []);
+
   const updatePaymentMethod = useCallback(async (data: {
     cardNumber: string;
     expiryMonth: string;
@@ -114,7 +145,6 @@ export function useBillingData() {
   }): Promise<{ success: boolean; error?: string }> => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Simulate random failure for demo
     if (Math.random() > 0.8) {
       return { success: false, error: 'Card declined. Please try a different payment method.' };
     }
@@ -171,6 +201,8 @@ export function useBillingData() {
     credits,
     nextBillingDate,
     nextAmount,
+    autoRenew,
+    toggleAutoRenew,
     updatePaymentMethod,
     setDefaultPaymentMethod,
     removePaymentMethod,
