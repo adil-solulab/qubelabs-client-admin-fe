@@ -7,6 +7,8 @@ export type NodeType =
   | 'message' | 'text_input' | 'quick_reply' | 'carousel' | 'name_input' | 'email_input' | 'phone_input' | 'date_input'
   // Flow-specific (Action Nodes)  
   | 'dtmf' | 'assistant' | 'transfer' | 'execute_flow' | 'raise_ticket'
+  // Safety & Risk
+  | 'safety_check'
   // Workflow-specific
   | 'api_call' | 'database' | 'function' | 'variable' | 'delay' | 'notification' | 'event_trigger'
   // Integration nodes (shared)
@@ -14,7 +16,7 @@ export type NodeType =
   | 'zendesk' | 'freshdesk'
   | 'zoho_crm' | 'salesforce' | 'hubspot';
 
-export type NodeCategory = 'prompts' | 'messages' | 'logic' | 'actions' | 'channels' | 'ticketing' | 'crm' | 'workflow_actions' | 'workflow_logic';
+export type NodeCategory = 'prompts' | 'messages' | 'logic' | 'actions' | 'safety' | 'channels' | 'ticketing' | 'crm' | 'workflow_actions' | 'workflow_logic';
 
 export type FlowStatus = 'draft' | 'published';
 
@@ -133,6 +135,23 @@ export interface NodeData {
     eventName: string;
     payload?: string;
   };
+  safetyConfig?: {
+    checks: {
+      sentimentAnalysis: boolean;
+      piiDetection: boolean;
+      policyViolation: boolean;
+      profanityFilter: boolean;
+      topicGuardrail: boolean;
+    };
+    sentimentThreshold: 'low' | 'medium' | 'high';
+    piiTypes: ('credit_card' | 'ssn' | 'phone' | 'email' | 'address')[];
+    blockedTopics: string;
+    onHighRisk: 'transfer_agent' | 'escalate_supervisor' | 'send_warning' | 'end_conversation';
+    onMediumRisk: 'continue_with_warning' | 'transfer_agent' | 'log_only';
+    onPiiDetected: 'mask_and_continue' | 'block_and_warn' | 'transfer_agent';
+    customRules: string;
+    enableLogging: boolean;
+  };
 }
 
 export interface FlowEdge {
@@ -219,6 +238,10 @@ export const FLOW_NODE_CATEGORIES: Record<string, { label: string; types: NodeTy
     label: 'Actions',
     types: ['execute_flow', 'raise_ticket', 'assistant', 'transfer', 'dtmf', 'delay', 'end'],
   },
+  safety: {
+    label: 'Safety & Risk',
+    types: ['safety_check'],
+  },
 };
 
 export const WORKFLOW_NODE_CATEGORIES: Record<string, { label: string; types: NodeType[] }> = {
@@ -233,6 +256,10 @@ export const WORKFLOW_NODE_CATEGORIES: Record<string, { label: string; types: No
   integrations: {
     label: 'Integrations',
     types: ['whatsapp', 'slack', 'telegram', 'teams', 'zendesk', 'freshdesk', 'zoho_crm', 'salesforce', 'hubspot'],
+  },
+  safety: {
+    label: 'Safety & Risk',
+    types: ['safety_check'],
   },
 };
 
@@ -466,5 +493,12 @@ export const NODE_TYPE_CONFIG: Record<NodeType, {
     color: 'text-amber-600',
     bgColor: 'bg-amber-600/10',
     borderColor: 'border-amber-600/30'
+  },
+  safety_check: {
+    label: 'Safety Check',
+    icon: '🛡️',
+    color: 'text-red-600',
+    bgColor: 'bg-red-600/10',
+    borderColor: 'border-red-600/30'
   },
 };
