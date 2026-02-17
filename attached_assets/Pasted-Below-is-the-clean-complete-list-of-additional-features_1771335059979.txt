@@ -1,0 +1,95 @@
+Below is the clean, complete list of additional features you MUST add to the “Create Agent → Persona → Voice Settings” section so it matches expectations similar to ElevenLabs-level voice persona controls.
+Your current options (from screenshot):
+Adaptability
+Verbosity
+Empathy
+Risk tolerance
+Domain expertise
+Brand voice profile
+➡️ These are NOT enough for voice persona settings.
+The client specifically mentioned male/female voice tone, meaning they expect full voice persona controls like ElevenLabs / Google / Amazon Polly.
+✅ FINAL LIST — Additional Features You Must Add to Voice Persona Settings
+1. Voice Identity Settings (New Section)
+Voice Gender
+Male
+Female
+Neutral / Androgynous
+Voice Age
+Child
+Teen
+Adult
+Senior
+Voice Accent / Locale
+Examples:
+US English
+UK English
+Indian English
+Australian
+African English
+Middle Eastern English
+(allow multi-language selection if needed)
+Voice Style / Tone
+Cheerful
+Calm
+Professional
+Friendly
+Serious
+Energetic
+Authoritative
+Supportive
+Whispery
+Conversational
+High-energy Sales
+Empathetic
+2. Voice Technical Settings
+Pitch Control
+Slider (Low → High)
+Speaking Rate
+Slow
+Normal
+Fast
+Very Fast (for call-center noise environments)
+Stability / Consistency
+(Just like ElevenLabs)
+More static / consistent
+More expressive
+Clarity / Sharpness
+Softened
+Balanced
+Crisp
+Pronunciation Customization
+Phoneme override (IPA-based)
+Dictionary of custom word pronunciations
+(Useful for brand names)
+3. Emotions & Expressiveness (Important for Voice AI)
+Emotion Range Controls
+(These appear in ElevenLabs + many enterprise systems)
+Neutral
+Happy
+Sad
+Angry
+Confident
+Excited
+Apologetic
+Analytical
+Emotion Strength
+Slider: 0–100%
+4. Conversational Behavior Settings
+Pausing & Naturalness
+Pause length (short / medium / long)
+Breathiness
+Fillers (on/off)
+“uh”, “hmm”, “let me check” (AI-friendly fillers)
+Interruptibility
+Can user interrupt voice mid-sentence? (Yes/No)
+Fallback Tone
+When AI is unsure:
+Professional
+Apologetic
+Neutral
+Informal
+5. Voice Preview Feature
+MUST HAVE:
+A button: “Preview Voice”
+Plays example audio based on all selected settings
+Real-time slider adjustments change preview output

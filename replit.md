@@ -43,6 +43,9 @@ A visual drag-and-drop canvas for designing conversational flows (`flow`) and ba
 - **Safety Check Node**: Comprehensive risk assessment with configurable settings for Bot Type, Sentiment Analysis, PII Detection, Policy Violation, Profanity Filter, Topic Guardrails, and Custom Rules, offering various Risk Actions and Audit Logging.
 - Features an environment selector (Staging, Sandbox, Production) and a category sidebar. A Test Panel supports Chat and Voice modes.
 
+#### Inbound WebRTC SDK
+A dedicated page for configuring an embeddable "Call Us" button that allows end users to make browser-based voice calls to AI agents. Features 5 configuration tabs: Appearance (button text, position, style, size, color presets, color picker, pulse animation, theme, border radius, font), Agent (target AI agent selector, greeting/waiting/end messages), Behavior (mute/speaker/hold/duration/network quality toggles, auto-answer, max call duration slider, noise reduction, echo cancellation), Security (domain restrictions, consent management, recording disclosure, GDPR mode), and Embed Code (HTML snippet generator, React/Next.js component code, npm install command, SDK events reference). Includes an interactive live preview panel with simulated call states (idle, connecting, active, ended) and integration stats.
+
 #### Integrations & Channels (Merged Module)
 A unified page for managing 27 integrations across 7 categories: CRM, Voice, Messaging, Email, Chat Widget, LiveChat, Payments. Includes a dedicated Chat Widget integration with a 5-tab configuration panel. Features a WebRTC Configuration Panel with 7 tabs: ICE Servers (STUN/TURN management), Audio Codecs (Opus/G.711/G.722 with priority ordering), Audio Processing (echo cancellation, noise suppression, VAD), Bandwidth & Quality, SIP Gateway integration, Security (SRTP/DTLS/OAuth), and Network settings.
 
