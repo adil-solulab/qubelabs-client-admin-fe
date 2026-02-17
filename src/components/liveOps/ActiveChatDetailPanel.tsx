@@ -98,7 +98,10 @@ export function ActiveChatDetailPanel({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversation.messages]);
 
+  const isTransferred = conversation.transferred === true;
+
   const handleTakeOver = async () => {
+    if (isTransferred) return;
     setIsTakingOver(true);
     try {
       await onTakeOver();
@@ -108,6 +111,7 @@ export function ActiveChatDetailPanel({
   };
 
   const handleEscalate = async () => {
+    if (isTransferred) return;
     if (!escalateReason.trim()) return;
     setIsEscalating(true);
     try {
@@ -119,8 +123,6 @@ export function ActiveChatDetailPanel({
     }
   };
 
-
-
   const getChannelIcon = () => {
     switch (conversation.channel) {
       case 'voice': return <Phone className="w-4 h-4" />;
@@ -130,6 +132,7 @@ export function ActiveChatDetailPanel({
   };
 
   const handleEndCall = () => {
+    if (isTransferred) return;
     if (conversation.channel === 'voice') {
       setDispositionOpen(true);
     } else {
@@ -303,7 +306,16 @@ export function ActiveChatDetailPanel({
           </div>
         </div>
 
-        {isVoiceCall && conversation.status === 'active' && (
+        {isTransferred && (
+          <div className="p-3 border-t flex-shrink-0 bg-muted/50">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <UserPlus className="w-4 h-4" />
+              <span>This conversation has been transferred to <strong className="text-foreground">{conversation.transferredTo}</strong>. You can no longer interact with it.</span>
+            </div>
+          </div>
+        )}
+
+        {isVoiceCall && conversation.status === 'active' && !isTransferred && (
           <VoiceCallControls
             voiceMuted={voiceMuted}
             voiceOnHold={voiceOnHold}
@@ -327,7 +339,7 @@ export function ActiveChatDetailPanel({
           />
         )}
 
-        {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && onSendMessage && (
+        {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && !isTransferred && onSendMessage && (
           <div className="p-3 border-t flex-shrink-0">
             <div className="flex gap-2">
               <Input
@@ -359,6 +371,7 @@ export function ActiveChatDetailPanel({
           </div>
         )}
 
+        {!isTransferred && (
         <div className="p-4 border-t flex-shrink-0 space-y-3">
           {showTransfer && (
             <div className="mb-2">
@@ -428,6 +441,7 @@ export function ActiveChatDetailPanel({
             )}
           </div>
         </div>
+        )}
       </div>
       </div>
 

@@ -150,6 +150,7 @@ export function ConversationDetailPanel({
   }, [conversation.messages]);
 
   const handleWhisperSend = () => {
+    if (isTransferred) return;
     if (!canWhisper) {
       notify.error('Permission denied', 'You do not have permission to perform this action.');
       return;
@@ -161,6 +162,7 @@ export function ConversationDetailPanel({
   };
 
   const handleBargeIn = () => {
+    if (isTransferred) return;
     if (!canBargeIn) {
       notify.error('Permission denied', 'You do not have permission to perform this action.');
       return;
@@ -169,6 +171,7 @@ export function ConversationDetailPanel({
   };
 
   const handleTransfer = (agentId: string) => {
+    if (isTransferred) return;
     if (!canTransfer) {
       notify.error('Permission denied', 'You do not have permission to perform this action.');
       return;
@@ -178,6 +181,7 @@ export function ConversationDetailPanel({
   };
 
   const handleMonitor = () => {
+    if (isTransferred) return;
     if (!canMonitor) {
       notify.error('Permission denied', 'You do not have permission to perform this action.');
       return;
@@ -200,6 +204,7 @@ export function ConversationDetailPanel({
   }, [conversation.id, setCustomerLanguage]);
 
   const handleEndCall = () => {
+    if (isTransferred) return;
     if (conversation.channel === 'voice') {
       setDispositionOpen(true);
     } else if (onEndConversation) {
@@ -221,6 +226,7 @@ export function ConversationDetailPanel({
   };
 
   const isVoiceCall = conversation.channel === 'voice';
+  const isTransferred = conversation.transferred === true;
 
   const conversationTranslation = getConversationTranslation(conversation.id);
 
@@ -339,7 +345,17 @@ export function ConversationDetailPanel({
         </div>
       </div>
 
+      {isTransferred && (
+        <div className="p-3 border-b flex-shrink-0 bg-muted/50">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <UserPlus className="w-4 h-4" />
+            <span>This conversation has been transferred to <strong className="text-foreground">{conversation.transferredTo}</strong>. You can no longer interact with it.</span>
+          </div>
+        </div>
+      )}
+
       {/* Action Bar (fixed) */}
+      {!isTransferred && (
       <div className="p-3 border-b flex-shrink-0">
         <div className="flex items-center gap-2 flex-wrap">
           {conversation.supervisorMode ? (
@@ -468,6 +484,7 @@ export function ConversationDetailPanel({
           </div>
         )}
       </div>
+      )}
 
       {/* Scrollable Content (ONLY this section scrolls) */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
@@ -592,7 +609,7 @@ export function ConversationDetailPanel({
         </div>
       </div>
 
-      {isVoiceCall && conversation.status === 'active' && (
+      {isVoiceCall && conversation.status === 'active' && !isTransferred && (
         <VoiceCallControls
           voiceMuted={voiceMuted}
           voiceOnHold={voiceOnHold}
@@ -616,7 +633,7 @@ export function ConversationDetailPanel({
         />
       )}
 
-      {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && onSendMessage && (
+      {(conversation.channel === 'chat' || conversation.channel === 'email') && conversation.status === 'active' && !isTransferred && onSendMessage && (
         <div className="p-3 border-t flex-shrink-0">
           <div className="flex gap-2">
             <Input
@@ -648,7 +665,7 @@ export function ConversationDetailPanel({
         </div>
       )}
 
-      {canWhisper && (conversation.supervisorMode === 'monitoring' || conversation.supervisorMode === 'whispering') && (
+      {canWhisper && !isTransferred && (conversation.supervisorMode === 'monitoring' || conversation.supervisorMode === 'whispering') && (
         <div className="p-3 border-t flex-shrink-0">
           <div className="flex gap-2">
             <Input

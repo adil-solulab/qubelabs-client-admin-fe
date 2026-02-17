@@ -99,6 +99,8 @@ export interface LiveConversation {
   coPilotSuggestions?: CoPilotSuggestion[];
   disposition?: CallDisposition;
   notes?: string[];
+  transferred?: boolean;
+  transferredTo?: string;
 }
 
 export interface Agent {

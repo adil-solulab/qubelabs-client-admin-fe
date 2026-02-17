@@ -468,6 +468,8 @@ export function useLiveOpsData() {
             isAiHandled: false,
             status: 'active',
             supervisorMode: null,
+            transferred: true,
+            transferredTo: agent?.name || 'Agent',
             messages: [...conv.messages, transferMessage]
           }
         : conv
@@ -481,6 +483,8 @@ export function useLiveOpsData() {
         isAiHandled: false,
         status: 'active',
         supervisorMode: null,
+        transferred: true,
+        transferredTo: agent?.name || 'Agent',
         messages: [...prev.messages, transferMessage]
       } : null);
     }
