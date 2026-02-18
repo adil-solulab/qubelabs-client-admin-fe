@@ -20,6 +20,9 @@ import {
   FileSpreadsheet,
   Users,
   AlertCircle,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,6 +114,15 @@ export function CreateCampaignWizard({
   const [leadFile, setLeadFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [csvValidation, setCsvValidation] = useState<{
+    isValid: boolean;
+    rowCount: number;
+    headers: string[];
+    matchedColumns: { field: string; header: string }[];
+    missingRequired: string[];
+    warnings: string[];
+  } | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [flowId, setFlowId] = useState('');
   const [workflowId, setWorkflowId] = useState('');
@@ -163,6 +175,17 @@ export function CreateCampaignWizard({
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+  const REQUIRED_FIELD_PATTERNS: { field: string; label: string; patterns: RegExp }[] = [
+    { field: 'name', label: 'Name', patterns: /^(full[_\s]?name|name|contact[_\s]?name|first[_\s]?name|lead[_\s]?name|customer[_\s]?name)$/i },
+    { field: 'phone', label: 'Phone Number', patterns: /^(phone|phone[_\s]?number|mobile|cell|tel|telephone|contact[_\s]?number)$/i },
+  ];
+
+  const OPTIONAL_FIELD_PATTERNS: { field: string; label: string; patterns: RegExp }[] = [
+    { field: 'email', label: 'Email', patterns: /^(email|e-mail|email[_\s]?address|mail)$/i },
+    { field: 'company', label: 'Company', patterns: /^(company|organization|org|business|company[_\s]?name|employer)$/i },
+    { field: 'notes', label: 'Notes', patterns: /^(notes|note|comments|comment|description|details|remarks)$/i },
+  ];
+
   const validateFile = (file: File): string | null => {
     const ext = file.name.toLowerCase();
     if (!ext.endsWith('.csv') && !ext.endsWith('.xls') && !ext.endsWith('.xlsx')) {
@@ -177,32 +200,115 @@ export function CreateCampaignWizard({
     return null;
   };
 
+  const validateCsvContent = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setCsvValidation(null);
+      return;
+    }
+
+    setIsValidating(true);
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+
+      if (lines.length === 0) {
+        setFileError('The CSV file is empty — no headers or data found.');
+        setLeadFile(null);
+        setCsvValidation(null);
+        setIsValidating(false);
+        return;
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+      const rowCount = Math.max(0, lines.length - 1);
+
+      if (rowCount === 0) {
+        setFileError('The CSV file has headers but no data rows.');
+        setLeadFile(null);
+        setCsvValidation(null);
+        setIsValidating(false);
+        return;
+      }
+
+      const matchedColumns: { field: string; header: string }[] = [];
+      const missingRequired: string[] = [];
+      const warnings: string[] = [];
+
+      for (const req of REQUIRED_FIELD_PATTERNS) {
+        const match = headers.find(h => req.patterns.test(h));
+        if (match) {
+          matchedColumns.push({ field: req.label, header: match });
+        } else {
+          missingRequired.push(req.label);
+        }
+      }
+
+      for (const opt of OPTIONAL_FIELD_PATTERNS) {
+        const match = headers.find(h => opt.patterns.test(h));
+        if (match) {
+          matchedColumns.push({ field: opt.label, header: match });
+        }
+      }
+
+      if (rowCount > 50000) {
+        warnings.push(`Large file with ${rowCount.toLocaleString()} rows — processing may take longer.`);
+      }
+
+      const emptyRowCount = lines.slice(1).filter(line => {
+        const cells = line.split(',').map(c => c.trim());
+        return cells.every(c => !c || c === '""' || c === "''");
+      }).length;
+      if (emptyRowCount > 0) {
+        warnings.push(`${emptyRowCount} empty row(s) detected and will be skipped.`);
+      }
+
+      const isValid = missingRequired.length === 0;
+
+      setCsvValidation({
+        isValid,
+        rowCount,
+        headers,
+        matchedColumns,
+        missingRequired,
+        warnings,
+      });
+
+      if (!isValid) {
+        setFileError(null);
+      }
+    } catch {
+      setFileError('Could not read the CSV file. It may be corrupted.');
+      setLeadFile(null);
+      setCsvValidation(null);
+    }
+    setIsValidating(false);
+  };
+
+  const processFile = (file: File) => {
+    const error = validateFile(file);
+    if (error) {
+      setFileError(error);
+      setLeadFile(null);
+      setCsvValidation(null);
+    } else {
+      setFileError(null);
+      setLeadFile(file);
+      validateCsvContent(file);
+    }
+  };
+
   const handleFileDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
     if (!file) return;
-    const error = validateFile(file);
-    if (error) {
-      setFileError(error);
-      setLeadFile(null);
-    } else {
-      setFileError(null);
-      setLeadFile(file);
-    }
+    processFile(file);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const error = validateFile(file);
-      if (error) {
-        setFileError(error);
-        setLeadFile(null);
-      } else {
-        setFileError(null);
-        setLeadFile(file);
-      }
+      processFile(file);
     }
     if (e.target) e.target.value = '';
   };
@@ -211,7 +317,11 @@ export function CreateCampaignWizard({
     switch (currentStep) {
       case 1: return name.trim().length > 0;
       case 2:
-        if (leadSource === 'csv') return !!leadFile;
+        if (leadSource === 'csv') {
+          if (!leadFile || isValidating) return false;
+          if (csvValidation && !csvValidation.isValid) return false;
+          return true;
+        }
         return true;
       case 3: return true;
       default: return false;
@@ -469,6 +579,7 @@ export function CreateCampaignWizard({
                         e.stopPropagation();
                         setLeadFile(null);
                         setFileError(null);
+                        setCsvValidation(null);
                       }}
                     >
                       <X className="w-4 h-4 mr-1" />
@@ -495,6 +606,80 @@ export function CreateCampaignWizard({
                 </div>
               )}
 
+              {isValidating && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span className="text-muted-foreground">Validating CSV file...</span>
+                </div>
+              )}
+
+              {csvValidation && !isValidating && (
+                <div className={cn(
+                  'rounded-lg border overflow-hidden',
+                  csvValidation.isValid ? 'border-green-500/30' : 'border-destructive/30'
+                )}>
+                  <div className={cn(
+                    'flex items-center gap-2 px-3 py-2',
+                    csvValidation.isValid ? 'bg-green-500/10' : 'bg-destructive/10'
+                  )}>
+                    {csvValidation.isValid ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-destructive" />
+                    )}
+                    <span className={cn(
+                      'text-sm font-medium',
+                      csvValidation.isValid ? 'text-green-700 dark:text-green-400' : 'text-destructive'
+                    )}>
+                      {csvValidation.isValid
+                        ? `Valid — ${csvValidation.rowCount.toLocaleString()} rows detected`
+                        : 'Missing required columns'}
+                    </span>
+                  </div>
+                  <div className="px-3 py-2 space-y-2 bg-background">
+                    {csvValidation.matchedColumns.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Matched Columns</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {csvValidation.matchedColumns.map((col) => (
+                            <span key={col.field} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 text-xs">
+                              <Check className="w-3 h-3" />
+                              {col.field} <span className="text-muted-foreground">← {col.header}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {csvValidation.missingRequired.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-medium text-destructive uppercase tracking-wide">Missing Required</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {csvValidation.missingRequired.map((field) => (
+                            <span key={field} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 text-destructive text-xs">
+                              <XCircle className="w-3 h-3" />
+                              {field}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Your CSV must have columns matching: name (or full_name, contact_name) and phone (or phone_number, mobile, cell, tel).
+                        </p>
+                      </div>
+                    )}
+                    {csvValidation.warnings.length > 0 && (
+                      <div className="space-y-1">
+                        {csvValidation.warnings.map((warning, i) => (
+                          <div key={i} className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                            <span>{warning}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <FileSpreadsheet className="w-3.5 h-3.5" /> CSV (.csv)
@@ -504,9 +689,11 @@ export function CreateCampaignWizard({
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
-                Your file should include columns for lead name, phone number, and optionally email, company, and notes.
-              </div>
+              {!csvValidation && !isValidating && (
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
+                  Your file should include columns for lead name, phone number, and optionally email, company, and notes.
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
