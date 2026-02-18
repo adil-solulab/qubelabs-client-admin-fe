@@ -1026,6 +1026,57 @@ export function NodePropertiesPanel({
             </div>
           )}
 
+          {['voice_output', 'chat_output', 'email_output', 'whatsapp_output', 'sms_output'].includes(node.type) && (() => {
+            const channelLabels: Record<string, string> = {
+              voice_output: 'Voice',
+              chat_output: 'Chat',
+              email_output: 'Email',
+              whatsapp_output: 'WhatsApp',
+              sms_output: 'SMS',
+            };
+            const formatLabels: Record<string, string> = {
+              ssml: 'SSML (Speech Synthesis)',
+              rich_text: 'Rich Text (Markdown)',
+              html: 'HTML Template',
+              whatsapp: 'WhatsApp Template',
+              plain_text: 'Plain Text',
+            };
+            const cfg = node.data.channelOutputConfig || {
+              channel: node.type.replace('_output', '') as 'voice' | 'chat' | 'email' | 'whatsapp' | 'sms',
+              messageTemplate: '',
+              formatting: 'plain_text',
+            };
+            return (
+              <>
+                <div className="space-y-3">
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-xs font-medium text-muted-foreground">Channel</p>
+                    <p className="text-sm font-semibold">{channelLabels[node.type] || 'Unknown'}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-xs font-medium text-muted-foreground">Format</p>
+                    <p className="text-sm">{formatLabels[cfg.formatting || ''] || cfg.formatting}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Message Template</Label>
+                    <Textarea
+                      value={cfg.messageTemplate}
+                      onChange={(e) => handleUpdate({
+                        channelOutputConfig: { ...cfg, messageTemplate: e.target.value },
+                      })}
+                      placeholder={`Enter ${channelLabels[node.type] || ''} message template...`}
+                      rows={5}
+                      className="resize-none text-sm font-mono"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      Use {'{{variable}}'} syntax to insert dynamic values
+                    </p>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+
           {node.type === 'safety_check' && (() => {
             const sc = node.data.safetyConfig || {
               botType: 'chat' as const,

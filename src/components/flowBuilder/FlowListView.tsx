@@ -11,9 +11,6 @@ import {
   Copy,
   Trash2,
   FileText,
-  Phone,
-  MessageSquare,
-  Mail,
   Pencil,
   GitBranch,
   Zap,
@@ -62,12 +59,6 @@ interface FlowListViewProps {
   onRenameFolder: (oldName: string, newName: string) => void;
   onDeleteFolder: (name: string) => void;
 }
-
-const CHANNEL_CONFIG = {
-  voice: { label: 'Voice', icon: <Phone className="w-3.5 h-3.5" />, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/20' },
-  chat: { label: 'Chat', icon: <MessageSquare className="w-3.5 h-3.5" />, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/20' },
-  email: { label: 'Email', icon: <Mail className="w-3.5 h-3.5" />, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-500/20' },
-} as const;
 
 export function FlowListView({
   flowSummaries,
@@ -365,11 +356,10 @@ export function FlowListView({
           </div>
 
           <div className="border rounded-xl overflow-hidden bg-card">
-            <div className="grid grid-cols-[1fr_1fr_130px_120px_80px_44px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="grid grid-cols-[1fr_1fr_130px_80px_44px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <span>{builderLabel} Name</span>
               <span>Description</span>
               <span>Last Edited</span>
-              <span>Channels</span>
               <span>Status</span>
               <span></span>
             </div>
@@ -430,7 +420,7 @@ export function FlowListView({
                     return (
                       <div
                         key={flow.id}
-                        className="grid grid-cols-[1fr_1fr_130px_120px_80px_44px] gap-4 px-6 py-3 border-b hover:bg-primary/5 transition-colors group cursor-pointer"
+                        className="grid grid-cols-[1fr_1fr_130px_80px_44px] gap-4 px-6 py-3 border-b hover:bg-primary/5 transition-colors group cursor-pointer"
                         onClick={() => onSelectFlow(flow.id)}
                       >
                         <div className="flex items-center gap-3 pl-8">
@@ -447,16 +437,6 @@ export function FlowListView({
                         <span className="text-xs text-muted-foreground self-center">
                           {formatDate(flow.updatedAt)}
                         </span>
-                        <div className="self-center flex items-center gap-1 flex-wrap">
-                          {flow.channels.map(ch => {
-                            const cfg = CHANNEL_CONFIG[ch];
-                            return (
-                              <span key={ch} className={cn('inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full', cfg.bg, cfg.color)}>
-                                {cfg.icon}
-                              </span>
-                            );
-                          })}
-                        </div>
                         <div className="self-center">
                           <Badge
                             variant={flow.status === 'published' ? 'default' : 'secondary'}
@@ -535,7 +515,7 @@ export function FlowListView({
             <DialogDescription>
               {activeBuilder === 'workflow'
                 ? 'Create a background workflow to run alongside your flows'
-                : 'Define your new conversational flow'}
+                : 'Flows are channel-neutral. Define channel outputs inside the canvas using Channel Output nodes.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">

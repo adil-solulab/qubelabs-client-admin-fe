@@ -11,12 +11,14 @@ export type NodeType =
   | 'safety_check'
   // Workflow-specific
   | 'api_call' | 'database' | 'function' | 'variable' | 'delay' | 'notification' | 'event_trigger'
+  // Channel Output nodes (flow-specific)
+  | 'voice_output' | 'chat_output' | 'email_output' | 'whatsapp_output' | 'sms_output'
   // Integration nodes (shared)
   | 'whatsapp' | 'slack' | 'telegram' | 'teams'
   | 'zendesk' | 'freshdesk'
   | 'zoho_crm' | 'salesforce' | 'hubspot';
 
-export type NodeCategory = 'prompts' | 'messages' | 'logic' | 'actions' | 'safety' | 'channels' | 'ticketing' | 'crm' | 'workflow_actions' | 'workflow_logic';
+export type NodeCategory = 'prompts' | 'messages' | 'logic' | 'actions' | 'safety' | 'channels' | 'channel_outputs' | 'ticketing' | 'crm' | 'workflow_actions' | 'workflow_logic' | 'messaging';
 
 export type FlowStatus = 'draft' | 'published';
 
@@ -142,6 +144,11 @@ export interface NodeData {
     targetWorkflowName: string;
     outputs: { name: string; type: string }[];
   };
+  channelOutputConfig?: {
+    channel: 'voice' | 'chat' | 'email' | 'whatsapp' | 'sms';
+    messageTemplate: string;
+    formatting?: string;
+  };
   safetyConfig?: {
     botType: 'voice' | 'chat' | 'both';
     checks: {
@@ -251,6 +258,10 @@ export const FLOW_NODE_CATEGORIES: Record<string, { label: string; types: NodeTy
   actions: {
     label: 'Actions',
     types: ['run_workflow', 'execute_flow', 'raise_ticket', 'assistant', 'transfer', 'dtmf', 'delay', 'end'],
+  },
+  channel_outputs: {
+    label: 'Channel Outputs',
+    types: ['voice_output', 'chat_output', 'email_output', 'whatsapp_output', 'sms_output'],
   },
   safety: {
     label: 'Safety & Risk',
@@ -529,5 +540,40 @@ export const NODE_TYPE_CONFIG: Record<NodeType, {
     color: 'text-red-600',
     bgColor: 'bg-red-600/10',
     borderColor: 'border-red-600/30'
+  },
+  voice_output: {
+    label: 'Voice Output',
+    icon: '📞',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-600/10',
+    borderColor: 'border-purple-600/30'
+  },
+  chat_output: {
+    label: 'Chat Output',
+    icon: '💬',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-600/10',
+    borderColor: 'border-blue-600/30'
+  },
+  email_output: {
+    label: 'Email Output',
+    icon: '📧',
+    color: 'text-green-600',
+    bgColor: 'bg-green-600/10',
+    borderColor: 'border-green-600/30'
+  },
+  whatsapp_output: {
+    label: 'WhatsApp Output',
+    icon: '📱',
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-600/10',
+    borderColor: 'border-emerald-600/30'
+  },
+  sms_output: {
+    label: 'SMS Output',
+    icon: '📲',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500/30'
   },
 };

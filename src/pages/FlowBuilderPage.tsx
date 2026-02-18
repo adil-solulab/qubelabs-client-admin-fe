@@ -11,9 +11,6 @@ import {
   AlertCircle,
   Lock,
   ChevronRight,
-  Phone,
-  MessageSquare,
-  Mail,
   GitBranch,
   Zap,
 } from 'lucide-react';
@@ -321,16 +318,9 @@ export default function FlowBuilderPage() {
               {flow.status}
             </Badge>
             <Badge variant="outline" className="text-xs">v{flow.currentVersion}</Badge>
-            <div className="flex items-center gap-1">
-              {flow.channels.map(ch => (
-                <Badge key={ch} variant="outline" className="text-xs gap-1">
-                  {ch === 'voice' && <Phone className="w-3 h-3" />}
-                  {ch === 'chat' && <MessageSquare className="w-3 h-3" />}
-                  {ch === 'email' && <Mail className="w-3 h-3" />}
-                  {ch.charAt(0).toUpperCase() + ch.slice(1)}
-                </Badge>
-              ))}
-            </div>
+            <Badge variant="outline" className="text-xs gap-1 text-muted-foreground">
+              Multi-Channel
+            </Badge>
             {hasUnsavedChanges && (
               <Badge variant="destructive" className="gap-1 text-xs">
                 <AlertCircle className="w-3 h-3" />

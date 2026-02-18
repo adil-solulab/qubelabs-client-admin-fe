@@ -6,7 +6,8 @@ import {
   Ticket, ClipboardList,
   BarChart3, Cloud, Hexagon,
   TextCursor, Zap, LayoutGrid, UserCircle, AtSign, Smartphone, Calendar,
-  RefreshCw, Database, Code, Box, Timer, Bell, Globe, ShieldCheck
+  RefreshCw, Database, Code, Box, Timer, Bell, Globe, ShieldCheck,
+  PhoneOutgoing, Mail, MessageSquareMore
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -54,6 +55,11 @@ const NODE_ICONS: Record<NodeType, React.ReactNode> = {
   notification: <Bell className="w-5 h-5" />,
   event_trigger: <Globe className="w-5 h-5" />,
   safety_check: <ShieldCheck className="w-5 h-5" />,
+  voice_output: <PhoneOutgoing className="w-5 h-5" />,
+  chat_output: <MessageSquareMore className="w-5 h-5" />,
+  email_output: <Mail className="w-5 h-5" />,
+  whatsapp_output: <MessageCircle className="w-5 h-5" />,
+  sms_output: <Smartphone className="w-5 h-5" />,
 };
 
 const NODE_DESCRIPTIONS: Record<NodeType, string> = {
@@ -91,6 +97,11 @@ const NODE_DESCRIPTIONS: Record<NodeType, string> = {
   notification: 'Send a notification',
   event_trigger: 'Trigger an external event',
   safety_check: 'Risk & safety checkpoint for AI guardrails',
+  voice_output: 'Format and deliver response via voice (SSML)',
+  chat_output: 'Format response for chat with buttons & quick replies',
+  email_output: 'Format and send as email template',
+  whatsapp_output: 'Format and deliver via WhatsApp',
+  sms_output: 'Format and send as SMS message',
 };
 
 export function NodeToolsSidebar({ onAddNode, canEdit, flowType = 'flow' }: NodeToolsSidebarProps) {

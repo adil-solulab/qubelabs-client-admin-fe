@@ -58,9 +58,9 @@ Implements a Super Agent (orchestrator) and specialized Agents (specialists) mod
 
 #### Flow Builder (Flows & Workflows)
 A visual drag-and-drop canvas for designing conversational flows (`flow`) and backend workflow automations (`workflow`).
-- **Multi-Channel Support**: Each flow/workflow supports all channels (Voice, Chat, Email) simultaneously. Channel selection has been removed from the creation dialog — flows are automatically multi-channel. The `Flow` and `FlowSummary` types use a `channels: FlowChannels` array instead of a single `channel` field.
+- **Multi-Channel Support**: Flows are channel-neutral by design. Channel selection has been removed from the creation dialog and flow list table. Instead, users define channel-specific outputs using **Channel Output nodes** (Voice, Chat, Email, WhatsApp, SMS) directly on the canvas. The flow detail header shows a "Multi-Channel" badge. Each channel output node has its own formatting (SSML for voice, rich text for chat, HTML for email, etc.) and a message template editor.
 - **Separated Builders**: Distinct interfaces for Flow Builder and Workflow Builder.
-- **Flow Nodes**: Includes Prompt, Message, Logic, Action (including Run Workflow), and Safety & Risk (Safety Check).
+- **Flow Nodes**: Includes Prompt, Message, Logic, Action (including Run Workflow), Channel Outputs (Voice, Chat, Email, WhatsApp, SMS), and Safety & Risk (Safety Check).
 - **Run Workflow Node**: Allows flows to call backend workflows. Features WorkflowSelectionModal for selecting existing workflows or creating new ones, displays workflow output variables (e.g., `{{workflow.booking_id}}`), supports "Change Workflow" from properties panel. Output variables are available as clickable tokens in downstream Message node editors. Creating a new workflow from within a flow stores a return target; after publishing the workflow, a "Return to Flow" prompt appears.
 - **Workflow Nodes**: Includes Actions, Logic, Integrations (Messaging, Ticketing, CRM), and Safety & Risk (Safety Check).
 - **Safety Check Node**: Comprehensive risk assessment with configurable settings for Bot Type, Sentiment Analysis, PII Detection, Policy Violation, Profanity Filter, Topic Guardrails, and Custom Rules, offering various Risk Actions and Audit Logging.

@@ -132,6 +132,36 @@ function getDefaultNodeData(type: NodeType): NodeData {
       eventName: '',
       payload: '{}',
     };
+  } else if (type === 'voice_output') {
+    base.channelOutputConfig = {
+      channel: 'voice',
+      messageTemplate: '',
+      formatting: 'ssml',
+    };
+  } else if (type === 'chat_output') {
+    base.channelOutputConfig = {
+      channel: 'chat',
+      messageTemplate: '',
+      formatting: 'rich_text',
+    };
+  } else if (type === 'email_output') {
+    base.channelOutputConfig = {
+      channel: 'email',
+      messageTemplate: '',
+      formatting: 'html',
+    };
+  } else if (type === 'whatsapp_output') {
+    base.channelOutputConfig = {
+      channel: 'whatsapp',
+      messageTemplate: '',
+      formatting: 'whatsapp',
+    };
+  } else if (type === 'sms_output') {
+    base.channelOutputConfig = {
+      channel: 'sms',
+      messageTemplate: '',
+      formatting: 'plain_text',
+    };
   } else if (CHANNEL_TYPES.includes(type)) {
     base.channelConfig = {
       recipientId: '',
