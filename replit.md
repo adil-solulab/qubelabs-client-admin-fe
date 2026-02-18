@@ -58,6 +58,7 @@ Implements a Super Agent (orchestrator) and specialized Agents (specialists) mod
 
 #### Flow Builder (Flows & Workflows)
 A visual drag-and-drop canvas for designing conversational flows (`flow`) and backend workflow automations (`workflow`).
+- **Multi-Channel Support**: Each flow/workflow supports all channels (Voice, Chat, Email) simultaneously. Channel selection has been removed from the creation dialog — flows are automatically multi-channel. The `Flow` and `FlowSummary` types use a `channels: FlowChannels` array instead of a single `channel` field.
 - **Separated Builders**: Distinct interfaces for Flow Builder and Workflow Builder.
 - **Flow Nodes**: Includes Prompt, Message, Logic, Action (including Run Workflow), and Safety & Risk (Safety Check).
 - **Run Workflow Node**: Allows flows to call backend workflows. Features WorkflowSelectionModal for selecting existing workflows or creating new ones, displays workflow output variables (e.g., `{{workflow.booking_id}}`), supports "Change Workflow" from properties panel. Output variables are available as clickable tokens in downstream Message node editors. Creating a new workflow from within a flow stores a return target; after publishing the workflow, a "Return to Flow" prompt appears.
