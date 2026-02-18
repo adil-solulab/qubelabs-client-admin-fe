@@ -377,6 +377,10 @@ export function CreateCampaignWizard({
         required: LEAD_FIELDS.find(f => f.key === fieldKey)?.required || false,
       },
     }));
+    setCsvValidationResult(null);
+    if (csvStep === 'validation') {
+      setCsvStep('mapping');
+    }
   };
 
   const mappedColumnHeaders = useMemo(() => {
@@ -389,11 +393,16 @@ export function CreateCampaignWizard({
 
   const hasBlockingErrors = csvValidationResult?.errors.some(e => e.row === 0) ?? false;
 
+  const isCsvFile = leadFile?.name.toLowerCase().endsWith('.csv') ?? false;
+  const isExcelFile = leadFile ? !isCsvFile : false;
+
   const canProceed = () => {
     switch (currentStep) {
       case 1: return name.trim().length > 0;
       case 2:
         if (leadSource === 'csv') {
+          if (!leadFile) return false;
+          if (isExcelFile) return true;
           if (csvStep === 'validation' && csvValidationResult && !hasBlockingErrors) return true;
           return false;
         }
@@ -409,7 +418,7 @@ export function CreateCampaignWizard({
 
   const handleBack = () => {
     if (currentStep > 1) {
-      if (currentStep === 2 && leadSource === 'csv' && csvStep !== 'upload') {
+      if (currentStep === 2 && leadSource === 'csv' && isCsvFile && csvStep !== 'upload') {
         if (csvStep === 'validation') {
           setCsvStep('mapping');
         } else if (csvStep === 'mapping') {
@@ -629,7 +638,7 @@ export function CreateCampaignWizard({
                 </p>
               </div>
 
-              <div className="flex items-center gap-1 mb-2">
+              {isCsvFile && <div className="flex items-center gap-1 mb-2">
                 {(['upload', 'mapping', 'validation'] as const).map((s, index) => {
                   const labels = { upload: 'Upload File', mapping: 'Map Columns', validation: 'Validate' };
                   const stepOrder = ['upload', 'mapping', 'validation'] as const;
@@ -663,7 +672,7 @@ export function CreateCampaignWizard({
                     </div>
                   );
                 })}
-              </div>
+              </div>}
 
               {csvStep === 'upload' && (
                 <>
@@ -742,7 +751,17 @@ export function CreateCampaignWizard({
                     <span>CSV files will go through column mapping and validation. Excel files are imported directly.</span>
                   </div>
 
-                  {leadFile && leadFile.name.toLowerCase().endsWith('.csv') && (
+                  {leadFile && isExcelFile && (
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-xs">
+                      <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="font-medium text-green-700 dark:text-green-400">Excel file ready</p>
+                        <p className="text-muted-foreground">Excel files are imported directly. Click Next to continue.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {leadFile && isCsvFile && (
                     <div className="flex justify-end">
                       <Button size="sm" onClick={handleProceedToMapping} disabled={isParsing}>
                         {isParsing ? (
