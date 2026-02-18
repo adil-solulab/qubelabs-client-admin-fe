@@ -12,6 +12,23 @@ Preferred communication style: Simple, everyday language.
 
 The application is a frontend-only prototype built with React 18 and TypeScript, using Vite as the build tool. React Router handles client-side navigation with protected routes.
 
+### Backend Database Schema (Entity Design)
+A complete set of TypeORM entity files for NestJS + PostgreSQL is located in `backend/src/entities/`. This covers all ConX modules with multi-tenant support (organizationId on every tenant entity). Entities include:
+- **Core**: Organization, User, Session, Group, GroupMember
+- **AI Agents**: SuperAgent, Agent, VoiceProfile (full voice persona settings)
+- **Knowledge Base**: KnowledgeBase, KnowledgeSource, KnowledgeDocument
+- **Flow Builder**: Flow, FlowNode, FlowEdge, Workflow, WorkflowNode, WorkflowEdge
+- **Campaigns**: Campaign, CampaignLead
+- **Integrations**: Integration, ChatWidgetConfig
+- **Live Ops**: Conversation, Message, ConversationAssignment
+- **Transcripts**: Transcript, TranscriptEntry
+- **Report Tickets**: ReportTicket, TicketComment
+- **Analytics**: AnalyticsEvent, AnalyticsMetric
+- **Billing**: Subscription, Invoice, PaymentMethod, CreditUsage
+- **Security**: AuditLog, ComplianceSetting, SSOConfig
+- **SDK**: ApiKey, EmbedWidget
+- **Enums**: Comprehensive enum definitions in `enums.ts`
+
 ### UI/UX Decisions
 - **Brand Identity**: ConX, tagline "responsible intelligence", using a defined color palette (blue, green, navy, dark) and DM Sans font. Logo assets are provided.
 - **Component Library**: `shadcn/ui` based on Radix UI, styled with Tailwind CSS and CSS variables for theming, adhering to atomic design principles.

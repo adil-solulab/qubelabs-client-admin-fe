@@ -272,6 +272,39 @@ export enum VoiceClarity {
   CRISP = 'crisp',
 }
 
+export enum AssignmentType {
+  AUTO = 'auto',
+  MANUAL = 'manual',
+  TRANSFER = 'transfer',
+  ESCALATION = 'escalation',
+}
+
+export enum MetricCategory {
+  OVERVIEW = 'overview',
+  CHANNELS = 'channels',
+  SENTIMENT = 'sentiment',
+  LLM = 'llm',
+  TRANSCRIPTION = 'transcription',
+  COMPLIANCE = 'compliance',
+  CAMPAIGNS = 'campaigns',
+}
+
+export enum PeriodType {
+  HOURLY = 'hourly',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  YEARLY = 'yearly',
+}
+
+export enum AuditSeverity {
+  INFO = 'info',
+  WARNING = 'warning',
+  ERROR = 'error',
+  CRITICAL = 'critical',
+}
+
 export enum SDKPlatform {
   WEB = 'web',
   IOS = 'ios',
