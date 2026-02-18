@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Bot, Crown, Plus, Trash2, Loader2, Shield, Volume2, Play, Pause, Search, Sliders, X, User, Mic2, Heart, MessageSquare } from 'lucide-react';
+import { Bot, Crown, Plus, Trash2, Loader2, Shield, Volume2, Play, Pause, Search, Sliders, X, User, Mic2, Heart, MessageSquare, Phone, Clock, Globe, Timer } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -93,6 +93,19 @@ const agentSchema = z.object({
   voiceFillersEnabled: z.boolean(),
   voiceInterruptible: z.boolean(),
   voiceFallbackTone: z.enum(['professional', 'apologetic', 'neutral', 'informal']),
+  voiceSpeed: z.number().min(0).max(100),
+  voiceSimilarity: z.number().min(0).max(100),
+  callMaxDuration: z.string(),
+  callInactivityDuration: z.string(),
+  callTimezone: z.string(),
+  callNoiseFiltering: z.boolean(),
+  callVoicemailDetection: z.boolean(),
+  callLeaveVoicemail: z.boolean(),
+  callRetry: z.boolean(),
+  callSilenceIntro: z.boolean(),
+  callSilenceSpeaking: z.boolean(),
+  callBackgroundAudio: z.boolean(),
+  callGracefulExit: z.boolean(),
 });
 
 type AgentFormValues = z.infer<typeof agentSchema>;
@@ -196,6 +209,19 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
       voiceFillersEnabled: false,
       voiceInterruptible: true,
       voiceFallbackTone: 'professional',
+      voiceSpeed: 75,
+      voiceSimilarity: 85,
+      callMaxDuration: '4 minutes',
+      callInactivityDuration: '10 seconds',
+      callTimezone: 'IST (UTC+5:30)',
+      callNoiseFiltering: false,
+      callVoicemailDetection: false,
+      callLeaveVoicemail: false,
+      callRetry: false,
+      callSilenceIntro: false,
+      callSilenceSpeaking: false,
+      callBackgroundAudio: false,
+      callGracefulExit: false,
     },
   });
 
@@ -255,6 +281,19 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         voiceFillersEnabled: agent.voiceProfile?.fillersEnabled ?? false,
         voiceInterruptible: agent.voiceProfile?.interruptible ?? true,
         voiceFallbackTone: agent.voiceProfile?.fallbackTone ?? 'professional',
+        voiceSpeed: agent.voiceProfile?.speed ?? 75,
+        voiceSimilarity: agent.voiceProfile?.similarity ?? 85,
+        callMaxDuration: agent.callSettings?.maxDuration ?? '4 minutes',
+        callInactivityDuration: agent.callSettings?.inactivityDuration ?? '10 seconds',
+        callTimezone: agent.callSettings?.timezone ?? 'IST (UTC+5:30)',
+        callNoiseFiltering: agent.callSettings?.noiseFiltering ?? false,
+        callVoicemailDetection: agent.callSettings?.voicemailDetection ?? false,
+        callLeaveVoicemail: agent.callSettings?.leaveVoicemail ?? false,
+        callRetry: agent.callSettings?.retry ?? false,
+        callSilenceIntro: agent.callSettings?.silenceIntro ?? false,
+        callSilenceSpeaking: agent.callSettings?.silenceSpeaking ?? false,
+        callBackgroundAudio: agent.callSettings?.backgroundAudio ?? false,
+        callGracefulExit: agent.callSettings?.gracefulExit ?? false,
       });
       setLanguages(agent.languages || ['English']);
     } else if (!isEdit) {
@@ -312,6 +351,19 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
         voiceFillersEnabled: false,
         voiceInterruptible: true,
         voiceFallbackTone: 'professional',
+        voiceSpeed: 75,
+        voiceSimilarity: 85,
+        callMaxDuration: '4 minutes',
+        callInactivityDuration: '10 seconds',
+        callTimezone: 'IST (UTC+5:30)',
+        callNoiseFiltering: false,
+        callVoicemailDetection: false,
+        callLeaveVoicemail: false,
+        callRetry: false,
+        callSilenceIntro: false,
+        callSilenceSpeaking: false,
+        callBackgroundAudio: false,
+        callGracefulExit: false,
       });
       setLanguages(['English']);
     }
@@ -361,7 +413,22 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
           fillersEnabled: values.voiceFillersEnabled,
           interruptible: values.voiceInterruptible,
           fallbackTone: values.voiceFallbackTone,
+          speed: values.voiceSpeed,
+          similarity: values.voiceSimilarity,
           customPronunciations: [],
+        },
+        callSettings: {
+          maxDuration: values.callMaxDuration,
+          inactivityDuration: values.callInactivityDuration,
+          timezone: values.callTimezone,
+          noiseFiltering: values.callNoiseFiltering,
+          voicemailDetection: values.callVoicemailDetection,
+          leaveVoicemail: values.callLeaveVoicemail,
+          retry: values.callRetry,
+          silenceIntro: values.callSilenceIntro,
+          silenceSpeaking: values.callSilenceSpeaking,
+          backgroundAudio: values.callBackgroundAudio,
+          gracefulExit: values.callGracefulExit,
         },
         languages: languages,
         llmProvider: values.llmProvider,
@@ -1282,6 +1349,187 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                       <p className="text-[10px] text-muted-foreground">
                         {VOICE_GENDER_LABELS[form.watch('voiceGender')]} · {VOICE_AGE_LABELS[form.watch('voiceAge')]} · {VOICE_ACCENT_LABELS[form.watch('voiceAccent')]} · {VOICE_STYLE_TONE_LABELS[form.watch('voiceStyleTone')]} · {VOICE_SPEAKING_RATE_LABELS[form.watch('voiceSpeakingRate')]} · {VOICE_EMOTION_LABELS[form.watch('voiceEmotion')]}
                       </p>
+                    </div>
+
+                    <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Voice Settings</h4>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="voiceStability"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="p-3 rounded-lg border bg-background space-y-2">
+                              <div className="flex items-center justify-between">
+                                <FormLabel className="text-xs font-semibold">Stability</FormLabel>
+                                <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Higher values will make speech more consistent, but it can also make it sound monotone. Lower values will make speech sound more expressive, but may lead to instabilities.
+                              </p>
+                              <FormControl>
+                                <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                              </FormControl>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="voiceSpeed"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="p-3 rounded-lg border bg-background space-y-2">
+                              <div className="flex items-center justify-between">
+                                <FormLabel className="text-xs font-semibold">Speed</FormLabel>
+                                <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Controls the speed of the generated speech. Values below 1.0 will slow down the speech, while values above 1.0 will speed it up. Extreme values may affect the quality of the generated speech.
+                              </p>
+                              <FormControl>
+                                <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                              </FormControl>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="voiceSimilarity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="p-3 rounded-lg border bg-background space-y-2">
+                              <div className="flex items-center justify-between">
+                                <FormLabel className="text-xs font-semibold">Similarity</FormLabel>
+                                <span className="text-xs font-medium text-primary tabular-nums">{field.value}%</span>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Higher values will boost the overall clarity and consistency of the voice. Very high values may lead to artifacts. Adjusting this value to find the right balance is recommended.
+                              </p>
+                              <FormControl>
+                                <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={([v]) => field.onChange(v)} className="py-1" />
+                              </FormControl>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Call</h4>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="callMaxDuration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Maximum Call Duration</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-8 text-xs">
+                                  <div className="flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <SelectValue />
+                                  </div>
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {['2 minutes', '4 minutes', '6 minutes', '10 minutes', '15 minutes', '30 minutes', '60 minutes'].map(d => (
+                                  <SelectItem key={d} value={d} className="text-xs">{d}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="callInactivityDuration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Inactivity Duration</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-8 text-xs">
+                                  <div className="flex items-center gap-1.5">
+                                    <Timer className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <SelectValue />
+                                  </div>
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {['5 seconds', '10 seconds', '15 seconds', '20 seconds', '30 seconds', '45 seconds', '60 seconds'].map(d => (
+                                  <SelectItem key={d} value={d} className="text-xs">{d}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="callTimezone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Timezone</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-8 text-xs">
+                                  <div className="flex items-center gap-1.5">
+                                    <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <SelectValue />
+                                  </div>
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {[
+                                  'IST (UTC+5:30)', 'EST (UTC-5:00)', 'CST (UTC-6:00)', 'MST (UTC-7:00)',
+                                  'PST (UTC-8:00)', 'GMT (UTC+0:00)', 'CET (UTC+1:00)', 'EET (UTC+2:00)',
+                                  'JST (UTC+9:00)', 'AEST (UTC+10:00)', 'NZST (UTC+12:00)',
+                                ].map(tz => (
+                                  <SelectItem key={tz} value={tz} className="text-xs">{tz}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="space-y-1 pt-1">
+                        {[
+                          { name: 'callNoiseFiltering' as const, label: 'Noise Filtering' },
+                          { name: 'callVoicemailDetection' as const, label: 'Voicemail detection' },
+                          { name: 'callLeaveVoicemail' as const, label: 'Leave voicemail message' },
+                          { name: 'callRetry' as const, label: 'Retry call' },
+                          { name: 'callSilenceIntro' as const, label: "Silence callee during assistant's introduction" },
+                          { name: 'callSilenceSpeaking' as const, label: 'Silence callee when assistant is speaking' },
+                          { name: 'callBackgroundAudio' as const, label: 'Enable background audio' },
+                          { name: 'callGracefulExit' as const, label: 'Enable graceful exit warning' },
+                        ].map((toggle) => (
+                          <FormField
+                            key={toggle.name}
+                            control={form.control}
+                            name={toggle.name}
+                            render={({ field }) => (
+                              <div className="flex items-center justify-between py-1.5 px-1">
+                                <span className="text-xs text-foreground">{toggle.label}</span>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} className="scale-75" />
+                              </div>
+                            )}
+                          />
+                        ))}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

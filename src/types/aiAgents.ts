@@ -115,6 +115,20 @@ export interface VoiceConfig {
   isPrimary: boolean;
 }
 
+export interface CallSettings {
+  maxDuration: string;
+  inactivityDuration: string;
+  timezone: string;
+  noiseFiltering: boolean;
+  voicemailDetection: boolean;
+  leaveVoicemail: boolean;
+  retry: boolean;
+  silenceIntro: boolean;
+  silenceSpeaking: boolean;
+  backgroundAudio: boolean;
+  gracefulExit: boolean;
+}
+
 export interface AIAgent {
   id: string;
   name: string;
@@ -134,6 +148,7 @@ export interface AIAgent {
   disclosureRequirements: string;
   voices: VoiceConfig[];
   voiceProfile?: VoiceProfile;
+  callSettings?: CallSettings;
   languages: string[];
   llmProvider: string;
   persona: AgentPersona;
@@ -242,6 +257,8 @@ export interface VoiceProfile {
   fillersEnabled: boolean;
   interruptible: boolean;
   fallbackTone: VoiceFallbackTone;
+  speed: number;
+  similarity: number;
   customPronunciations: { word: string; pronunciation: string }[];
 }
 
@@ -338,6 +355,8 @@ export const DEFAULT_VOICE_PROFILE: VoiceProfile = {
   fillersEnabled: false,
   interruptible: true,
   fallbackTone: 'professional',
+  speed: 75,
+  similarity: 85,
   customPronunciations: [],
 };
 
