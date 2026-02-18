@@ -214,19 +214,6 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
             )}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-2.5 rounded-lg bg-muted/50">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Voice Profile</p>
-                {agent.voiceProfile ? (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_GENDER_LABELS[agent.voiceProfile.gender]}</Badge>
-                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_AGE_LABELS[agent.voiceProfile.age]}</Badge>
-                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_ACCENT_LABELS[agent.voiceProfile.accent]}</Badge>
-                    <Badge variant="outline" className="text-[9px] h-4">{VOICE_STYLE_TONE_LABELS[agent.voiceProfile.styleTone]}</Badge>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground mt-1">No voice configured</p>
-                )}
-              </div>
-              <div className="p-2.5 rounded-lg bg-muted/50">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Languages</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {(agent.languages || []).map((lang, i) => (
@@ -236,20 +223,97 @@ export function AgentDetailPanel({ agent, childAgents, onBack, onEdit, onTest, o
                   ))}
                 </div>
               </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-muted/50">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">LLM Provider & Model</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Cpu className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-sm font-medium">{agent.llmProvider || 'OpenAI'}</span>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-sm">{agent.prompt.model}</span>
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">LLM Provider & Model</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Cpu className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-sm font-medium">{agent.llmProvider || 'OpenAI'}</span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-sm">{agent.prompt.model}</span>
+                </div>
               </div>
             </div>
           </div>
         </CollapsibleSection>
 
-        <CollapsibleSection title="Persona" icon={MessageSquare}>
+        <CollapsibleSection title="Voice Persona" icon={Volume2}>
+          <div className="grid gap-3">
+            <div className="p-2.5 rounded-lg bg-muted/50">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Voice Identity</p>
+              {agent.voiceProfile ? (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <Badge variant="outline" className="text-[9px] h-4">{VOICE_GENDER_LABELS[agent.voiceProfile.gender]}</Badge>
+                  <Badge variant="outline" className="text-[9px] h-4">{VOICE_AGE_LABELS[agent.voiceProfile.age]}</Badge>
+                  <Badge variant="outline" className="text-[9px] h-4">{VOICE_ACCENT_LABELS[agent.voiceProfile.accent]}</Badge>
+                  <Badge variant="outline" className="text-[9px] h-4">{VOICE_STYLE_TONE_LABELS[agent.voiceProfile.styleTone]}</Badge>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">No voice configured</p>
+              )}
+            </div>
+            {agent.voiceProfile && (
+              <>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Pitch</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${agent.voiceProfile.pitch}%` }} />
+                      </div>
+                      <span className="text-xs font-medium">{agent.voiceProfile.pitch}%</span>
+                    </div>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Stability</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${agent.voiceProfile.stability}%` }} />
+                      </div>
+                      <span className="text-xs font-medium">{agent.voiceProfile.stability}%</span>
+                    </div>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Speed</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${agent.voiceProfile.speed}%` }} />
+                      </div>
+                      <span className="text-xs font-medium">{agent.voiceProfile.speed}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Emotion</p>
+                    <Badge variant="outline" className="text-xs capitalize">{agent.voiceProfile.emotion}</Badge>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Expressiveness</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${agent.voiceProfile.expressiveness}%` }} />
+                      </div>
+                      <span className="text-xs font-medium">{agent.voiceProfile.expressiveness}%</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+            {agent.callSettings && (
+              <div className="p-2.5 rounded-lg bg-muted/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Call Settings</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <Badge variant="outline" className="text-[9px] h-4">Max: {agent.callSettings.maxDuration}</Badge>
+                  <Badge variant="outline" className="text-[9px] h-4">Inactivity: {agent.callSettings.inactivityDuration}</Badge>
+                  {agent.callSettings.noiseFiltering && <Badge variant="secondary" className="text-[9px] h-4">Noise Filter</Badge>}
+                  {agent.callSettings.voicemailDetection && <Badge variant="secondary" className="text-[9px] h-4">Voicemail</Badge>}
+                </div>
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Prompt Persona" icon={MessageSquare}>
           <div className="grid gap-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="p-2.5 rounded-lg bg-muted/50">

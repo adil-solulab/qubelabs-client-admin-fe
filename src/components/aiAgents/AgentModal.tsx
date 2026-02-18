@@ -495,9 +495,10 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
           <Form {...form}>
             <form id="agent-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="w-full grid grid-cols-5">
+                <TabsList className="w-full grid grid-cols-6">
                   <TabsTrigger value="basics" className="text-xs">Basics</TabsTrigger>
                   <TabsTrigger value="persona" className="text-xs">Persona</TabsTrigger>
+                  <TabsTrigger value="voice" className="text-xs">Voice</TabsTrigger>
                   <TabsTrigger value="prompt" className="text-xs">Prompt</TabsTrigger>
                   <TabsTrigger value="behavior" className="text-xs">Behavior</TabsTrigger>
                   <TabsTrigger value="guardrails" className="text-xs">Guardrails</TabsTrigger>
@@ -927,6 +928,164 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                     />
                   </div>
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <FormField
+                        control={form.control}
+                        name="expressiveMode"
+                        render={({ field }) => (
+                          <div className="p-3 rounded-lg border bg-muted/30 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">&#127908;</span>
+                              <span className="text-sm font-semibold">Expressive Mode</span>
+                              <Badge variant="secondary" className="text-[9px] h-4 bg-primary/10 text-primary">New</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Enhance your agent with emotionally intelligent speech, natural intonation, and expressive audio.</p>
+                            <div className="flex gap-2">
+                              <Button type="button" variant={field.value ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => field.onChange(true)}>
+                                Enable
+                              </Button>
+                              <Button type="button" variant={!field.value ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => field.onChange(false)}>
+                                Dismiss
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      />
+
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-semibold">Language</h4>
+                        <p className="text-xs text-muted-foreground">Choose the default and additional languages</p>
+                        <div className="space-y-1.5">
+                          {languages.map((lang, i) => (
+                            <div key={lang} className="flex items-center justify-between p-2 rounded-lg border bg-muted/30">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">&#127760;</span>
+                                <span className="text-xs font-medium">{lang}</span>
+                                {i === 0 && <Badge variant="secondary" className="text-[9px] h-4">Default</Badge>}
+                              </div>
+                              {i > 0 && (
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setLanguages(prev => prev.filter((_, idx) => idx !== i))}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <Select
+                          onValueChange={(lang) => {
+                            if (!languages.includes(lang)) {
+                              setLanguages(prev => [...prev, lang]);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="+ Add additional languages" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {LANGUAGE_OPTIONS.filter(l => !languages.includes(l)).map(l => (
+                              <SelectItem key={l} value={l} className="text-xs">{l}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-semibold">LLM</h4>
+                        <p className="text-xs text-muted-foreground">Select provider and model for the LLM</p>
+                        <FormField
+                          control={form.control}
+                          name="llmProvider"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select onValueChange={(v) => {
+                                field.onChange(v);
+                                const models = LLM_PROVIDERS[v];
+                                if (models && models.length > 0) {
+                                  form.setValue('model', models[0].toLowerCase().replace(/\s+/g, '-'));
+                                }
+                              }} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Object.keys(LLM_PROVIDERS).map(p => (
+                                    <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="model"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {(LLM_PROVIDERS[form.watch('llmProvider')] || []).map(m => (
+                                    <SelectItem key={m} value={m.toLowerCase().replace(/\s+/g, '-')} className="text-xs">{m}</SelectItem>
+                                  ))}
+                                  <SelectItem value="gpt-4">GPT-4</SelectItem>
+                                  <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                                  <SelectItem value="claude-3">Claude 3</SelectItem>
+                                  <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField
+                          control={form.control}
+                          name="temperature"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Temperature ({field.value})</FormLabel>
+                              <FormControl>
+                                <Slider
+                                  min={0}
+                                  max={2}
+                                  step={0.1}
+                                  value={[field.value]}
+                                  onValueChange={([v]) => field.onChange(v)}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="maxTokens"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Max Tokens</FormLabel>
+                              <FormControl>
+                                <Input type="number" min={1} max={4096} className="h-8 text-xs" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="voice" className="space-y-4 mt-4">
                   <div className="space-y-4">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
@@ -1531,161 +1690,6 @@ export function AgentModal({ agent, isEdit, open, onOpenChange, onSave, superAge
                         ))}
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <FormField
-                        control={form.control}
-                        name="expressiveMode"
-                        render={({ field }) => (
-                          <div className="p-3 rounded-lg border bg-muted/30 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">&#127908;</span>
-                              <span className="text-sm font-semibold">Expressive Mode</span>
-                              <Badge variant="secondary" className="text-[9px] h-4 bg-primary/10 text-primary">New</Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground">Enhance your agent with emotionally intelligent speech, natural intonation, and expressive audio.</p>
-                            <div className="flex gap-2">
-                              <Button type="button" variant={field.value ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => field.onChange(true)}>
-                                Enable
-                              </Button>
-                              <Button type="button" variant={!field.value ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => field.onChange(false)}>
-                                Dismiss
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-semibold">Language</h4>
-                        <p className="text-xs text-muted-foreground">Choose the default and additional languages</p>
-                        <div className="space-y-1.5">
-                          {languages.map((lang, i) => (
-                            <div key={lang} className="flex items-center justify-between p-2 rounded-lg border bg-muted/30">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm">&#127760;</span>
-                                <span className="text-xs font-medium">{lang}</span>
-                                {i === 0 && <Badge variant="secondary" className="text-[9px] h-4">Default</Badge>}
-                              </div>
-                              {i > 0 && (
-                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setLanguages(prev => prev.filter((_, idx) => idx !== i))}>
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <Select
-                          onValueChange={(lang) => {
-                            if (!languages.includes(lang)) {
-                              setLanguages(prev => [...prev, lang]);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="+ Add additional languages" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LANGUAGE_OPTIONS.filter(l => !languages.includes(l)).map(l => (
-                              <SelectItem key={l} value={l} className="text-xs">{l}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-semibold">LLM</h4>
-                        <p className="text-xs text-muted-foreground">Select provider and model for the LLM</p>
-                        <FormField
-                          control={form.control}
-                          name="llmProvider"
-                          render={({ field }) => (
-                            <FormItem>
-                              <Select onValueChange={(v) => {
-                                field.onChange(v);
-                                const models = LLM_PROVIDERS[v];
-                                if (models && models.length > 0) {
-                                  form.setValue('model', models[0].toLowerCase().replace(/\s+/g, '-'));
-                                }
-                              }} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Object.keys(LLM_PROVIDERS).map(p => (
-                                    <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="model"
-                          render={({ field }) => (
-                            <FormItem>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {(LLM_PROVIDERS[form.watch('llmProvider')] || []).map(m => (
-                                    <SelectItem key={m} value={m.toLowerCase().replace(/\s+/g, '-')} className="text-xs">{m}</SelectItem>
-                                  ))}
-                                  <SelectItem value="gpt-4">GPT-4</SelectItem>
-                                  <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                                  <SelectItem value="claude-3">Claude 3</SelectItem>
-                                  <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField
-                          control={form.control}
-                          name="temperature"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs">Temperature ({field.value})</FormLabel>
-                              <FormControl>
-                                <Slider
-                                  min={0}
-                                  max={2}
-                                  step={0.1}
-                                  value={[field.value]}
-                                  onValueChange={([v]) => field.onChange(v)}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="maxTokens"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs">Max Tokens</FormLabel>
-                              <FormControl>
-                                <Input type="number" min={1} max={4096} className="h-8 text-xs" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
                   </div>
                 </TabsContent>
 
