@@ -47,7 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { FlowSummary, FlowChannel, FlowType } from '@/types/flowBuilder';
+import type { FlowSummary, FlowType } from '@/types/flowBuilder';
 import { cn } from '@/lib/utils';
 import { notify } from '@/hooks/useNotification';
 
@@ -55,7 +55,7 @@ interface FlowListViewProps {
   flowSummaries: FlowSummary[];
   categories: string[];
   onSelectFlow: (flowId: string) => void;
-  onCreateFlow: (name: string, description: string, category: string, channel: FlowChannel, flowType: FlowType) => void;
+  onCreateFlow: (name: string, description: string, category: string, flowType: FlowType) => void;
   onDeleteFlow: (flowId: string) => void;
   onDuplicateFlow: (flowId: string) => void;
   onCreateFolder: (name: string) => boolean;
@@ -63,11 +63,11 @@ interface FlowListViewProps {
   onDeleteFolder: (name: string) => void;
 }
 
-const CHANNEL_CONFIG: Record<FlowChannel, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
+const CHANNEL_CONFIG = {
   voice: { label: 'Voice', icon: <Phone className="w-3.5 h-3.5" />, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/20' },
   chat: { label: 'Chat', icon: <MessageSquare className="w-3.5 h-3.5" />, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/20' },
   email: { label: 'Email', icon: <Mail className="w-3.5 h-3.5" />, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-500/20' },
-};
+} as const;
 
 export function FlowListView({
   flowSummaries,
@@ -91,7 +91,6 @@ export function FlowListView({
   const [newFlowName, setNewFlowName] = useState('');
   const [newFlowDescription, setNewFlowDescription] = useState('');
   const [newFlowCategory, setNewFlowCategory] = useState(categories[0] || 'Base');
-  const [newFlowChannel, setNewFlowChannel] = useState<FlowChannel>('chat');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -131,10 +130,9 @@ export function FlowListView({
       setExpandedCategories(prev => ({ ...prev, [newCategoryName.trim()]: true }));
     }
 
-    onCreateFlow(newFlowName.trim(), newFlowDescription.trim(), category, newFlowChannel, activeBuilder);
+    onCreateFlow(newFlowName.trim(), newFlowDescription.trim(), category, activeBuilder);
     setNewFlowName('');
     setNewFlowDescription('');
-    setNewFlowChannel('chat');
     setNewCategoryName('');
     setShowNewCategory(false);
     setCreateModalOpen(false);
@@ -367,11 +365,11 @@ export function FlowListView({
           </div>
 
           <div className="border rounded-xl overflow-hidden bg-card">
-            <div className="grid grid-cols-[1fr_1fr_130px_90px_80px_44px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="grid grid-cols-[1fr_1fr_130px_120px_80px_44px] gap-4 px-6 py-3 bg-muted/40 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <span>{builderLabel} Name</span>
               <span>Description</span>
               <span>Last Edited</span>
-              <span>Channel</span>
+              <span>Channels</span>
               <span>Status</span>
               <span></span>
             </div>
@@ -429,11 +427,10 @@ export function FlowListView({
                   </div>
 
                   {isExpanded && categoryFlows.map(flow => {
-                    const channelCfg = CHANNEL_CONFIG[flow.channel];
                     return (
                       <div
                         key={flow.id}
-                        className="grid grid-cols-[1fr_1fr_130px_90px_80px_44px] gap-4 px-6 py-3 border-b hover:bg-primary/5 transition-colors group cursor-pointer"
+                        className="grid grid-cols-[1fr_1fr_130px_120px_80px_44px] gap-4 px-6 py-3 border-b hover:bg-primary/5 transition-colors group cursor-pointer"
                         onClick={() => onSelectFlow(flow.id)}
                       >
                         <div className="flex items-center gap-3 pl-8">
@@ -450,11 +447,15 @@ export function FlowListView({
                         <span className="text-xs text-muted-foreground self-center">
                           {formatDate(flow.updatedAt)}
                         </span>
-                        <div className="self-center">
-                          <span className={cn('inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full', channelCfg.bg, channelCfg.color)}>
-                            {channelCfg.icon}
-                            {channelCfg.label}
-                          </span>
+                        <div className="self-center flex items-center gap-1 flex-wrap">
+                          {flow.channels.map(ch => {
+                            const cfg = CHANNEL_CONFIG[ch];
+                            return (
+                              <span key={ch} className={cn('inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full', cfg.bg, cfg.color)}>
+                                {cfg.icon}
+                              </span>
+                            );
+                          })}
                         </div>
                         <div className="self-center">
                           <Badge
@@ -561,34 +562,6 @@ export function FlowListView({
                 rows={3}
                 className="resize-none"
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Channel</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {(['voice', 'chat', 'email'] as FlowChannel[]).map(ch => {
-                  const cfg = CHANNEL_CONFIG[ch];
-                  return (
-                    <button
-                      key={ch}
-                      type="button"
-                      className={cn(
-                        'flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all',
-                        newFlowChannel === ch
-                          ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-border hover:border-muted-foreground/40 hover:bg-muted/30'
-                      )}
-                      onClick={() => setNewFlowChannel(ch)}
-                    >
-                      <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', cfg.bg, cfg.color)}>
-                        {ch === 'voice' && <Phone className="w-4 h-4" />}
-                        {ch === 'chat' && <MessageSquare className="w-4 h-4" />}
-                        {ch === 'email' && <Mail className="w-4 h-4" />}
-                      </div>
-                      <span className="text-xs font-medium">{cfg.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">

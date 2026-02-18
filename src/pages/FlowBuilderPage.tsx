@@ -104,7 +104,7 @@ export default function FlowBuilderPage() {
       if (existing) {
         selectFlow(existing.id);
       } else {
-        const newFlow = createFlow(openFlow, `${openFlow} flow`, 'Base', 'chat', 'flow');
+        const newFlow = createFlow(openFlow, `${openFlow} flow`, 'Base', 'flow');
         selectFlow(newFlow.id);
       }
       setSearchParams({}, { replace: true });
@@ -159,7 +159,7 @@ export default function FlowBuilderPage() {
     if (flow) {
       setReturnToFlowId(flow.id);
     }
-    const newWorkflow = createFlow('New Workflow', 'Backend automation workflow', 'Operations', 'chat', 'workflow');
+    const newWorkflow = createFlow('New Workflow', 'Backend automation workflow', 'Operations', 'workflow');
     setWorkflowModalOpen(false);
     selectFlow(newWorkflow.id);
     notify.created('New workflow created — you can return to your flow after publishing');
@@ -321,12 +321,16 @@ export default function FlowBuilderPage() {
               {flow.status}
             </Badge>
             <Badge variant="outline" className="text-xs">v{flow.currentVersion}</Badge>
-            <Badge variant="outline" className="text-xs gap-1">
-              {flow.channel === 'voice' && <Phone className="w-3 h-3" />}
-              {flow.channel === 'chat' && <MessageSquare className="w-3 h-3" />}
-              {flow.channel === 'email' && <Mail className="w-3 h-3" />}
-              {flow.channel.charAt(0).toUpperCase() + flow.channel.slice(1)}
-            </Badge>
+            <div className="flex items-center gap-1">
+              {flow.channels.map(ch => (
+                <Badge key={ch} variant="outline" className="text-xs gap-1">
+                  {ch === 'voice' && <Phone className="w-3 h-3" />}
+                  {ch === 'chat' && <MessageSquare className="w-3 h-3" />}
+                  {ch === 'email' && <Mail className="w-3 h-3" />}
+                  {ch.charAt(0).toUpperCase() + ch.slice(1)}
+                </Badge>
+              ))}
+            </div>
             {hasUnsavedChanges && (
               <Badge variant="destructive" className="gap-1 text-xs">
                 <AlertCircle className="w-3 h-3" />

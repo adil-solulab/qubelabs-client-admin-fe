@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary, FlowChannel, FlowType } from '@/types/flowBuilder';
+import type { Flow, FlowNode, FlowEdge, FlowVersion, NodeType, NodeData, FlowSummary, FlowType } from '@/types/flowBuilder';
 import { NODE_TYPE_CONFIG } from '@/types/flowBuilder';
 
 const CHANNEL_TYPES: NodeType[] = ['whatsapp', 'slack', 'telegram', 'teams'];
@@ -163,7 +163,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Customer Support Flow',
     description: 'Main customer support conversation flow',
     category: 'Base',
-    channel: 'voice',
+    channels: ['voice', 'chat', 'email'],
     flowType: 'flow',
     currentVersion: '2.1',
     status: 'published',
@@ -290,7 +290,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Handle Customer',
     description: 'Customer inquiry handling and routing',
     category: 'Base',
-    channel: 'chat',
+    channels: ['voice', 'chat', 'email'],
     flowType: 'flow',
     currentVersion: '1.2',
     status: 'published',
@@ -341,7 +341,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Product FAQ',
     description: 'Automated product FAQ responses',
     category: 'FAQs',
-    channel: 'chat',
+    channels: ['voice', 'chat', 'email'],
     flowType: 'flow',
     currentVersion: '1.0',
     status: 'published',
@@ -400,7 +400,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Billing FAQ',
     description: 'Handle billing and payment inquiries',
     category: 'FAQs',
-    channel: 'voice',
+    channels: ['voice', 'chat', 'email'],
     flowType: 'workflow',
     currentVersion: '1.1',
     status: 'draft',
@@ -451,7 +451,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Appointment Booking',
     description: 'Schedule and manage customer appointments',
     category: 'Operations',
-    channel: 'email',
+    channels: ['voice', 'chat', 'email'],
     flowType: 'workflow',
     currentVersion: '1.0',
     status: 'published',
@@ -501,7 +501,7 @@ const generateMockFlows = (): Flow[] => [
     name: 'Generate Booking ID',
     description: 'Backend workflow to generate and store booking IDs',
     category: 'Operations',
-    channel: 'chat',
+    channels: ['voice', 'chat', 'email'],
     flowType: 'workflow',
     currentVersion: '1.0',
     status: 'published',
@@ -612,7 +612,7 @@ export function useFlowBuilderData() {
         name: f.name,
         description: f.description,
         category: f.category,
-        channel: f.channel,
+        channels: f.channels,
         flowType: f.flowType,
         status: f.status,
         currentVersion: f.currentVersion,
@@ -625,13 +625,13 @@ export function useFlowBuilderData() {
     return [...new Set(flows.map(f => f.category))];
   }, [flows]);
 
-  const createFlow = useCallback((name: string, description: string, category: string, channel: FlowChannel = 'chat', flowType: FlowType = 'flow') => {
+  const createFlow = useCallback((name: string, description: string, category: string, flowType: FlowType = 'flow') => {
     const newFlow: Flow = {
       id: `flow-${Date.now()}`,
       name,
       description,
       category,
-      channel,
+      channels: ['voice', 'chat', 'email'],
       flowType,
       currentVersion: '1.0',
       status: 'draft',
@@ -681,7 +681,7 @@ export function useFlowBuilderData() {
     return newFlow;
   }, [flows]);
 
-  const updateFlowMeta = useCallback((flowId: string, updates: { name?: string; description?: string; category?: string; channel?: FlowChannel }) => {
+  const updateFlowMeta = useCallback((flowId: string, updates: { name?: string; description?: string; category?: string }) => {
     setFlows(prev => prev.map(f => f.id === flowId ? { ...f, ...updates } : f));
   }, []);
 
@@ -693,7 +693,7 @@ export function useFlowBuilderData() {
       name: '__folder_placeholder__',
       description: '',
       category: folderName,
-      channel: 'chat',
+      channels: ['voice', 'chat', 'email'],
       flowType: 'flow',
       currentVersion: '0',
       status: 'draft',

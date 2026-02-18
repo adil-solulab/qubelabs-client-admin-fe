@@ -47,7 +47,7 @@ export function TestPanel({ flow }: TestPanelProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [waitingForInput, setWaitingForInput] = useState(false);
   const [waitingForDTMF, setWaitingForDTMF] = useState(false);
-  const [testMode, setTestMode] = useState<TestMode>(flow.channel === 'voice' ? 'voice' : 'chat');
+  const [testMode, setTestMode] = useState<TestMode>(flow.channels.includes('voice') ? 'voice' : 'chat');
   const [isCallActive, setIsCallActive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);

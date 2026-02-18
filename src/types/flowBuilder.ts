@@ -22,6 +22,8 @@ export type FlowStatus = 'draft' | 'published';
 
 export type FlowChannel = 'voice' | 'chat' | 'email';
 
+export type FlowChannels = FlowChannel[];
+
 export interface FlowNode {
   id: string;
   type: NodeType;
@@ -189,7 +191,7 @@ export interface Flow {
   name: string;
   description: string;
   category: string;
-  channel: FlowChannel;
+  channels: FlowChannels;
   flowType: FlowType;
   currentVersion: string;
   status: FlowStatus;
@@ -205,7 +207,7 @@ export interface FlowSummary {
   name: string;
   description: string;
   category: string;
-  channel: FlowChannel;
+  channels: FlowChannels;
   flowType: FlowType;
   status: FlowStatus;
   currentVersion: string;
