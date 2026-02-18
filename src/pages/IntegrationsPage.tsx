@@ -2,14 +2,6 @@ import { useState, useMemo } from 'react';
 import {
   Search,
   Plug,
-  Key,
-  Webhook,
-  Plus,
-  Copy,
-  Check,
-  Trash2,
-  MoreVertical,
-  CheckCircle,
   MessageSquare,
   Phone,
   MessageCircle,
@@ -20,36 +12,19 @@ import {
   Wifi,
   ChevronRight,
   Settings2,
+  Filter,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
 import { usePermission } from '@/hooks/usePermission';
 import { notify } from '@/hooks/useNotification';
-import { PermissionButton } from '@/components/auth/PermissionButton';
 import { IntegrationDetailView } from '@/components/integrations/IntegrationDetailView';
 import { ChatWidgetConfigPanel } from '@/components/channels/ChatWidgetConfigPanel';
-import { CreateAPIKeyModal } from '@/components/integrations/CreateAPIKeyModal';
-import { AddWebhookModal } from '@/components/integrations/AddWebhookModal';
 import type { Integration, IntegrationCategory } from '@/types/integrations';
 import { CATEGORY_CONFIG, INTEGRATION_ICONS } from '@/types/integrations';
 import { cn } from '@/lib/utils';
@@ -69,17 +44,11 @@ const CATEGORY_LUCIDE_ICONS: Record<IntegrationCategory, React.ElementType> = {
 export default function IntegrationsPage() {
   const {
     integrations,
-    apiKeys,
-    webhooks,
     chatWidgetConfig,
     isSavingWidget,
     connectIntegration,
     disconnectIntegration,
     updateChatWidgetConfig,
-    createAPIKey,
-    revokeAPIKey,
-    toggleAPIKey,
-    createWebhook,
   } = useIntegrationsData();
 
   const { withPermission } = usePermission('integrations');
@@ -88,9 +57,7 @@ export default function IntegrationsPage() {
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<IntegrationCategory | 'all'>('all');
-  const [createKeyModalOpen, setCreateKeyModalOpen] = useState(false);
-  const [addWebhookModalOpen, setAddWebhookModalOpen] = useState(false);
-  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<'grid' | 'list'>('grid');
 
   const categoryOrder: IntegrationCategory[] = ['crm', 'voice', 'messaging', 'email', 'chat_widget', 'live_chat', 'payment'];
 
@@ -104,13 +71,15 @@ export default function IntegrationsPage() {
         counts[int.category] = (counts[int.category] || 0) + 1;
       }
     });
-    counts['chat_widget'] = 1;
+    counts['chat_widget'] = (counts['chat_widget'] || 0) + 1;
     return counts;
   }, [integrations, searchQuery]);
 
   const connectedCount = useMemo(() => {
     return integrations.filter(i => i.status === 'connected').length;
   }, [integrations]);
+
+  const totalCount = integrations.length + 1;
 
   const categoryConnectedCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -171,49 +140,6 @@ export default function IntegrationsPage() {
     return result;
   };
 
-  const handleCreateKey = async (name: string, permissions: string[]) => {
-    const result = await createAPIKey(name, permissions);
-    if (result.success) notify.created('API Key');
-    else notify.error('Failed to create API key');
-    return result;
-  };
-
-  const handleRevokeKey = async (keyId: string) => {
-    withPermission('delete', async () => {
-      await revokeAPIKey(keyId);
-      notify.deleted('API Key');
-    });
-  };
-
-  const handleToggleKey = async (keyId: string) => {
-    withPermission('edit', async () => {
-      await toggleAPIKey(keyId);
-      const key = apiKeys.find(k => k.id === keyId);
-      if (key?.isActive) notify.info('API Key disabled');
-      else notify.success('API Key enabled');
-    });
-  };
-
-  const handleCopyKey = async (keyId: string, key: string) => {
-    await navigator.clipboard.writeText(key);
-    setCopiedKeyId(keyId);
-    setTimeout(() => setCopiedKeyId(null), 2000);
-    notify.copied();
-  };
-
-  const handleAddWebhook = async (name: string, url: string, events: string[]) => {
-    const result = await createWebhook(name, url, events);
-    if (result.success) notify.created('Webhook Endpoint');
-    else notify.error('Failed to create webhook');
-    return result;
-  };
-
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
   if (viewMode === 'detail' && selectedIntegration) {
     const liveIntegration = integrations.find(i => i.id === selectedIntegration.id) || selectedIntegration;
     return (
@@ -241,387 +167,271 @@ export default function IntegrationsPage() {
     );
   }
 
-
-  const totalCount = integrations.length + 1;
-
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Integrations & Channels</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Connect third-party services and communication channels to your AI platform
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="px-3 py-1.5 text-xs gap-1.5">
-              <Wifi className="w-3 h-3 text-success" />
-              {connectedCount} connected
-            </Badge>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm font-semibold">{connectedCount}</span>
+              <span className="text-xs text-muted-foreground">of {totalCount} connected</span>
+            </div>
           </div>
         </div>
 
-        <Tabs defaultValue="integrations" className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <TabsList>
-              <TabsTrigger value="integrations" className="gap-1.5">
-                <Plug className="w-3.5 h-3.5" />
-                Integrations
-              </TabsTrigger>
-              <TabsTrigger value="api-keys" className="gap-1.5">
-                <Key className="w-3.5 h-3.5" />
-                API Keys
-              </TabsTrigger>
-              <TabsTrigger value="webhooks" className="gap-1.5">
-                <Webhook className="w-3.5 h-3.5" />
-                Webhooks
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <div className="grid lg:grid-cols-[220px,1fr] gap-6">
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search integrations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm bg-card"
+              />
+            </div>
 
-          <TabsContent value="integrations" className="mt-0">
-            <div className="grid lg:grid-cols-[240px,1fr] gap-6">
-              <div className="space-y-1">
-                <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9 text-sm"
-                  />
+            <nav className="space-y-0.5">
+              <button
+                onClick={() => setActiveCategory('all')}
+                className={cn(
+                  'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all',
+                  activeCategory === 'all'
+                    ? 'bg-primary text-primary-foreground font-medium shadow-sm'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Plug className="w-4 h-4" />
+                  <span>All Integrations</span>
                 </div>
+                <span className={cn(
+                  'text-xs font-medium px-1.5 py-0.5 rounded-md',
+                  activeCategory === 'all' ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                )}>
+                  {totalCount}
+                </span>
+              </button>
 
-                <nav className="space-y-0.5">
+              <div className="pt-2 pb-1 px-3">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Categories</span>
+              </div>
+
+              {categoryOrder.map(cat => {
+                const config = CATEGORY_CONFIG[cat];
+                const CatIcon = CATEGORY_LUCIDE_ICONS[cat];
+                const count = categoryCounts[cat] || 0;
+                const activeCount = categoryConnectedCounts[cat] || 0;
+                if (count === 0 && searchQuery) return null;
+
+                return (
                   <button
-                    onClick={() => setActiveCategory('all')}
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
                     className={cn(
-                      'w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors',
-                      activeCategory === 'all'
-                        ? 'bg-primary text-primary-foreground font-medium'
+                      'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all',
+                      activeCategory === cat
+                        ? 'bg-primary text-primary-foreground font-medium shadow-sm'
                         : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     )}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Plug className="w-4 h-4" />
-                      <span>All</span>
+                      <CatIcon className="w-4 h-4" />
+                      <span>{config.label}</span>
                     </div>
-                    <span className={cn(
-                      'text-xs font-medium',
-                      activeCategory === 'all' ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                    )}>
-                      {totalCount}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {activeCount > 0 && activeCategory !== cat && (
+                        <span className="w-2 h-2 rounded-full bg-green-500" />
+                      )}
+                      <span className={cn(
+                        'text-xs font-medium px-1.5 py-0.5 rounded-md',
+                        activeCategory === cat ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      )}>
+                        {count}
+                      </span>
+                    </div>
                   </button>
+                );
+              })}
+            </nav>
+          </div>
 
-                  {categoryOrder.map(cat => {
-                    const config = CATEGORY_CONFIG[cat];
-                    const CatIcon = CATEGORY_LUCIDE_ICONS[cat];
-                    const count = categoryCounts[cat] || 0;
-                    const activeCount = categoryConnectedCounts[cat] || 0;
-                    if (count === 0 && searchQuery) return null;
-
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={cn(
-                          'w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors',
-                          activeCategory === cat
-                            ? 'bg-primary text-primary-foreground font-medium'
-                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                        )}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <CatIcon className="w-4 h-4" />
-                          <span>{config.label}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {activeCount > 0 && activeCategory !== cat && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                          )}
-                          <span className={cn(
-                            'text-xs font-medium',
-                            activeCategory === cat ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                          )}>
-                            {count}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </nav>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {activeCategory === 'all' ? 'All categories' : CATEGORY_CONFIG[activeCategory]?.label}
+                  {' '}
+                  <span className="font-medium text-foreground">
+                    ({activeCategory === 'all' ? totalCount : (filteredIntegrations.length + (activeCategory === 'chat_widget' ? 1 : 0))})
+                  </span>
+                </span>
               </div>
-
-              <div className="space-y-8">
-                {(activeCategory === 'all' || activeCategory === 'chat_widget') && (
-                  <div>
-                    {activeCategory === 'all' && (
-                      <h2 className="text-base font-semibold text-foreground mb-4">Chat Widget (1)</h2>
-                    )}
-                    <Card
-                      className="gradient-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 group max-w-md border-purple-200 dark:border-purple-800/40"
-                      onClick={() => setViewMode('chat-widget')}
-                    >
-                      <CardContent className="pt-5 pb-5">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center text-2xl flex-shrink-0 border border-purple-200 dark:border-purple-800/40 group-hover:border-primary/30 transition-colors">
-                            <MessageSquare className="w-5 h-5 text-purple-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
-                                Chat Widget
-                              </h3>
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-success/10 text-success border-success/30">
-                                <Wifi className="w-2.5 h-2.5 mr-0.5" />
-                                Active
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                              Embeddable web chat widget with full customization - appearance, bot icon, settings, navigation, and deploy script.
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Settings2 className="w-4 h-4 text-muted-foreground" />
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {['Appearance', 'Bot Icon', 'Settings', 'Navigation', 'Deploy'].map(f => (
-                            <Badge key={f} variant="secondary" className="text-[10px]">{f}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-
-                {activeCategory === 'all' ? (
-                  categoryOrder.filter(c => c !== 'chat_widget').map(cat => {
-                    const items = groupedIntegrations[cat];
-                    if (!items || items.length === 0) return null;
-                    const config = CATEGORY_CONFIG[cat];
-
-                    return (
-                      <div key={cat}>
-                        <h2 className="text-base font-semibold text-foreground mb-4">
-                          {config.label} ({items.length})
-                        </h2>
-                        <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                          {items.map(integration => (
-                            <IntegrationCard
-                              key={integration.id}
-                              integration={integration}
-                              onClick={() => handleOpenDetail(integration)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : activeCategory !== 'chat_widget' ? (
-                  <div>
-                    <h2 className="text-base font-semibold text-foreground mb-4">
-                      {CATEGORY_CONFIG[activeCategory]?.label} ({filteredIntegrations.length})
-                    </h2>
-                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                      {filteredIntegrations.map(integration => (
-                        <IntegrationCard
-                          key={integration.id}
-                          integration={integration}
-                          onClick={() => handleOpenDetail(integration)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {filteredIntegrations.length === 0 && activeCategory !== 'chat_widget' && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <Plug className="w-12 h-12 text-muted-foreground mb-4" />
-                    <h3 className="font-semibold mb-1">No integrations found</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Try adjusting your search or category filter
-                    </p>
-                  </div>
-                )}
+              <div className="flex items-center gap-1 border rounded-lg p-0.5">
+                <button
+                  onClick={() => setLayoutMode('grid')}
+                  className={cn(
+                    'p-1.5 rounded-md transition-colors',
+                    layoutMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setLayoutMode('list')}
+                  className={cn(
+                    'p-1.5 rounded-md transition-colors',
+                    layoutMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <List className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-          </TabsContent>
 
-          <TabsContent value="api-keys" className="space-y-6">
-            <Card className="gradient-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base font-medium">API Keys</CardTitle>
-                    <CardDescription>Manage your API keys for programmatic access</CardDescription>
+            {(activeCategory === 'all' || activeCategory === 'chat_widget') && (
+              <div>
+                {activeCategory === 'all' && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-4 rounded-full bg-purple-500" />
+                    <h2 className="text-sm font-semibold text-foreground">Chat Widget</h2>
+                    <span className="text-xs text-muted-foreground">(1)</span>
                   </div>
-                  <Button size="sm" onClick={() => setCreateKeyModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    Create Key
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Key</TableHead>
-                      <TableHead>Permissions</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Last Used</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {apiKeys.map(apiKey => (
-                      <TableRow key={apiKey.id}>
-                        <TableCell className="font-medium">{apiKey.name}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <code className="text-xs bg-muted px-2 py-1 rounded">
-                              {apiKey.key.substring(0, 20)}...
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => handleCopyKey(apiKey.id, apiKey.key)}
-                            >
-                              {copiedKeyId === apiKey.id ? (
-                                <Check className="w-3 h-3 text-success" />
-                              ) : (
-                                <Copy className="w-3 h-3" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1 flex-wrap">
-                            {apiKey.permissions.map(p => (
-                              <Badge key={p} variant="outline" className="text-[10px]">{p}</Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {formatDate(apiKey.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {apiKey.lastUsed ? formatDate(apiKey.lastUsed) : 'Never'}
-                        </TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={apiKey.isActive}
-                            onCheckedChange={() => handleToggleKey(apiKey.id)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleCopyKey(apiKey.id, apiKey.key)}>
-                                <Copy className="w-4 h-4 mr-2" />
-                                Copy Key
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleRevokeKey(apiKey.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Revoke Key
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="webhooks" className="space-y-6">
-            <Card className="gradient-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base font-medium">Webhook Endpoints</CardTitle>
-                    <CardDescription>Configure endpoints to receive real-time events</CardDescription>
-                  </div>
-                  <PermissionButton
-                    screenId="integrations"
-                    action="create"
-                    size="sm"
-                    onClick={() => {
-                      withPermission('create', () => setAddWebhookModalOpen(true));
-                    }}
-                    unauthorizedMessage="You don't have permission to add webhook endpoints."
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Endpoint
-                  </PermissionButton>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {webhooks.map(webhook => (
-                    <div
-                      key={webhook.id}
-                      className="p-4 rounded-xl border bg-muted/30 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Webhook className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{webhook.name}</p>
-                            <code className="text-xs text-muted-foreground">{webhook.url}</code>
-                          </div>
+                )}
+                <Card
+                  className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 group border-purple-200/50 dark:border-purple-800/30 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20"
+                  onClick={() => setViewMode('chat-widget')}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0 border border-purple-200/50 dark:border-purple-800/30 group-hover:scale-105 transition-transform">
+                        <MessageSquare className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
+                            Chat Widget
+                          </h3>
+                          <Badge className="text-[10px] px-1.5 py-0 h-5 bg-green-500/10 text-green-600 border-green-500/30 hover:bg-green-500/10">
+                            Active
+                          </Badge>
                         </div>
-                        <Switch checked={webhook.isActive} />
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {webhook.events.map(event => (
-                          <Badge key={event} variant="secondary" className="text-[10px]">{event}</Badge>
-                        ))}
-                      </div>
-                      {webhook.lastTriggered && (
-                        <p className="text-xs text-muted-foreground mt-3">
-                          Last triggered: {formatTime(webhook.lastTriggered)}
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                          Embeddable web chat widget with full customization - appearance, bot icon, settings, navigation, and deploy script.
                         </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Appearance', 'Bot Icon', 'Settings', 'Navigation', 'Deploy'].map(f => (
+                            <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{f}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Settings2 className="w-4 h-4 text-muted-foreground" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {activeCategory === 'all' ? (
+              categoryOrder.filter(c => c !== 'chat_widget').map(cat => {
+                const items = groupedIntegrations[cat];
+                if (!items || items.length === 0) return null;
+                const config = CATEGORY_CONFIG[cat];
+
+                return (
+                  <div key={cat}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={cn('w-1 h-4 rounded-full', config.barColor)} />
+                      <h2 className="text-sm font-semibold text-foreground">{config.label}</h2>
+                      <span className="text-xs text-muted-foreground">({items.length})</span>
+                      {(categoryConnectedCounts[cat] || 0) > 0 && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 ml-auto">
+                          <Wifi className="w-2.5 h-2.5 mr-0.5 text-green-500" />
+                          {categoryConnectedCounts[cat]} active
+                        </Badge>
                       )}
                     </div>
-                  ))}
+                    {layoutMode === 'grid' ? (
+                      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {items.map(integration => (
+                          <IntegrationCard
+                            key={integration.id}
+                            integration={integration}
+                            onClick={() => handleOpenDetail(integration)}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {items.map(integration => (
+                          <IntegrationListItem
+                            key={integration.id}
+                            integration={integration}
+                            onClick={() => handleOpenDetail(integration)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : activeCategory !== 'chat_widget' ? (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <h2 className="text-sm font-semibold text-foreground">
+                    {CATEGORY_CONFIG[activeCategory]?.label}
+                  </h2>
+                  <span className="text-xs text-muted-foreground">({filteredIntegrations.length})</span>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                {layoutMode === 'grid' ? (
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {filteredIntegrations.map(integration => (
+                      <IntegrationCard
+                        key={integration.id}
+                        integration={integration}
+                        onClick={() => handleOpenDetail(integration)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {filteredIntegrations.map(integration => (
+                      <IntegrationListItem
+                        key={integration.id}
+                        integration={integration}
+                        onClick={() => handleOpenDetail(integration)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {filteredIntegrations.length === 0 && activeCategory !== 'chat_widget' && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                  <Plug className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold mb-1">No integrations found</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Try adjusting your search or category filter to find what you're looking for
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      <CreateAPIKeyModal
-        open={createKeyModalOpen}
-        onOpenChange={setCreateKeyModalOpen}
-        onCreate={handleCreateKey}
-      />
-
-      <AddWebhookModal
-        open={addWebhookModalOpen}
-        onOpenChange={setAddWebhookModalOpen}
-        onAdd={handleAddWebhook}
-      />
     </AppLayout>
   );
 }
@@ -635,31 +445,93 @@ function IntegrationCard({
 }) {
   const icon = INTEGRATION_ICONS[integration.icon] || '🔌';
   const isConnected = integration.status === 'connected';
-
   return (
     <Card
       className={cn(
-        'gradient-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 group',
-        isConnected && 'ring-1 ring-success/20'
+        'cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 group overflow-hidden',
+        isConnected && 'border-green-500/20'
       )}
       onClick={onClick}
     >
-      <CardContent className="pt-5 pb-5">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center text-2xl flex-shrink-0 border group-hover:border-primary/30 transition-colors">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-11 h-11 rounded-xl bg-muted/80 flex items-center justify-center text-xl flex-shrink-0 border group-hover:border-primary/30 group-hover:scale-105 transition-all">
             {icon}
           </div>
-          {isConnected && (
-            <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-1" />
-          )}
+          <div className="flex items-center gap-1.5">
+            {isConnected ? (
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="text-[10px] font-medium text-green-600">Connected</span>
+              </div>
+            ) : (
+              <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-muted">Not connected</span>
+            )}
+          </div>
         </div>
         <h3 className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors">
           {integration.name}
         </h3>
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-3">
           {integration.description}
         </p>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-1">
+            {integration.features.slice(0, 2).map(f => (
+              <span key={f} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{f}</span>
+            ))}
+            {integration.features.length > 2 && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">+{integration.features.length - 2}</span>
+            )}
+          </div>
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+function IntegrationListItem({
+  integration,
+  onClick,
+}: {
+  integration: Integration;
+  onClick: () => void;
+}) {
+  const icon = INTEGRATION_ICONS[integration.icon] || '🔌';
+  const isConnected = integration.status === 'connected';
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-3 px-4 py-3 rounded-lg border bg-card cursor-pointer transition-all hover:bg-accent/50 group',
+        isConnected && 'border-green-500/15'
+      )}
+      onClick={onClick}
+    >
+      <div className="w-9 h-9 rounded-lg bg-muted/80 flex items-center justify-center text-lg flex-shrink-0 border group-hover:border-primary/30 transition-colors">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-medium group-hover:text-primary transition-colors">{integration.name}</h3>
+        <p className="text-xs text-muted-foreground truncate">{integration.description}</p>
+      </div>
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex gap-1 max-w-[150px] overflow-hidden">
+          {integration.features.slice(0, 2).map(f => (
+            <span key={f} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground whitespace-nowrap">{f}</span>
+          ))}
+        </div>
+        {isConnected ? (
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <span className="text-[10px] font-medium text-green-600">Connected</span>
+          </div>
+        ) : (
+          <span className="text-[10px] text-muted-foreground">Not connected</span>
+        )}
+        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+    </div>
   );
 }

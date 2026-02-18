@@ -59,15 +59,16 @@ export const CATEGORY_CONFIG: Record<IntegrationCategory, {
   label: string;
   color: string;
   bgColor: string;
+  barColor: string;
   icon: string;
 }> = {
-  crm: { label: 'CRM', color: 'text-blue-600', bgColor: 'bg-blue-500/10', icon: 'crm' },
-  voice: { label: 'Voice', color: 'text-violet-600', bgColor: 'bg-violet-500/10', icon: 'voice' },
-  messaging: { label: 'Messaging', color: 'text-green-600', bgColor: 'bg-green-500/10', icon: 'messaging' },
-  email: { label: 'Email', color: 'text-orange-600', bgColor: 'bg-orange-500/10', icon: 'email' },
-  chat_widget: { label: 'Chat Widget', color: 'text-purple-600', bgColor: 'bg-purple-500/10', icon: 'chat_widget' },
-  live_chat: { label: 'LiveChat', color: 'text-cyan-600', bgColor: 'bg-cyan-500/10', icon: 'live_chat' },
-  payment: { label: 'Payments', color: 'text-emerald-600', bgColor: 'bg-emerald-500/10', icon: 'payment' },
+  crm: { label: 'CRM', color: 'text-blue-600', bgColor: 'bg-blue-500/10', barColor: 'bg-blue-500', icon: 'crm' },
+  voice: { label: 'Voice', color: 'text-violet-600', bgColor: 'bg-violet-500/10', barColor: 'bg-violet-500', icon: 'voice' },
+  messaging: { label: 'Messaging', color: 'text-green-600', bgColor: 'bg-green-500/10', barColor: 'bg-green-500', icon: 'messaging' },
+  email: { label: 'Email', color: 'text-orange-600', bgColor: 'bg-orange-500/10', barColor: 'bg-orange-500', icon: 'email' },
+  chat_widget: { label: 'Chat Widget', color: 'text-purple-600', bgColor: 'bg-purple-500/10', barColor: 'bg-purple-500', icon: 'chat_widget' },
+  live_chat: { label: 'LiveChat', color: 'text-cyan-600', bgColor: 'bg-cyan-500/10', barColor: 'bg-cyan-500', icon: 'live_chat' },
+  payment: { label: 'Payments', color: 'text-emerald-600', bgColor: 'bg-emerald-500/10', barColor: 'bg-emerald-500', icon: 'payment' },
 };
 
 export const STATUS_CONFIG: Record<IntegrationStatus, {
