@@ -237,7 +237,7 @@ export function LeadUploadModal({
 
   const isValidFileType = (file: File) => {
     const name = file.name.toLowerCase();
-    return name.endsWith('.csv') || name.endsWith('.xls');
+    return name.endsWith('.csv') || name.endsWith('.xls') || name.endsWith('.xlsx');
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -259,7 +259,7 @@ export function LeadUploadModal({
         setSelectedFile(file);
         setFileError(null);
       } else {
-        setFileError('Only .csv and .xls files are supported.');
+        setFileError('Only .csv, .xls, and .xlsx files are supported.');
       }
     }
   };
@@ -271,7 +271,7 @@ export function LeadUploadModal({
         setSelectedFile(file);
         setFileError(null);
       } else {
-        setFileError('Only .csv and .xls files are supported.');
+        setFileError('Only .csv, .xls, and .xlsx files are supported.');
       }
     }
     if (e.target) e.target.value = '';
@@ -426,7 +426,7 @@ export function LeadUploadModal({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.xls"
+                  accept=".csv,.xls,.xlsx"
                   className="hidden"
                   onChange={handleFileSelect}
                 />
@@ -470,7 +470,7 @@ export function LeadUploadModal({
                   <FileSpreadsheet className="w-3.5 h-3.5" /> CSV (.csv)
                 </span>
                 <span className="flex items-center gap-1">
-                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xls)
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xls, .xlsx)
                 </span>
               </div>
 

@@ -19,6 +19,7 @@ import {
   Upload,
   FileSpreadsheet,
   Users,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -109,6 +110,7 @@ export function CreateCampaignWizard({
   const [leadSource, setLeadSource] = useState<LeadSourceType>('csv');
   const [leadFile, setLeadFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [flowId, setFlowId] = useState('');
   const [workflowId, setWorkflowId] = useState('');
@@ -159,24 +161,48 @@ export function CreateCampaignWizard({
     { id: 3, label: 'Review' },
   ];
 
-  const isValidFileType = (file: File) => {
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  const validateFile = (file: File): string | null => {
     const ext = file.name.toLowerCase();
-    return ext.endsWith('.csv') || ext.endsWith('.xls');
+    if (!ext.endsWith('.csv') && !ext.endsWith('.xls') && !ext.endsWith('.xlsx')) {
+      return `Invalid file type "${file.name.split('.').pop()}". Only .csv, .xls, and .xlsx files are accepted.`;
+    }
+    if (file.size === 0) {
+      return 'The file is empty. Please upload a file with lead data.';
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return `File is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum allowed size is 10 MB.`;
+    }
+    return null;
   };
 
   const handleFileDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file && isValidFileType(file)) {
+    if (!file) return;
+    const error = validateFile(file);
+    if (error) {
+      setFileError(error);
+      setLeadFile(null);
+    } else {
+      setFileError(null);
       setLeadFile(file);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && isValidFileType(file)) {
-      setLeadFile(file);
+    if (file) {
+      const error = validateFile(file);
+      if (error) {
+        setFileError(error);
+        setLeadFile(null);
+      } else {
+        setFileError(null);
+        setLeadFile(file);
+      }
     }
     if (e.target) e.target.value = '';
   };
@@ -422,7 +448,7 @@ export function CreateCampaignWizard({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.xls"
+                  accept=".csv,.xls,.xlsx"
                   className="hidden"
                   onChange={handleFileSelect}
                 />
@@ -442,6 +468,7 @@ export function CreateCampaignWizard({
                       onClick={(e) => {
                         e.stopPropagation();
                         setLeadFile(null);
+                        setFileError(null);
                       }}
                     >
                       <X className="w-4 h-4 mr-1" />
@@ -461,12 +488,19 @@ export function CreateCampaignWizard({
                 )}
               </div>
 
+              {fileError && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-sm">
+                  <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <p className="text-destructive">{fileError}</p>
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <FileSpreadsheet className="w-3.5 h-3.5" /> CSV (.csv)
                 </span>
                 <span className="flex items-center gap-1">
-                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xls)
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel (.xls, .xlsx)
                 </span>
               </div>
 
